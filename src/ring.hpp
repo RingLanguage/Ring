@@ -2246,6 +2246,8 @@ typedef enum {
 #define RING_CMD_T_VERSION "version"
 #define RING_CMD_T_HELP "help"
 
+#define RING_RDB_INTERPRETER_DAP "dap" // DAP 交互协议
+
 enum RING_COMMAND_TYPE {
     RING_COMMAND_UNKNOW,
 
@@ -2264,6 +2266,7 @@ struct Ring_Command_Arg {
     std::string              input_file_name; // run/dump/rdb
     std::string              keyword;         // man
     unsigned int             optimize_level;
+    std::string              rdb_interpreter; // rdb 交互协议，默认为 命令行模式
     std::vector<std::string> shell_args;
 };
 
@@ -2430,6 +2433,10 @@ struct RDB_Arg {
 #define ISSET_TRACE_EVENT_EXIT(debug_config) ((debug_config)->enable_trace_event & ENABLE_TRACE_EVENT_EXIT)
 #define ISSET_TRACE_EVENT_ALL(debug_config) ((debug_config)->enable_trace_event == ENABLE_TRACE_EVENT_ALL)
 
+
+#define DEBUG_CONFIG(frame) ((frame)->rvm->debug_config)
+#define DEBUG_IS_DAP(debug_config) (true == str_eq((debug_config)->rdb_interpreter.c_str(), RING_RDB_INTERPRETER_DAP))
+
 struct RVM_DebugConfig {
     bool                  enable;
     TraceDispacth         trace_dispatch;
@@ -2450,6 +2457,8 @@ struct RVM_DebugConfig {
     // break_points 先简单实现, 只能在 main package 中设置断点
     std::vector<RVM_BreakPoint> break_points;
     // RVM_DebugMode debug_mode;
+
+    std::string rdb_interpreter;
 };
 
 struct RVM_BreakPoint {
@@ -2763,6 +2772,14 @@ struct MemBlock {
     printf("%s[DEBUG][%s:%d][function:%s]" format "%s\n", LOG_COLOR_DARKGREEN, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__, LOG_COLOR_CLEAR)
 #else
 #define debug_generate_info_with_darkgreen(format, ...)
+#endif
+
+// debug ring debugger 的详情
+#ifdef DEBUG_RDB_TRACE_DISPATH_DETAIL
+#define debug_rdb_with_darkgreen(format, ...) \
+    printf("%s[DEBUG][%s:%d][function:%s]" format "%s\n", LOG_COLOR_DARKGREEN, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__, LOG_COLOR_CLEAR)
+#else
+#define debug_rdb_with_darkgreen(format, ...)
 #endif
 
 #ifdef DEBUG_EXEC_VM
@@ -3630,6 +3647,7 @@ unsigned int             get_source_line_number_by_pc(RVM_Function* function, un
 std::string              format_rvm_type(Ring_VirtualMachine* rvm, RVM_Value* value);
 std::string              format_rvm_value(RVM_Value* value);
 std::string              format_rvm_call_stack(Ring_VirtualMachine* rvm);
+unsigned int             get_rvm_call_stack_level(Ring_VirtualMachine* rvm);
 CallInfo                 get_rvm_call_stack(Ring_VirtualMachine* rvm, unsigned int skip);
 std::string              format_rvm_current_func(Ring_VirtualMachine* rvm, unsigned int source_line_number);
 

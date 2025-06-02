@@ -95,11 +95,16 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
     std::string              input_file_name;
     std::string              keyword;
     unsigned int             optimize_level = 0;
+    std::string              rdb_interpreter;
     std::vector<std::string> shell_args;
 
 
     // option
-    auto option_rule = (clipp::option("-O", "--Opt") & clipp::value("opt-level", optimize_level));
+    auto optimize_level_rule  = (clipp::option("-O", "--Opt") & clipp::value("opt-level", optimize_level));
+
+    auto rdb_interpreter_rule = (clipp::option("", "--interpreter=") & clipp::value("interpreter-protocol", rdb_interpreter));
+
+    auto option_rule          = (optimize_level_rule | rdb_interpreter_rule);
 
     // run command
     auto run_rule = (clipp::command(RING_CMD_T_RUN).set(cmd, RING_COMMAND_RUN),
@@ -130,6 +135,7 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
     // printf("input_file_name:%s\n", input_file_name.c_str());
     // printf("keyword:%s\n", keyword.c_str());
     // printf("optimize_level:%d\n", optimize_level);
+    // printf("rdb_interpreter:%s\n", rdb_interpreter.c_str());
     // printf("shell_args:\n");
     // for (int i = 0; i < shell_args.size(); i++) {
     //     printf("[i]:%s\n", shell_args[i].c_str());
@@ -147,6 +153,7 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
         .input_file_name = input_file_name,
         .keyword         = keyword,
         .optimize_level  = optimize_level,
+        .rdb_interpreter = rdb_interpreter,
         .shell_args      = shell_args,
     };
 
@@ -380,7 +387,7 @@ char* ring_repl_hints(const char* buf, int* color, int* bold) {
 int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
     RVM_DebugConfig* debug_config      = (RVM_DebugConfig*)mem_alloc(NULL_MEM_POOL, sizeof(RVM_DebugConfig));
     debug_config->enable               = true;
-    debug_config->trace_dispatch       = debug_trace_dispatch;
+    debug_config->trace_dispatch       = debug_trace_dispatch_cli;
     debug_config->enable_trace_event   = 0;
     debug_config->stop_at_entry        = true;
     debug_config->display_globals      = false;
@@ -391,6 +398,7 @@ int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
     debug_config->step_over_deep_count = 0;
     debug_config->step_out_deep_count  = 0;
     debug_config->break_points         = std::vector<RVM_BreakPoint>{};
+    debug_config->rdb_interpreter      = args.rdb_interpreter;
 
     SET_TRACE_EVENT_ALL(debug_config);
     if (debug_config->stop_at_entry) {
@@ -401,14 +409,19 @@ int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
 
     rvm->debug_config = debug_config;
 
-    printf(LOG_COLOR_YELLOW);
-    printf("%s\n", RING_VERSION);
-    printf("\n");
-    printf("Start Ring Debugger...\n");
-    printf("\n");
-    printf("Input file:%s\n", args.input_file_name.c_str());
-    printf("\n");
-    printf(LOG_COLOR_CLEAR);
+    if (DEBUG_IS_DAP(debug_config)) {
+        debug_config->trace_dispatch = debug_trace_dispatch_dap;
+    } else {
+        printf(LOG_COLOR_YELLOW);
+        printf("%s\n", RING_VERSION);
+        printf("\n");
+        printf("Start Ring Debugger...\n");
+        printf("\n");
+        printf("Input file:%s\n", args.input_file_name.c_str());
+        printf("Interpreter:%s\n", args.rdb_interpreter.c_str());
+        printf("\n");
+        printf(LOG_COLOR_CLEAR);
+    }
 
     return 0;
 }
