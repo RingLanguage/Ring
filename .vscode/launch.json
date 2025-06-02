@@ -2,14 +2,65 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "(lldb) 启动",
+      // 调试 Ring run 命令
+      "name": "Debug Ring run",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/bin/ring",
       "args": [
         "-O0",
         "run",
-        "${workspaceFolder}/test/040-aonymous-function/test-001.ring"
+        "${workspaceFolder}/test/008-class/class-000.ring"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
+      // 调试 Ring dump 命令
+      "name": "Debug Ring dump",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/ring",
+      "args": [
+        "-O0",
+        "dump",
+        "${workspaceFolder}/test/008-class/class-000.ring"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
+      // 调试 Ring rdb 命令；使用 命令行模式交互
+      "name": "Debug Ring rdb-cli",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/ring",
+      "args": [
+        "rdb",
+        "${workspaceFolder}/test/008-class/class-000.ring"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
+      // 调试 Ring rdb-dap 命令；使用 DAP 协议交互
+      "name": "Debug Ring rdb-dap",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/ring",
+      "args": [
+        "--interpreter=dap",
+        "rdb",
+        "${workspaceFolder}/test/008-class/class-000.ring"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",

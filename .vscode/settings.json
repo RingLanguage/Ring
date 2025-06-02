@@ -1,10 +1,10 @@
 {
   "files.associations": {
-    "*.sqlbook": "sql",
-    "*.ndjson": "jsonl",
     "*.dbclient-js": "javascript",
     "*.embeddedhtml": "html",
     "*.ring": "go",
+    "*.sqlbook": "sql",
+    "*.ndjson": "jsonl",
     "*.cpp": "cpp",
     "stdlib.h": "c",
     "stdio.h": "c",
@@ -101,15 +101,23 @@
     "*.inc": "cpp",
     "__verbose_abort": "cpp",
     "execution": "cpp",
-    "print": "cpp"
+    "print": "cpp",
+    "any": "cpp",
+    "forward_list": "cpp",
+    "ranges": "cpp",
+    "span": "cpp",
+    "condition_variable": "cpp",
+    "format": "cpp",
+    "numbers": "cpp",
+    "semaphore": "cpp"
   },
   "editor.formatOnSave": true,
   "code-runner.executorMap": {
     "c": "cd $dir && gcc $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
-    "cpp": "cd $dir && g++ -std=c++17 $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt"
+    "cpp": "cd $dir && g++ -std=c++20 $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt"
   },
   "clang.cxxflags": [
-    "-std=c++17"
+    "-std=c++20"
   ],
   "C_Cpp_Runner.cCompilerPath": "clang",
   "C_Cpp_Runner.cppCompilerPath": "clang++",
