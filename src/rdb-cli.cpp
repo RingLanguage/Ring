@@ -7,26 +7,6 @@
 
 
 /*
-调试器一般有这么几个功能
-
-1. 设置断点：在编译器中添加断点的功能，允许用户在需要时设置断点。当虚拟机执行到断点处时，暂停执行并进入调试模式。
-
-2. 单步执行：实现单步执行功能，允许用户逐步执行虚拟机指令，方便用户跟踪程序执行过程。
-
-3. 变量查看：提供查看当前栈状态、局部变量、全局变量等的功能，让用户可以查看程序中的变量值。
-
-4. 函数跟踪：记录函数调用堆栈，显示当前函数调用链，帮助用户跟踪函数调用关系。
-
-5. 错误处理：捕获运行时错误，并提供错误信息显示和定位功能，帮助用户快速定位问题。
-
-6. 用户交互界面：设计一个友好的用户交互界面，让用户可以方便地操作调试功能，设置断点、单步执行、查看变量等。
-
-7. 调试命令：设计一些调试命令，如继续执行、打印变量、查看堆栈等，让用户可以通过命令来控制调试过程。
-
-*/
-
-
-/*
  * ring debugger 实现方式
  *
  * 1. 通过 ring rdb <input-file> 调用debugger
@@ -235,54 +215,36 @@ std::vector<RDB_Command> rdb_commands = {
 static unsigned int trace_count = 0;
 
 //
-int debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg) {
+int cli_debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg) {
 
     RVM_DebugConfig* debug_config = frame->rvm->debug_config;
-    // std::string      func_name;
 
-    // func_name = "$ring!start()";
-    // if (frame->call_info != nullptr
-    //     && frame->call_info->callee_function != nullptr) {
-    //     func_name = std::string(frame->call_info->callee_function->func_name) + "()";
-    // }
-
-    // if (str_eq(event, TRACE_EVENT_CALL)
-    //     && str_eq(func_name.c_str(), "$ring!start()")) {
-    //     if (debug_config->stop_at_entry) {
-    //         event = TRACE_EVENT_SAE;
-    //     }
-    // }
-
-
-#ifdef DEBUG_RDB_TRACE_DISPATH_DETAIL
-    printf("---debug_trace_dispatch[%u]---\n", trace_count);
-    printf("|[@]event:            %s\n", event);
-    printf("|[@]current_function: %s\n", frame->callee_func);
-    printf("|[@]next_opcode:      %s\n", frame->next_opcode);
-    printf("|[@]source_line_num:  %u\n", frame->source_line_number);
-    printf("---debug_trace_dispatch---\n");
-    printf("\n\n");
-#endif
+    debug_rdb_with_darkgreen("---debug_trace_dispatch[%u]---\n", trace_count);
+    debug_rdb_with_darkgreen("|[@]event:            %s\n", event);
+    debug_rdb_with_darkgreen("|[@]next_opcode:      %d\n", frame->next_opcode);
+    debug_rdb_with_darkgreen("|[@]source_line_num:  %u\n", frame->source_line_number);
+    debug_rdb_with_darkgreen("---debug_trace_dispatch---\n");
+    debug_rdb_with_darkgreen("\n\n");
 
 
     if (str_eq(event, TRACE_EVENT_SAE)) {
         if (ISSET_TRACE_EVENT_SAE(debug_config))
-            dispath_sae(frame, event, arg);
+            cli_dispath_sae(frame, event, arg);
     } else if (str_eq(event, TRACE_EVENT_OPCODE)) {
         if (ISSET_TRACE_EVENT_OPCODE(debug_config))
-            dispath_opcode(frame, event, arg);
+            cli_dispath_opcode(frame, event, arg);
     } else if (str_eq(event, TRACE_EVENT_LINE)) {
         if (ISSET_TRACE_EVENT_LINE(debug_config))
-            dispath_line(frame, event, arg);
+            cli_dispath_line(frame, event, arg);
     } else if (str_eq(event, TRACE_EVENT_CALL)) {
         if (ISSET_TRACE_EVENT_CALL(debug_config))
-            dispath_call(frame, event, arg);
+            cli_dispath_call(frame, event, arg);
     } else if (str_eq(event, TRACE_EVENT_RETURN)) {
         if (ISSET_TRACE_EVENT_RETURN(debug_config))
-            dispath_return(frame, event, arg);
+            cli_dispath_return(frame, event, arg);
     } else if (str_eq(event, TRACE_EVENT_EXIT)) {
         if (ISSET_TRACE_EVENT_EXIT(debug_config))
-            dispath_exit(frame, event, arg);
+            cli_dispath_exit(frame, event, arg);
     }
 
 
@@ -291,7 +253,7 @@ int debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg) {
     return 0;
 }
 
-int dispath_sae(RVM_Frame* frame, const char* event, const char* arg) {
+int cli_dispath_sae(RVM_Frame* frame, const char* event, const char* arg) {
 
     printf(LOG_COLOR_GREEN);
     printf("[@]stop at entry: main()\n");
@@ -305,11 +267,11 @@ int dispath_sae(RVM_Frame* frame, const char* event, const char* arg) {
     return 0;
 }
 
-int dispath_opcode(RVM_Frame* frame, const char* event, const char* arg) {
+int cli_dispath_opcode(RVM_Frame* frame, const char* event, const char* arg) {
     return 0;
 }
 
-int dispath_line(RVM_Frame* frame, const char* event, const char* arg) {
+int cli_dispath_line(RVM_Frame* frame, const char* event, const char* arg) {
 
     RVM_DebugConfig*             debug_config = frame->rvm->debug_config;
     std::vector<RVM_BreakPoint>& break_points = debug_config->break_points;
@@ -320,15 +282,13 @@ int dispath_line(RVM_Frame* frame, const char* event, const char* arg) {
     printf(LOG_COLOR_GREEN);
     if (step_cmd != RDB_COMMAND_STEP_UNKNOW) {
 
-#ifdef DEBUG_RDB_TRACE_DISPATH_DETAIL
         if (step_cmd == RDB_COMMAND_STEP_OVER) {
-            printf("[@]step over, stop.\n");
+            debug_rdb_with_darkgreen("[@]step over, stop.\n");
         } else if (step_cmd == RDB_COMMAND_STEP_INTO) {
-            printf("[@]step into, stop.\n");
+            debug_rdb_with_darkgreen("[@]step into, stop.\n");
         } else if (step_cmd == RDB_COMMAND_STEP_OUT) {
-            printf("[@]step out, stop.\n");
+            debug_rdb_with_darkgreen("[@]step out, stop.\n");
         }
-#endif
 
         location = format_rvm_current_func(frame->rvm, frame->source_line_number);
         printf("[@]stop at:\n    %s\n", location.c_str());
@@ -392,7 +352,7 @@ END_DISPATH_LINE:
     return 0;
 }
 
-int dispath_call(RVM_Frame* frame, const char* event, const char* arg) {
+int cli_dispath_call(RVM_Frame* frame, const char* event, const char* arg) {
     RVM_DebugConfig* debug_config = frame->rvm->debug_config;
 
     debug_config->call_func_deep_count++;
@@ -405,7 +365,7 @@ int dispath_call(RVM_Frame* frame, const char* event, const char* arg) {
     return 0;
 }
 
-int dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
+int cli_dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
     RVM_DebugConfig* debug_config = frame->rvm->debug_config;
 
     debug_config->call_func_deep_count--;
@@ -423,7 +383,7 @@ int dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
     return 0;
 }
 
-int dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
+int cli_dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
     printf(LOG_COLOR_GREEN);
     printf("[@]Process exited, code:%d\n", 0);
     printf(LOG_COLOR_CLEAR);
@@ -592,10 +552,8 @@ int rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
                 file_stat               = frame->call_info->callee_function->ring_file_stat;
 
 
-#ifdef DEBUG_RDB_TRACE_DISPATH_DETAIL
-                printf("source file abs_path: %s, last-modified: %lld\n", file_stat->abs_path.c_str(), file_stat->last_modified);
-                printf("source file number:%u\n", frame->source_line_number);
-#endif
+                debug_rdb_with_darkgreen("source file abs_path: %s, last-modified: %lld\n", file_stat->abs_path.c_str(), file_stat->last_modified);
+                debug_rdb_with_darkgreen("source file number:%u\n", frame->source_line_number);
 
                 struct stat stat_;
                 if (stat(file_stat->abs_path.c_str(), &stat_) != 0) {

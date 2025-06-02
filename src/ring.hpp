@@ -3802,18 +3802,29 @@ unsigned int        rvm_free_fvb(Ring_VirtualMachine* rvm, RVM_FreeValueBlock* f
 
 
 /* --------------------
- * debug.cpp
+ * rdb-cli.cpp
+ * rdb-dap.cpp
  * function definition
  *
  */
 
-int     debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg);
-int     dispath_sae(RVM_Frame* frame, const char* event, const char* arg);
-int     dispath_opcode(RVM_Frame* frame, const char* event, const char* arg);
-int     dispath_line(RVM_Frame* frame, const char* event, const char* arg);
-int     dispath_call(RVM_Frame* frame, const char* event, const char* arg);
-int     dispath_return(RVM_Frame* frame, const char* event, const char* arg);
-int     dispath_exit(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_dispath_sae(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_dispath_opcode(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_dispath_line(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_dispath_call(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_dispath_return(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg);
+
+
+int     cli_debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg);
+int     cli_dispath_sae(RVM_Frame* frame, const char* event, const char* arg);
+int     cli_dispath_opcode(RVM_Frame* frame, const char* event, const char* arg);
+int     cli_dispath_line(RVM_Frame* frame, const char* event, const char* arg);
+int     cli_dispath_call(RVM_Frame* frame, const char* event, const char* arg);
+int     cli_dispath_return(RVM_Frame* frame, const char* event, const char* arg);
+int     cli_dispath_exit(RVM_Frame* frame, const char* event, const char* arg);
 
 int     rdb_cli(RVM_Frame* frame, const char* event, const char* arg);
 RDB_Arg rdb_parse_command(const char* line);

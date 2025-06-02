@@ -387,7 +387,7 @@ char* ring_repl_hints(const char* buf, int* color, int* bold) {
 int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
     RVM_DebugConfig* debug_config      = (RVM_DebugConfig*)mem_alloc(NULL_MEM_POOL, sizeof(RVM_DebugConfig));
     debug_config->enable               = true;
-    debug_config->trace_dispatch       = debug_trace_dispatch_cli;
+    debug_config->trace_dispatch       = cli_debug_trace_dispatch;
     debug_config->enable_trace_event   = 0;
     debug_config->stop_at_entry        = true;
     debug_config->display_globals      = false;
@@ -410,7 +410,7 @@ int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
     rvm->debug_config = debug_config;
 
     if (DEBUG_IS_DAP(debug_config)) {
-        debug_config->trace_dispatch = debug_trace_dispatch_dap;
+        debug_config->trace_dispatch = dap_debug_trace_dispatch;
     } else {
         printf(LOG_COLOR_YELLOW);
         printf("%s\n", RING_VERSION);

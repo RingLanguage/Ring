@@ -20,7 +20,8 @@ OBJS   = \
 	std_lib.o\
 	mem_pool.o\
 	gc.o\
-	debug.o\
+	rdb-cli.o\
+	rdb-dap.o\
 	vm-debug.o\
 	debug-free-value.o\
 	debug-gc.o\
@@ -74,7 +75,7 @@ TOOL_GEN_VMCODE_DOC_OBJS  = vm.o tool_gen_vmcode_doc.o
 #  DDEBUG_RVM_MEM_POOL_DETAIL 	     展示 Memory Pool 内存分配的详情
 #  DEBUG_RVM_GC_DETAIL 			     展示 Garbage Collect 的详情
 #  DEBUG_RDB_TRACE_DISPATH_DETAIL    调试开发Ring-Debugger: 展示 rdb trace_dispath 的详情, 可以展示每一次回掉到debugger的详情
-CFLAGS = -c -static -O2 -std=c++17 \
+CFLAGS = -c -static -O2 -std=c++20 \
 				-Wall \
 				-Wextra \
 				-Wno-sign-compare \
@@ -209,7 +210,8 @@ man_help.o: man_help.cpp ring.hpp
 std_lib.o: std_lib.cpp ring.hpp
 mem_pool.o: mem_pool.cpp ring.hpp
 gc.o: gc.cpp ring.hpp
-debug.o: debug.cpp ring.hpp
+rdb-cli.o: rdb-cli.cpp ring.hpp
+rdb-dap.o: rdb-dap.cpp dap.hpp dap_process.hpp json.hpp ring.hpp
 vm-debug.o: vm-debug.cpp ring.hpp
 debug-free-value.o: debug-free-value.cpp ring.hpp
 debug-gc.o: debug-gc.cpp ring.hpp
