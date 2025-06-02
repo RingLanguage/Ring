@@ -247,7 +247,7 @@ void package_compile(Package* package) {
 
 
 #ifdef DEBUG_COMPILER_SUMMARY
-    if (str_eq(package->package_name, "main")) {
+    if (str_eq(package->package_name, PACKAGE_MAIN)) {
         package_dump(package);
         for (PackageUnit* package_unit : package->package_unit_list) {
             package_unit_dump(package_unit);

@@ -747,7 +747,7 @@ Function* create_function_definition(FunctionType        type,
     }
 
     // 对于main()函数，检查 参数 和返回值
-    if (str_eq(function->identifier, "main")) {
+    if (str_eq(function->identifier, FUNC_MAIN)) {
 
         // main() 函数没有返回值
         // Ring-Compiler-Error-Report ERROR_FUNCTION_MAIN_INVALID

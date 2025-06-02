@@ -455,7 +455,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             }
 
             if (prev_opcde == RVM_CODE_INVOKE_FUNC
-                && str_eq(VM_CUR_CO_CALLINFO->callee_function->identifier, "main")) {
+                && str_eq(VM_CUR_CO_CALLINFO->callee_function->identifier, FUNC_MAIN)) {
                 event = TRACE_EVENT_SAE;
             }
 
@@ -463,7 +463,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             unsigned int source_line_number = 0;
             if (VM_CUR_CO_CALLINFO != nullptr
                 && VM_CUR_CO_CALLINFO->callee_function != nullptr
-                && !str_eq(VM_CUR_CO_CALLINFO->callee_function->identifier, "__global_init")) {
+                && !str_eq(VM_CUR_CO_CALLINFO->callee_function->identifier, FUNC_GLOBAL_INIT)) {
                 // TODO: 这里直接通过二分法查找, 这里需要优化一下:
                 //       因为Opcode是一行一行运行的, opcode++, 可以用更快的方式找到对应的函数行数
                 source_line_number = get_source_line_number_by_pc(VM_CUR_CO_CALLINFO->callee_function, VM_CUR_CO_PC);

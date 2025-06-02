@@ -2248,6 +2248,10 @@ typedef enum {
 
 #define RING_RDB_INTERPRETER_DAP "dap" // DAP 交互协议
 
+#define FUNC_GLOBAL_INIT "__global_init"
+#define FUNC_MAIN "main"
+#define PACKAGE_MAIN "main"
+
 enum RING_COMMAND_TYPE {
     RING_COMMAND_UNKNOW,
 

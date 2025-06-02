@@ -104,7 +104,7 @@ void ring_generate_vm_code(Package* package, Package_Executer* package_executer)
     add_functions(package, package_executer);
     add_classes(package, package_executer);
 
-    if (str_eq(package->package_name, "main")) {
+    if (str_eq(package->package_name, PACKAGE_MAIN)) {
         // Ring-Compiler-Error-Report ERROR_NOT_FOUND_MAIN_FUNCTION
         if (!package_executer->exist_main_func) {
             DEFINE_ERROR_REPORT_STR;
@@ -133,7 +133,7 @@ void ring_generate_vm_code(Package* package, Package_Executer* package_executer)
     }
 
 #ifdef DEBUG_GENERATE_SUMMARY
-    if (str_eq(package->package_name, "main")) {
+    if (str_eq(package->package_name, PACKAGE_MAIN)) {
         package_executer_dump(package_executer);
     }
 #endif
@@ -197,11 +197,11 @@ void add_functions(Package* package, Package_Executer* executer) {
     for (unsigned int i = 0; i < package->function_list.size(); i++) {
         copy_function(executer, &(executer->function_list[i]), package->function_list[i]);
         // 注册main函数
-        if (str_eq(package->package_name, "main")
-            && str_eq(package->function_list[i]->identifier, "main")) {
+        if (str_eq(package->package_name, PACKAGE_MAIN)
+            && str_eq(package->function_list[i]->identifier, FUNC_MAIN)) {
             executer->exist_main_func = true;
             executer->main_func_index = i;
-        } else if (str_eq(package->function_list[i]->identifier, "__global_init")) {
+        } else if (str_eq(package->function_list[i]->identifier, FUNC_GLOBAL_INIT)) {
             executer->exist_global_init_func = true;
             executer->global_init_func_index = i;
         }

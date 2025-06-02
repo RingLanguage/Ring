@@ -73,7 +73,7 @@ void ring_compiler_fix_ast(Package* package) {
     unsigned int func_index = 0;
     for (Function* func : package->function_list) {
         func->func_index = func_index++;
-        if (str_eq(func->identifier, "__global_init")) {
+        if (str_eq(func->identifier, FUNC_GLOBAL_INIT)) {
             continue;
         }
         fix_function_definition(func);
@@ -161,7 +161,7 @@ void ring_compiler_fix_ast(Package* package) {
     func_index = 0;
     for (Function* func : package->function_list) {
         func->func_index = func_index++;
-        if (str_eq(func->identifier, "__global_init")) {
+        if (str_eq(func->identifier, FUNC_GLOBAL_INIT)) {
             continue;
         }
         fix_function_block(func);
@@ -217,7 +217,7 @@ Function* create_global_init_func(Package* package) {
     function->end_line_number     = 0;
     function->package             = package;
     function->ring_file_stat      = nullptr;
-    function->identifier          = (char*)"__global_init";
+    function->identifier          = (char*)FUNC_GLOBAL_INIT;
     function->parameter_list_size = 0;
     function->parameter_list      = nullptr;
     function->return_list_size    = 0;
@@ -3136,7 +3136,7 @@ Package* resolve_package(char*        package_posit,
     }
 
     // Ring-Compiler-Error-Report ERROR_USE_PACKAGE_MAIN_IMPORT
-    if (str_eq(package_posit, "main")) {
+    if (str_eq(package_posit, PACKAGE_MAIN)) {
         DEFINE_ERROR_REPORT_STR;
 
         compile_err_buf = sprintf_string(

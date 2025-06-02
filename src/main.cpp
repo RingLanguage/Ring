@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
     // TODO: 目前main package 只能有一个源文件
     // main package 源文件即为 ring run 指定的输入文件
     Package* main_package = package_create_input_file(compiler_entry,
-                                                      (char*)"main",
+                                                      (char*)PACKAGE_MAIN,
                                                       (char*)ring_command_arg.input_file_name.c_str());
     // 将 shell_args 注册到 main-package 中
     // 在 main函数中可以通过这种方式获取:
@@ -256,7 +256,7 @@ int main(int argc, char** argv) {
      * 初始化代码生成阶段相关的struct
      */
     ExecuterEntry*    executer_entry        = executer_entry_create();
-    Package_Executer* main_package_executer = package_executer_create(executer_entry, (char*)"main");
+    Package_Executer* main_package_executer = package_executer_create(executer_entry, (char*)PACKAGE_MAIN);
     //
     executer_entry->main_package_executer = main_package_executer;
 
