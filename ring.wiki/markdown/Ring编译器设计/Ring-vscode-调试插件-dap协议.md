@@ -22,6 +22,8 @@
 type: 固定为 "event"，表示这是一个事件
 event: 固定为 "stopped"，表示线程停止事件
 body.reason: 值为 "entry"，表示停止原因是程序入口点
+  - entry
+  - step  stepIn/stepOut/step 指令
 body.threadId: 停止的线程ID
 body.allThreadsStopped: 布尔值，表示是否所有线程都停止了
 body.preserveFocusHint: 可选，提示UI是否应保持当前焦点
@@ -497,6 +499,105 @@ body.allThreadsContinued (可选): 布尔值，表示是否所有线程都被恢
 }
 ```
 
+
+## next 指令（stepOver）
+
+
+```json
+{
+  "command": "next",
+  "arguments": {
+    "threadId": 1,
+    "singleThread": false,
+    "granularity": "statement"
+  },
+  "type": "request",
+  "seq": 125
+}
+```
+
+
+```json
+{
+  "type": "response",
+  "request_seq": 125,
+  "success": true,
+  "command": "next",
+  "body": {},
+  "seq": 459
+}
+```
+
+## stepIn 指令
+
+
+
+
+```json
+{
+  "type": "request",
+  "command": "stepIn",
+  "arguments": {
+    "threadId": 1,
+    "singleThread": false,
+    "granularity": "statement"
+  },
+  "seq": 123
+}
+```
+
+arguments.granularity (optional): The granularity of the step ("statement", "line", or "instruction")
+
+
+
+```json
+{
+  "type": "response",
+  "request_seq": 123,
+  "success": true,
+  "command": "stepIn",
+  "body": {},
+  "seq": 456
+}
+```
+
+
+## stepOut 指令
+
+stepOut 的具体作用
+当你在调试过程中进入了一个函数调用（比如使用了 stepInto 指令），stepOut 会让你：
+
+执行完当前函数的剩余部分
+
+返回到调用这个函数的地方
+
+在函数返回后的第一条语句处暂停
+
+
+```json
+{
+  "command": "stepOut",
+  "arguments": {
+    "threadId": 1,
+    "singleThread": false,
+    "granularity": "statement"
+  },
+  "type": "request",
+  "seq": 124
+}
+```
+
+
+```json
+{
+  "type": "response",
+  "request_seq": 124,
+  "success": true,
+  "command": "stepOut",
+  "body": {},
+  "seq": 457
+}
+```
 
 
 ## exited/terminated

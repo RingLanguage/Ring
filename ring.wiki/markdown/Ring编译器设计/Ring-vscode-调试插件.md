@@ -1156,6 +1156,23 @@ https://vscode.github.net.cn/docs/editor/debugging
 运行模式
 
 
+runEditorContents
+debugEditorContents
+
+功能总结
+功能	runEditorContents（之前）	debugEditorContents（当前）
+调试模式	noDebug: true（直接运行）	进入调试模式
+断点支持	❌ 不支持	✅ 支持
+单步调试	❌ 不支持	✅ 支持
+stopOnEntry	❌ 不适用	✅ 程序入口暂停
+适用场景
+用户点击 "Debug File"（如果该命令绑定到右键菜单或快捷键）。
+
+用户按 F5 启动调试（如果配置了 launch.json 或直接调用此命令）。
+
+需要调试 Ring 脚本时（检查变量、单步执行等）。
+
+
 ----------------
 
 
@@ -1254,3 +1271,5 @@ stdout 程序的标准输出，有 typescript 那边进行截获
 1. c++20 std::variant
 2. c++23 std::expected
 3. tl::expected
+
+四、定义 stepInto stepOver stepOut 的处理逻辑
