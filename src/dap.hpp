@@ -446,9 +446,9 @@ struct StepResponseBody {
     std::optional<bool> allThreadsContinued;
 };
 
-struct StepRequest : DAPMessage {
+struct NextRequest : DAPMessage {
     StepArguments arguments;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepRequest, seq, type, command, arguments);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(NextRequest, seq, type, command, arguments);
 };
 struct StepInRequest : DAPMessage {
     StepArguments arguments;

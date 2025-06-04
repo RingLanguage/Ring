@@ -241,6 +241,9 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
                 },
             };
             dap_sender.send(continue_response);
+        } else if (dap_message.command == dap::Command_Next) {
+        } else if (dap_message.command == dap::Command_StepIn) {
+        } else if (dap_message.command == dap::Command_StepOut) {
         }
 
 
