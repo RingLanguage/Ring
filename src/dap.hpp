@@ -433,6 +433,49 @@ inline void from_json(const json& j, ContinueResponseBody& c) {
 } // namespace dap
 
 
+// ------- request/response 定义 --------
+// next/stepIn/stepOut
+namespace dap {
+
+struct StepArguments {
+    int                        threadId;
+    std::optional<bool>        singleThread;
+    std::optional<std::string> granularity; // "statement", "line", or "instruction" TODO: 抽象出 const
+};
+struct StepResponseBody {
+    std::optional<bool> allThreadsContinued;
+};
+
+struct StepRequest : DAPMessage {
+    StepArguments arguments;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepRequest, seq, type, command, arguments);
+};
+struct StepInRequest : DAPMessage {
+    StepArguments arguments;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepInRequest, seq, type, command, arguments);
+};
+struct StepOutRequest : DAPMessage {
+    StepArguments arguments;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepOutRequest, seq, type, command, arguments);
+};
+
+
+struct StepResponse : DAPResponse {
+    StepResponseBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepResponse, seq, request_seq, type, command, success, message, body);
+};
+struct StepInResponse : DAPResponse {
+    StepResponseBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepInResponse, seq, request_seq, type, command, success, message, body);
+};
+struct StepOutResponse : DAPResponse {
+    StepResponseBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepOutResponse, seq, request_seq, type, command, success, message, body);
+};
+
+} // namespace dap
+
+
 // ------- event 定义 --------
 namespace dap {
 
