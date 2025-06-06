@@ -47,115 +47,159 @@ int test_send_response_1() {
 
     printf("test_send_response_1------------\n");
 
-
     DapMessageSender sender(STDOUT_FILENO);
 
-    // initialize_response
-    dap::InitializeResponse initialize_response = dap::InitializeResponse{
-        {
-            .seq         = 1,
-            .request_seq = 1,
-            .type        = dap::MessageType_Response,
-            .command     = dap::Command_Initialize,
-            .success     = true,
-            .message     = "",
-        },
-        .body = dap::InitializeResponseBody{
-            .supportsConfigurationDoneRequest = true,
-            .supportsFunctionBreakpoints      = true,
-            .supportsConditionalBreakpoints   = true,
-            .exceptionBreakpointFilters       = std::vector<dap::ExceptionBreakpointsFilter>{},
-            .supportsSetVariable              = true,
-            .supportsStepBack                 = true,
-        },
-    };
-    sender.send(initialize_response);
 
-
-    // launch_response
-    dap::LaunchResponse launch_response = dap::LaunchResponse{
-        {
-            .seq         = 2,
-            .request_seq = 2,
-            .type        = dap::MessageType_Response,
-            .command     = dap::Command_Launch,
-            .success     = true,
-            .message     = "",
-        },
-        .body = dap::LaunchResponseBody{
-            .error = dap::LaunchErrorBody{
-                .id        = 1,
-                .format    = "Launch failed",
-                .variables = {{"reason", "Invalid program path"}},
+    {
+        // initialize_response
+        dap::InitializeResponse initialize_response = dap::InitializeResponse{
+            {
+                .seq         = 1,
+                .request_seq = 1,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_Initialize,
+                .success     = true,
+                .message     = "",
             },
-        },
-    };
-    sender.send(launch_response);
-
-
-    // threads_response
-    dap::ThreadsResponse threads_response = dap::ThreadsResponse{
-        {
-            .seq         = 1,
-            .request_seq = 1,
-            .type        = dap::MessageType_Response,
-            .command     = dap::Command_Threads,
-            .success     = true,
-            .message     = "",
-        },
-        .body = dap::ThreadsResponseBody{
-            .threads = std::vector<dap::Thread>{
-                {
-                    .id          = 1,
-                    .name        = "thread-1",
-                    .state       = "stopped",
-                    .pauseReason = "entry",
+            .body = dap::InitializeResponseBody{
+                .supportsConfigurationDoneRequest = true,
+                .supportsFunctionBreakpoints      = true,
+                .supportsConditionalBreakpoints   = true,
+                .exceptionBreakpointFilters       = std::vector<dap::ExceptionBreakpointsFilter>{},
+                .supportsSetVariable              = true,
+                .supportsStepBack                 = true,
+            },
+        };
+        sender.send(initialize_response);
+    }
+    {
+        // launch_response
+        dap::LaunchResponse launch_response = dap::LaunchResponse{
+            {
+                .seq         = 2,
+                .request_seq = 2,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_Launch,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::LaunchResponseBody{
+                .error = dap::LaunchErrorBody{
+                    .id        = 1,
+                    .format    = "Launch failed",
+                    .variables = {{"reason", "Invalid program path"}},
                 },
             },
-        },
-    };
-    sender.send(threads_response);
-
-
-    dap::StackTraceResponse stack_trace_response = dap::StackTraceResponse{
-        {
-            .seq         = 2,
-            .request_seq = 2,
-            .type        = dap::MessageType_Response,
-            .command     = dap::Command_StackTrace,
-            .success     = true,
-            .message     = "",
-        },
-        .body = dap::StackTraceResponseBody{
-            .stackFrames = std::vector<dap::StackFrame>{
-                {
-                    .id        = 0,
-                    .name      = "main",
-                    .line      = 10,
-                    .column    = 5,
-                    .endLine   = 10,
-                    .endColumn = 5,
+        };
+        sender.send(launch_response);
+    }
+    {
+        // threads_response
+        dap::ThreadsResponse threads_response = dap::ThreadsResponse{
+            {
+                .seq         = 1,
+                .request_seq = 1,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_Threads,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::ThreadsResponseBody{
+                .threads = std::vector<dap::Thread>{
+                    {
+                        .id          = 1,
+                        .name        = "thread-1",
+                        .state       = "stopped",
+                        .pauseReason = "entry",
+                    },
                 },
             },
-            .totalFrames = 1,
-        }};
-    sender.send(stack_trace_response);
-
-
-    dap::ContinueResponse continue_response = dap::ContinueResponse{
-        {
-            .seq         = 3,
-            .request_seq = 3,
-            .type        = dap::MessageType_Response,
-            .command     = dap::Command_Continue,
-            .success     = true,
-            .message     = "",
-        },
-        .body = dap::ContinueResponseBody{
-            .allThreadsContinued = true,
-        },
-    };
-    sender.send(continue_response);
+        };
+        sender.send(threads_response);
+    }
+    {
+        dap::StackTraceResponse stack_trace_response = dap::StackTraceResponse{
+            {
+                .seq         = 2,
+                .request_seq = 2,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_StackTrace,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::StackTraceResponseBody{
+                .stackFrames = std::vector<dap::StackFrame>{
+                    {
+                        .id        = 0,
+                        .name      = "main",
+                        .line      = 10,
+                        .column    = 5,
+                        .endLine   = 10,
+                        .endColumn = 5,
+                    },
+                },
+                .totalFrames = 1,
+            }};
+        sender.send(stack_trace_response);
+    }
+    {
+        dap::ContinueResponse continue_response = dap::ContinueResponse{
+            {
+                .seq         = 3,
+                .request_seq = 3,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_Continue,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::ContinueResponseBody{
+                .allThreadsContinued = true,
+            },
+        };
+        sender.send(continue_response);
+    }
+    {
+        dap::NextResponse step_response = dap::NextResponse{
+            {
+                .seq         = 3,
+                .request_seq = 3,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_Next,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::StepResponseBody{},
+        };
+        sender.send(step_response);
+    }
+    {
+        dap::StepInResponse stepin_response = dap::StepInResponse{
+            {
+                .seq         = 3,
+                .request_seq = 3,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_StepIn,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::StepResponseBody{},
+        };
+        sender.send(stepin_response);
+    }
+    {
+        dap::StepOutResponse stepout_response = dap::StepOutResponse{
+            {
+                .seq         = 3,
+                .request_seq = 3,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_StepOut,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::StepResponseBody{},
+        };
+        sender.send(stepout_response);
+    }
 
 
     return 0;

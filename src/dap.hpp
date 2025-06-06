@@ -438,12 +438,14 @@ inline void from_json(const json& j, ContinueResponseBody& c) {
 namespace dap {
 
 struct StepArguments {
-    int                        threadId;
-    std::optional<bool>        singleThread;
-    std::optional<std::string> granularity; // "statement", "line", or "instruction" TODO: 抽象出 const
+    int         threadId;
+    bool        singleThread;
+    std::string granularity; // "statement", "line", or "instruction" TODO: 抽象出 const
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepArguments, threadId, singleThread, granularity);
 };
 struct StepResponseBody {
-    std::optional<bool> allThreadsContinued;
+    bool allThreadsContinued;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepResponseBody, allThreadsContinued);
 };
 
 struct NextRequest : DAPMessage {
@@ -460,9 +462,9 @@ struct StepOutRequest : DAPMessage {
 };
 
 
-struct StepResponse : DAPResponse {
+struct NextResponse : DAPResponse {
     StepResponseBody body;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(StepResponse, seq, request_seq, type, command, success, message, body);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(NextResponse, seq, request_seq, type, command, success, message, body);
 };
 struct StepInResponse : DAPResponse {
     StepResponseBody body;
