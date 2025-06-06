@@ -359,6 +359,8 @@ int cli_dispath_call(RVM_Frame* frame, const char* event, const char* arg) {
 
     if (debug_config->step_cmd == RDB_COMMAND_STEP_OVER) {
         if (debug_config->step_over_deep_count < debug_config->call_func_deep_count) {
+            // 进入一个函数了，不需要 trace_event_line
+            // 函数中的断点也会失效
             UNSET_TRACE_EVENT_LINE(debug_config);
         }
     }
@@ -372,6 +374,7 @@ int cli_dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
 
     if (debug_config->step_cmd == RDB_COMMAND_STEP_OVER) {
         if (debug_config->step_over_deep_count == debug_config->call_func_deep_count) {
+            // 内部的函数返回了，需要继续 trace_event_line
             SET_TRACE_EVENT_LINE(debug_config);
         }
     } else if (debug_config->step_cmd == RDB_COMMAND_STEP_OUT) {

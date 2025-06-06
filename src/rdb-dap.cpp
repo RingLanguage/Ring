@@ -88,18 +88,71 @@ int dap_dispath_opcode(RVM_Frame* frame, const char* event, const char* arg) {
 
 // 也可以暂时不用处理
 int dap_dispath_line(RVM_Frame* frame, const char* event, const char* arg) {
+
+    RVM_DebugConfig*             debug_config = frame->rvm->debug_config;
+    std::vector<RVM_BreakPoint>& break_points = debug_config->break_points;
+    RDB_COMMAND_STEP_TYPE&       step_cmd     = debug_config->step_cmd;
+    std::string                  location;
+
+    if (step_cmd != RDB_COMMAND_STEP_UNKNOW) {
+        step_cmd = RDB_COMMAND_STEP_UNKNOW;
+    } else {
+        // 上一个命令是 continue
+        // TODO: check 命中断点
+        return 0; // 没有命中断点
+    }
+
+    // 发送 stop 事件，reason 先写死 step 即可
+    dap::StoppedEvent stopped_event;
+    stopped_event.seq                    = dap_seq++;
+    stopped_event.body.reason            = dap::StoppedEventReason_Step;
+    stopped_event.body.threadId          = 1; // TODO: 获取当前线程ID
+    stopped_event.body.allThreadsStopped = true;
+
+    DapMessageSender sender(STDERR_FILENO);
+    sender.send(stopped_event);
+
+    dap_rdb_cli(frame, event, arg);
+
+
     return 0;
 }
 
 
 // 暂时不用处理即可
 int dap_dispath_call(RVM_Frame* frame, const char* event, const char* arg) {
+    RVM_DebugConfig* debug_config = frame->rvm->debug_config;
+
+    debug_config->call_func_deep_count++; // TODO: 这里多此一举了，应该直接获取栈的数量
+
+    if (debug_config->step_cmd == RDB_COMMAND_STEP_OVER) {
+        if (debug_config->step_over_deep_count < debug_config->call_func_deep_count) {
+            // 进入一个函数了，不需要 trace_event_line
+            // 函数中的断点也会失效
+            UNSET_TRACE_EVENT_LINE(debug_config);
+        }
+    }
     return 0;
 }
 
 
 // TODO:暂时不用处理即可
 int dap_dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
+    RVM_DebugConfig* debug_config = frame->rvm->debug_config;
+
+    debug_config->call_func_deep_count--; // TODO: 这里多此一举了，应该直接获取栈的数量
+
+    if (debug_config->step_cmd == RDB_COMMAND_STEP_OVER) {
+        if (debug_config->step_over_deep_count == debug_config->call_func_deep_count) {
+            // 内部的函数返回了，需要继续 trace_event_line
+            SET_TRACE_EVENT_LINE(debug_config);
+        }
+    } else if (debug_config->step_cmd == RDB_COMMAND_STEP_OUT) {
+        if (debug_config->step_out_deep_count - 1 == debug_config->call_func_deep_count) {
+            SET_TRACE_EVENT_LINE(debug_config);
+        }
+    }
+
     return 0;
 }
 
@@ -123,6 +176,8 @@ int dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
 // 4. 如果是 continue 命令，退出 循环，不再处理dap消息
 // 5. 如果是 其他命令，循环处理dap 消息
 int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
+
+    RVM_DebugConfig*    debug_config = frame->rvm->debug_config;
 
     DapMessageProcessor dap_processor(STDIN_FILENO, nullptr);
     DapMessageSender    dap_sender(STDERR_FILENO);
@@ -242,6 +297,27 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
             };
             dap_sender.send(continue_response);
         } else if (dap_message.command == dap::Command_Next) {
+            // 先发送 response
+            // 直接退出循环即可
+            break_read_input                   = true;
+
+            debug_config->step_cmd             = RDB_COMMAND_STEP_OVER;
+            debug_config->step_over_deep_count = debug_config->call_func_deep_count;
+
+            dap::NextResponse next_response    = dap::NextResponse{
+                   {
+                       .seq         = dap_seq++,
+                       .request_seq = dap_message.seq,
+                       .type        = dap::MessageType_Response,
+                       .command     = dap::Command_Next,
+                       .success     = true,
+                       .message     = "",
+                },
+                   .body = dap::StepResponseBody{
+                       .allThreadsContinued = true,
+                },
+            };
+            dap_sender.send(next_response);
         } else if (dap_message.command == dap::Command_StepIn) {
         } else if (dap_message.command == dap::Command_StepOut) {
         }

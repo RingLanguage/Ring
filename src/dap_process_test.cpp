@@ -308,7 +308,12 @@ int process_dap_handler_test_2() {
 {"seq":1, "type":"request", "command":"stackTrace", "arguments":{}}
 {"seq":1, "type":"request", "command":"stackTrace", "arguments":{"threadId":1,"startFrame":0,"levels":20}}
 
+continue
 {"seq":1, "type":"request", "command":"continue", "arguments":{"threadId":1,"singleThread":false}}
+
+next
+{"seq":1, "type":"request", "command":"next", "arguments":{"threadId":1,"singleThread":false, "granularity":""}}
+
 */
 
 
