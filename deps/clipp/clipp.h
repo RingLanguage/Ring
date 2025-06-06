@@ -160,7 +160,7 @@ template <class Fn, class Ret, class... Args>
 constexpr auto
 check_is_callable(int) -> decltype(std::declval<Fn>()(std::declval<Args>()...),
                                    std::integral_constant<bool,
-                                                          std::is_same<Ret, typename std::result_of<Fn(Args...)>::type>::value>{});
+                                                          std::is_same<Ret, typename std::invoke_result<Fn(Args...)>::type>::value>{});
 
 template <class, class, class...>
 constexpr auto
@@ -170,7 +170,7 @@ template <class Fn, class Ret>
 constexpr auto
 check_is_callable_without_arg(int) -> decltype(std::declval<Fn>()(),
                                                std::integral_constant<bool,
-                                                                      std::is_same<Ret, typename std::result_of<Fn()>::type>::value>{});
+                                                                      std::is_same<Ret, typename std::invoke_result<Fn()>::type>::value>{});
 
 template <class, class>
 constexpr auto
@@ -272,8 +272,7 @@ inline bool
 fwd_to_unsigned_int(const char*& s) {
     if (!s)
         return false;
-    for (; std::isspace(*s); ++s)
-        ;
+    for (; std::isspace(*s); ++s);
     if (!s[0] || s[0] == '-')
         return false;
     if (s[0] == '-')

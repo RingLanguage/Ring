@@ -27,4 +27,4 @@ following:
 Clipp
 ---
 
-https://github.com/muellan/clip
+https://github.com/muellan/clipp

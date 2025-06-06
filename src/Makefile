@@ -102,6 +102,7 @@ CFLAGS = -c -static -O2 -std=c++20 \
 
 CFLAGS+= -I../deps/linenoise
 CFLAGS+= -I../deps/clipp
+CFLAGS+= -I/opt/homebrew/include
 BIN = ../bin
 INCLUDES = \
 
