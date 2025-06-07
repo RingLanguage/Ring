@@ -600,6 +600,92 @@ stepOut 的具体作用
 ```
 
 
+## setBreakpointsRequest
+
+
+```json
+{
+  "command": "setBreakpoints",
+  "arguments": {
+    "source": {
+      "path": "/path/to/file.js",
+      "name": "file.js"
+    },
+    "breakpoints": [
+      {
+        "line": 10,
+        "condition": "x > 5",
+        "hitCondition": ">= 3"
+      },
+      {
+        "line": 20
+      }
+    ],
+    "lines": [10, 20],  // 可选（部分调试器可能用此替代 `breakpoints`）
+    "sourceModified": false  // 可选（标记源文件是否被修改）
+  },
+  "seq": 42,  // 请求序列号
+  "type": "request"
+}
+```
+
+
+字段说明：
+source：断点所在的源文件（必须包含 path 或 sourceReference）。
+breakpoints：断点数组，每个断点可包含：
+line：断点行号（从 1 开始）。
+condition：条件断点的表达式（可选）。
+hitCondition：命中次数条件（如 ">=3" 表示第 3 次命中时暂停，可选）。
+lines：简化版断点设置（仅行号，部分调试器支持）。
+sourceModified：如果为 true，调试器可能需要重新定位断点。
+
+
+
+setBreakpoints Response
+
+```json
+{
+  "command": "setBreakpoints",
+  "success": true,
+  "body": {
+    "breakpoints": [
+      {
+        "id": 1,
+        "line": 10,
+        "verified": true,
+        "message": "Breakpoint set",
+        "source": {
+          "path": "/path/to/file.js"
+        }
+      },
+      {
+        "id": 2,
+        "line": 20,
+        "verified": false,
+        "message": "Line is not executable",
+        "source": {
+          "path": "/path/to/file.js"
+        }
+      }
+    ]
+  },
+  "seq": 42,  // 对应请求的序列号
+  "type": "response"
+}
+```
+
+
+字段说明：
+breakpoints：返回实际设置的断点状态数组：
+
+id：断点唯一标识符（用于后续操作）。
+
+verified：是否成功设置（如行号不可执行会返回 false）。
+
+message：附加信息（例如失败原因）。
+
+line：实际设置的行号（可能与请求不同，如自动调整到最近的可执行行）。
+
 ## exited/terminated
 
 
