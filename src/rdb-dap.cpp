@@ -319,7 +319,20 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
             };
             dap_sender.send(next_response);
         } else if (dap_message.command == dap::Command_StepIn) {
+            // 先发送 response
+            // 直接退出循环即可
+            break_read_input       = true;
+
+            debug_config->step_cmd = RDB_COMMAND_STEP_INTO;
         } else if (dap_message.command == dap::Command_StepOut) {
+            // 先发送 response
+            // 直接退出循环即可
+            break_read_input                  = true;
+
+            debug_config->step_cmd            = RDB_COMMAND_STEP_OUT;
+            debug_config->step_out_deep_count = debug_config->call_func_deep_count;
+
+            UNSET_TRACE_EVENT_LINE(debug_config);
         }
 
 
