@@ -200,6 +200,31 @@ int test_send_response_1() {
         };
         sender.send(stepout_response);
     }
+    {
+        dap::SetBreakpointsResponse set_breakpoints_response = dap::SetBreakpointsResponse{
+            {
+                .seq         = 3,
+                .request_seq = 3,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_SetBreakpoints,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::SetBreakpointsResponseBody{
+                .breakpoints = std::vector<dap::BreakpointResponseInfo>{
+                    {.id       = 1,
+                     .line     = 10,
+                     .verified = true,
+                     .message  = "",
+                     .source   = dap::Source{
+                           .name            = "test.ring",
+                           .path            = "/home/user/test.ring",
+                           .sourceReference = 10,
+                     }}},
+            },
+        };
+        sender.send(set_breakpoints_response);
+    }
 
 
     return 0;
@@ -314,6 +339,8 @@ continue
 next
 {"seq":1, "type":"request", "command":"next", "arguments":{"threadId":1,"singleThread":false, "granularity":""}}
 
+setBreakpoints
+{"type":"request","seq":14,"command":"setBreakpoints","arguments":{"source":{"name":"","path":"/Users/lizhenhu/Desktop/vscode-ring-debugger-extension/sampleWorkspace/function-000.ring","sourceReference":0},"lines":[38],"breakpoints":[{"line":38}],"sourceModified":false}}
 */
 
 

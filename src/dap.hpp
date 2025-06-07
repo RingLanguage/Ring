@@ -478,6 +478,66 @@ struct StepOutResponse : DAPResponse {
 } // namespace dap
 
 
+// ------- request/response 定义 --------
+// setBreakPointsRequest
+namespace dap {
+
+struct Breakpoint {
+    int                        line;         // 行号（从1开始）
+    std::optional<std::string> condition;    // 条件表达式（如 "x > 5"）
+    std::optional<std::string> hitCondition; // 命中条件（如 ">=3"）
+};
+
+inline void to_json(json& j, const Breakpoint& c) {
+    j = json{{"line", c.line}};
+    if (c.condition)
+        j["condition"] = *c.condition;
+    if (c.hitCondition)
+        j["condition"] = *c.hitCondition;
+}
+
+inline void from_json(const json& j, Breakpoint& c) {
+    j.at("line").get_to(c.line);
+    if (j.contains("condition"))
+        c.condition = j["condition"];
+    if (j.contains("hitCondition"))
+        c.hitCondition = j["hitCondition"];
+}
+
+struct SetBreakpointsArguments {
+    Source                  source;         // 源代码文件
+    std::vector<Breakpoint> breakpoints;    // 断点列表
+    std::optional<bool>     sourceModified; // 可选（源码是否被修改）
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SetBreakpointsArguments, source, breakpoints, sourceModified);
+};
+
+struct BreakpointResponseInfo {
+    int         id;       // 断点唯一标识符
+    int         line;     // 实际设置的行号
+    bool        verified; // 是否成功设置
+    std::string message;  // 状态信息（如错误原因）
+    Source      source;   // 关联的源代码
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BreakpointResponseInfo, id, line, verified, message, source);
+};
+
+// 响应体（SetBreakpointsResponseBody）
+struct SetBreakpointsResponseBody {
+    std::vector<BreakpointResponseInfo> breakpoints; // 断点设置结果
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SetBreakpointsResponseBody, breakpoints);
+};
+
+struct SetBreakpointsRequest : DAPMessage {
+    SetBreakpointsArguments arguments;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SetBreakpointsRequest, seq, type, command, arguments);
+};
+
+struct SetBreakpointsResponse : DAPResponse {
+    SetBreakpointsResponseBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(SetBreakpointsResponse, seq, request_seq, type, command, success, message, body);
+};
+
+} // namespace dap
+
 // ------- event 定义 --------
 namespace dap {
 

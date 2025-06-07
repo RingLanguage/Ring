@@ -98,8 +98,22 @@ int dap_dispath_line(RVM_Frame* frame, const char* event, const char* arg) {
         step_cmd = RDB_COMMAND_STEP_UNKNOW;
     } else {
         // 上一个命令是 continue
-        // TODO: check 命中断点
-        return 0; // 没有命中断点
+        // check hit breakpoints
+        int hit_breakpoint_num = -1;
+
+        for (int i = 0; i < break_points.size(); i++) {
+            if (break_points[i].line_number == frame->source_line_number) {
+                hit_breakpoint_num = i;
+                break;
+            }
+        }
+
+        if (hit_breakpoint_num != -1) {
+            // 命中断点
+            // TODO: 这时候 reason 应该为 Breakpoint
+        } else {
+            return 0; // 没有命中断点
+        }
     }
 
     // 发送 stop 事件，reason 先写死 step 即可
@@ -177,10 +191,11 @@ int dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
 // 5. 如果是 其他命令，循环处理dap 消息
 int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
 
-    RVM_DebugConfig*    debug_config = frame->rvm->debug_config;
+    RVM_DebugConfig*             debug_config = frame->rvm->debug_config;
+    std::vector<RVM_BreakPoint>& break_points = frame->rvm->debug_config->break_points;
 
-    DapMessageProcessor dap_processor(STDIN_FILENO, nullptr);
-    DapMessageSender    dap_sender(STDERR_FILENO);
+    DapMessageProcessor          dap_processor(STDIN_FILENO, nullptr);
+    DapMessageSender             dap_sender(STDERR_FILENO);
 
     while (true) {
 
@@ -276,6 +291,58 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
                     .totalFrames = stack_level,
                 }};
             dap_sender.send(stack_trace_response);
+
+        } else if (dap_message.command == dap::Command_SetBreakpoints) {
+            // 先发送 response
+            // 继续处理消息
+            break_read_input = false;
+
+            dap::SetBreakpointsRequest request;
+            auto                       err = json_decode(message_body, &request);
+            if (err != nullptr) {
+                // 错误处理
+                printf("json_decode SetBreakpointsRequest error:%s", err->message.c_str());
+                fflush(stdout);
+                continue;
+            }
+
+            dap::SetBreakpointsResponse response = dap::SetBreakpointsResponse{
+                {
+                    .seq         = dap_seq++,
+                    .request_seq = dap_message.seq,
+                    .type        = dap::MessageType_Response,
+                    .command     = dap::Command_SetBreakpoints,
+                    .success     = true,
+                    .message     = "",
+                },
+                .body = dap::SetBreakpointsResponseBody{
+                    .breakpoints = std::vector<dap::BreakpointResponseInfo>{},
+                },
+            };
+
+            break_points.clear();
+            int break_points_count = 0;
+            // TODO: 这里有很多东西是写死的
+            for (dap::Breakpoint& bp : request.arguments.breakpoints) {
+
+                RVM_BreakPoint breakpoint = RVM_BreakPoint{
+                    .package     = nullptr,
+                    .file_name   = nullptr,
+                    .func_name   = nullptr,
+                    .line_number = (unsigned int)(bp.line),
+                };
+                break_points.push_back(breakpoint);
+
+                response.body.breakpoints.push_back(dap::BreakpointResponseInfo{
+                    .id       = break_points_count++,
+                    .line     = bp.line,
+                    .verified = true,
+                    .message  = "",
+                    .source   = request.arguments.source,
+                });
+            }
+
+            dap_sender.send(response);
 
         } else if (dap_message.command == dap::Command_Continue) {
             // 先发送 response
