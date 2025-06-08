@@ -109,7 +109,8 @@
     "condition_variable": "cpp",
     "format": "cpp",
     "numbers": "cpp",
-    "semaphore": "cpp"
+    "semaphore": "cpp",
+    "codecvt": "cpp"
   },
   "editor.formatOnSave": true,
   "code-runner.executorMap": {
