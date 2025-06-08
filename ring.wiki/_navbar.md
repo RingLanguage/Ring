@@ -26,3 +26,4 @@
   - [**Ring**提案-垃圾回收](./markdown/Ring编译器设计/Ring-提案-003.md)
   - [**Ring**提案-标准库](./markdown/Ring编译器设计/Ring-提案-004.md)
   - [**Ring**提案-枚举](./markdown/Ring编译器设计/Ring-提案-005.md)
+  - [**Ring**调试插件](./markdown/Ring编译器设计/Ring-vscode-调试插件.md)

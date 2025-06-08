@@ -1273,3 +1273,7 @@ stdout 程序的标准输出，有 typescript 那边进行截获
 3. tl::expected
 
 四、定义 stepInto stepOver stepOut 的处理逻辑
+
+五、定义 setBreakpoint 的处理逻辑
+
+六、提供 ring build 的能力，能够检测出语法错误
