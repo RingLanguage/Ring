@@ -222,6 +222,107 @@ symbolSearchPath: 符号文件搜索路径
 ```
 
 
+
+## threads 的 request和response
+
+
+Threads 请求 (Request)
+客户端发送给调试器的请求格式：
+
+```json
+{
+  "type": "request",
+  "command": "threads",
+  "arguments": {},
+  "seq": 123
+}
+```
+
+请求说明:
+这是最简单的 DAP 请求之一，通常不需要任何参数
+当调试会话开始或线程状态改变时，客户端通常会发送此请求
+
+
+Threads 响应 (Response)
+调试器返回的响应格式：
+
+```json
+{
+  "type": "response",
+  "command": "threads",
+  "success": true,
+  "body": {
+    "threads": [
+      {
+        "id": 1,
+        "name": "main thread",
+        "state": "stopped",
+        "pauseReason": "entry"
+      },
+      {
+        "id": 2,
+        "name": "worker thread #1",
+        "state": "running"
+      },
+      {
+        "id": 3,
+        "name": "background thread",
+        "state": "stopped",
+        "pauseReason": "breakpoint"
+      }
+    ]
+  },
+  "seq": 123,
+  "request_seq": 123
+}
+```
+
+响应参数说明:
+threads 数组中的每个线程对象包含：
+id (必需): 线程的唯一标识符
+name (必需): 线程的名称(用于显示)
+state (可选): 线程状态，通常是：
+"running": 线程正在运行
+"stopped": 线程已停止
+"terminated": 线程已终止
+
+pauseReason (可选): 如果线程停止，说明停止原因，常见值包括：
+"entry": 在程序入口点停止
+"breakpoint": 因断点停止
+"exception": 因异常停止
+"pause": 用户手动暂停
+"step": 单步执行后停止
+"debugger_stopped": 调试器停止
+
+
+
+如果请求失败，响应可能如下：
+
+```json
+{
+  "type": "response",
+  "command": "threads",
+  "success": false,
+  "message": "Debug session not active",
+  "seq": 123,
+  "request_seq": 123
+}
+```
+
+
+使用场景
+调试会话初始化：当调试会话启动时，客户端通常会请求线程列表
+线程状态变化：当收到stopped事件时，客户端可能会刷新线程列表
+多线程调试：在多线程程序中，客户端需要定期更新线程状态
+
+注意事项
+线程ID在整个调试会话期间必须保持稳定
+即使没有多线程，调试器也应返回至少一个线程(通常是主线程)
+线程名称应尽可能具有描述性，便于用户识别
+
+
+
+
 ## stacktrace 的 request 和 response
 
 
@@ -337,103 +438,153 @@ totalFrames (可选): 总帧数(如果levels参数限制了返回数量)
 ```
 
 
+## scopes request/response
 
-## threads 的 request和response
-
-
-Threads 请求 (Request)
-客户端发送给调试器的请求格式：
 
 ```json
 {
-  "type": "request",
-  "command": "threads",
-  "arguments": {},
-  "seq": 123
+  "command": "scopes",
+  "arguments": {
+    "frameId": 123  // 堆栈帧的唯一标识符（来自 stackTrace 响应）
+  },
+  "seq": 42,        // 请求序列号
+  "type": "request"
 }
 ```
 
-请求说明:
-这是最简单的 DAP 请求之一，通常不需要任何参数
-当调试会话开始或线程状态改变时，客户端通常会发送此请求
 
 
-Threads 响应 (Response)
-调试器返回的响应格式：
+
+字段说明
+frameId：来自 stackTrace 响应的堆栈帧 ID，表示要查询哪个帧的作用域。
+
 
 ```json
 {
-  "type": "response",
-  "command": "threads",
+  "command": "scopes",
   "success": true,
   "body": {
-    "threads": [
+    "scopes": [
       {
-        "id": 1,
-        "name": "main thread",
-        "state": "stopped",
-        "pauseReason": "entry"
+        "name": "Local",
+        "variablesReference": 1001,  // 用于后续 variables 请求
+        "expensive": false,          // 是否计算成本高（如全局作用域可能较慢）
+        "source": {                  // 可选，作用域关联的源代码
+          "path": "/path/to/file.cpp"
+        }
       },
       {
-        "id": 2,
-        "name": "worker thread #1",
-        "state": "running"
-      },
-      {
-        "id": 3,
-        "name": "background thread",
-        "state": "stopped",
-        "pauseReason": "breakpoint"
+        "name": "Global",
+        "variablesReference": 1002,
+        "expensive": true
       }
     ]
   },
-  "seq": 123,
-  "request_seq": 123
+  "seq": 42,       // 对应请求的序列号
+  "type": "response"
 }
 ```
 
-响应参数说明:
-threads 数组中的每个线程对象包含：
-id (必需): 线程的唯一标识符
-name (必需): 线程的名称(用于显示)
-state (可选): 线程状态，通常是：
-"running": 线程正在运行
-"stopped": 线程已停止
-"terminated": 线程已终止
-
-pauseReason (可选): 如果线程停止，说明停止原因，常见值包括：
-"entry": 在程序入口点停止
-"breakpoint": 因断点停止
-"exception": 因异常停止
-"pause": 用户手动暂停
-"step": 单步执行后停止
-"debugger_stopped": 调试器停止
+字段说明
+scopes：返回的作用域列表，每个作用域包含：
+name：作用域名称（如 "Local"、"Global"）。
+variablesReference：用于后续 variables 请求获取该作用域的变量（如果为 0 表示无变量）。
+expensive：如果为 true，表示获取该作用域的变量可能较慢（如全局作用域）。
+source（可选）：作用域关联的源代码位置。
 
 
+3. 典型工作流程
 
-如果请求失败，响应可能如下：
+获取 threads → 返回 threadId。
+
+获取堆栈帧（stackTrace 请求）→ 返回 frameId。
+
+获取作用域（scopes 请求）→ 返回作用域列表（如 Local、Global）。
+
+获取变量（variables 请求）→ 使用 variablesReference 查询具体变量值。
+
+
+
+## variables 的 request/response
+
+variables 请求用于获取某个作用域（scope）或变量引用（variable reference）中的变量列表
+
+
 
 ```json
 {
-  "type": "response",
-  "command": "threads",
-  "success": false,
-  "message": "Debug session not active",
-  "seq": 123,
-  "request_seq": 123
+  "command": "variables",
+  "arguments": {
+    "variablesReference": 1001,  // 来自 scopes/variables 响应的引用
+    "filter": "named",           // 可选：过滤类型（"named" | "indexed" | "all"）
+    "start": 0,                  // 可选：分页起始索引
+    "count": 100                 // 可选：返回的变量数量
+  },
+  "seq": 42,                     // 请求序列号
+  "type": "request"
 }
 ```
 
 
-使用场景
-调试会话初始化：当调试会话启动时，客户端通常会请求线程列表
-线程状态变化：当收到stopped事件时，客户端可能会刷新线程列表
-多线程调试：在多线程程序中，客户端需要定期更新线程状态
 
-注意事项
-线程ID在整个调试会话期间必须保持稳定
-即使没有多线程，调试器也应返回至少一个线程(通常是主线程)
-线程名称应尽可能具有描述性，便于用户识别
+字段说明
+variablesReference：来自 scopes 或 variables 响应的引用 ID。
+filter（可选）：
+"named"：仅返回具名变量（默认）。
+"indexed"：仅返回数组/字典的索引变量（如 [0], [1]）。
+"all"：返回所有变量。
+start 和 count（可选）：用于分页加载大量变量。
+
+
+
+```json
+{
+  "command": "variables",
+  "success": true,
+  "body": {
+    "variables": [
+      {
+        "name": "count",
+        "value": "42",
+        "type": "int",
+        "variablesReference": 0,      // 0 表示无子变量
+        "evaluateName": "count"       // 可选：用于表达式求值的名称
+      },
+      {
+        "name": "array",
+        "value": "int[3]",
+        "type": "array",
+        "variablesReference": 1002,   // 非 0 表示可进一步展开
+        "indexedVariables": 3        // 可选：数组/字典的元素数量
+      }
+    ]
+  },
+  "seq": 42,                        // 对应请求的序列号
+  "type": "response"
+}
+```
+
+
+
+字段说明
+variables：变量列表，每个变量包含：
+name 和 value：变量的名称和值的字符串表示。
+type（可选）：变量类型（如 "int"、"string"）。
+
+variablesReference：
+0：表示该变量无子变量。
+非 0：可通过新的 variables 请求展开（如数组、结构体）。
+
+evaluateName（可选）：用于表达式求值的名称（如 "array[0]"）。
+indexedVariables/namedVariables（可选）：提示客户端可展开的子变量数量。
+
+
+3. 典型工作流程
+获取作用域（scopes 请求）→ 返回 variablesReference（如 1001）。
+
+获取变量（variables 请求）→ 使用 variablesReference 查询变量列表。
+
+展开复杂变量（如数组）→ 对 variablesReference != 0 的变量发起新的 variables 请求。
 
 
 
