@@ -385,6 +385,139 @@ inline void from_json(const json& j, StackTraceResponseBody& s) {
 
 } // namespace dap
 
+// ------- request/response 定义 --------
+// scopes variables
+namespace dap {
+struct ScopesArguments {
+    int frameId; // 堆栈帧 ID
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScopesArguments, frameId);
+};
+
+struct Scope {
+    std::string           name;               // 作用域名称（如 "Local"、"Global"）
+    int                   variablesReference; // 用于后续获取变量（variables 请求）
+    bool                  expensive;          // 是否计算成本高
+    std::optional<Source> source;             // 可选，关联的源代码
+};
+inline void to_json(json& j, const Scope& c) {
+    j = json{
+        {"name", c.name},
+        {"variablesReference", c.variablesReference},
+        {"expensive", c.expensive},
+    };
+    if (c.source)
+        j["source"] = *c.source;
+}
+
+inline void from_json(const json& j, Scope& c) {
+    j.at("name").get_to(c.name);
+    j.at("variablesReference").get_to(c.variablesReference);
+    j.at("expensive").get_to(c.expensive);
+    if (j.contains("source"))
+        c.source = j["source"];
+}
+
+struct ScopesResponseseBody {
+    std::vector<Scope> scopes; // 作用域列表
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScopesResponseseBody, scopes);
+};
+
+
+struct ScopesRequest : DAPMessage {
+    ScopesArguments arguments;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScopesRequest, seq, type, command, arguments);
+};
+struct ScopesResponse : DAPResponse {
+    ScopesResponseseBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ScopesResponse, seq, request_seq, type, command, success, message, body);
+};
+} // namespace dap
+
+
+// ------- request/response 定义 --------
+// variables
+namespace dap {
+struct VariablesRequestArguments {
+    int                        variablesReference; // 变量引用（来自 scopes/previous variables 响应）
+    std::optional<std::string> filter;             // 可选："named"（默认）、"indexed"（数组/字典索引）、"all"
+    std::optional<int>         start;              // 可选：分页起始索引
+    std::optional<int>         count;              // 可选：返回的变量数量
+};
+inline void to_json(json& j, const VariablesRequestArguments& c) {
+    j = json{
+        {"variablesReference", c.variablesReference},
+    };
+    if (c.filter)
+        j["filter"] = *c.filter;
+    if (c.start)
+        j["start"] = *c.start;
+    if (c.count)
+        j["count"] = *c.count;
+}
+
+inline void from_json(const json& j, VariablesRequestArguments& c) {
+    j.at("variablesReference").get_to(c.variablesReference);
+    if (j.contains("filter"))
+        c.filter = j["filter"];
+    if (j.contains("start"))
+        c.start = j["start"];
+    if (j.contains("count"))
+        c.count = j["count"];
+}
+
+
+struct Variable {
+    std::string                name;               // 变量名（如 "count"）
+    std::string                value;              // 变量值的字符串表示（如 "42"）
+    std::optional<std::string> type;               // 可选：变量类型（如 "int"）
+    int                        variablesReference; // 非 0 表示可进一步展开（子变量）
+    std::optional<std::string> evaluateName;       // 可选：用于表达式求值（如 "array[0]"）
+    std::optional<int>         indexedVariables;   // 可选：数组/字典的元素数量
+    std::optional<int>         namedVariables;     // 可选：具名子变量数量
+};
+inline void to_json(json& j, const Variable& c) {
+    j = json{
+        {"name", c.name},
+        {"value", c.value},
+        {"variablesReference", c.variablesReference},
+    };
+    if (c.type)
+        j["type"] = *c.type;
+    if (c.evaluateName)
+        j["evaluateName"] = *c.evaluateName;
+    if (c.indexedVariables)
+        j["indexedVariables"] = *c.indexedVariables;
+    if (c.namedVariables)
+        j["namedVariables"] = *c.namedVariables;
+}
+inline void from_json(const json& j, Variable& c) {
+    j.at("name").get_to(c.name);
+    j.at("value").get_to(c.value);
+    j.at("variablesReference").get_to(c.variablesReference);
+    if (j.contains("type"))
+        c.type = j["type"];
+    if (j.contains("evaluateName"))
+        c.evaluateName = j["evaluateName"];
+    if (j.contains("indexedVariables"))
+        c.indexedVariables = j["indexedVariables"];
+    if (j.contains("namedVariables"))
+        c.namedVariables = j["namedVariables"];
+}
+struct VariablesResponseBody {
+    std::vector<Variable> variables; // 变量列表
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(VariablesResponseBody, variables);
+};
+
+struct VariablesRequest : DAPMessage {
+    VariablesRequestArguments arguments;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(VariablesRequest, seq, type, command, arguments);
+};
+struct VariablesResponse : DAPResponse {
+    VariablesResponseBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(VariablesResponse, seq, request_seq, type, command, success, message, body);
+};
+} // namespace dap
+
 
 // ------- request/response 定义 --------
 // continue

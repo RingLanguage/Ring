@@ -292,6 +292,98 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
                 }};
             dap_sender.send(stack_trace_response);
 
+        } else if (dap_message.command == dap::Command_Scopes) {
+            // 先发送 response
+            // 继续处理消息
+            break_read_input = false;
+
+            dap::ScopesRequest request;
+            auto               err = json_decode(message_body, &request);
+            if (err != nullptr) {
+                // 错误处理
+                printf("json_decode ScopesRequest error:%s", err->message.c_str());
+                fflush(stdout);
+                continue;
+            }
+
+            dap::ScopesResponse response = dap::ScopesResponse{
+                {
+                    .seq         = dap_seq++,
+                    .request_seq = dap_message.seq,
+                    .type        = dap::MessageType_Response,
+                    .command     = dap::Command_Scopes,
+                    .success     = true,
+                    .message     = "",
+                },
+                .body = dap::ScopesResponseseBody{
+                    .scopes = std::vector<dap::Scope>{
+                        {
+                            .name               = "Local",
+                            .variablesReference = 1001,
+                            .expensive          = true,
+                        },
+                        {
+                            .name               = "Global",
+                            .variablesReference = 1002,
+                            .expensive          = true,
+                        },
+                    },
+                },
+            };
+            dap_sender.send(response);
+
+        } else if (dap_message.command == dap::Command_Variables) {
+            // 先发送 response
+            // 继续处理消息
+            break_read_input = false;
+
+            dap::VariablesRequest request;
+            auto                  err = json_decode(message_body, &request);
+            if (err != nullptr) {
+                // 错误处理
+                printf("json_decode VariablesRequest error:%s", err->message.c_str());
+                fflush(stdout);
+                continue;
+            }
+
+            dap::VariablesResponse response = dap::VariablesResponse{
+                {
+                    .seq         = dap_seq++,
+                    .request_seq = dap_message.seq,
+                    .type        = dap::MessageType_Response,
+                    .command     = dap::Command_Variables,
+                    .success     = true,
+                    .message     = "",
+                },
+                .body = dap::VariablesResponseBody{
+                    .variables = std::vector<dap::Variable>{},
+                },
+            };
+
+            if (request.arguments.variablesReference == 1001) {
+                // local
+                for (std::pair<std::string, RVM_Value*>& local : frame->locals) {
+                    std::string type  = format_rvm_type(frame->rvm, local.second);
+                    std::string value = format_rvm_value(local.second);
+                    response.body.variables.push_back(dap::Variable{
+                        .name  = local.first,
+                        .type  = type,
+                        .value = value,
+                    });
+                }
+            } else if (request.arguments.variablesReference == 1002) {
+                // global
+                for (std::pair<std::string, RVM_Value*>& local : frame->globals) {
+                    std::string type  = format_rvm_type(frame->rvm, local.second);
+                    std::string value = format_rvm_value(local.second);
+                    response.body.variables.push_back(dap::Variable{
+                        .name  = local.first,
+                        .type  = type,
+                        .value = value,
+                    });
+                }
+            }
+            dap_sender.send(response);
         } else if (dap_message.command == dap::Command_SetBreakpoints) {
             // 先发送 response
             // 继续处理消息

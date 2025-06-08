@@ -143,6 +143,55 @@ int test_send_response_1() {
         sender.send(stack_trace_response);
     }
     {
+        dap::ScopesResponse scopes_response = dap::ScopesResponse{
+            {
+                .seq         = 2,
+                .request_seq = 2,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_Scopes,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::ScopesResponseseBody{
+                .scopes = std::vector<dap::Scope>{
+                    {
+                        .name               = "local",
+                        .variablesReference = 1,
+                        .expensive          = true,
+                    },
+                    {
+                        .name               = "global",
+                        .variablesReference = 2,
+                        .expensive          = true,
+                    },
+                },
+            }};
+        sender.send(scopes_response);
+    }
+    {
+        dap::VariablesResponse variables_response = dap::VariablesResponse{
+            {
+                .seq         = 2,
+                .request_seq = 2,
+                .type        = dap::MessageType_Response,
+                .command     = dap::Command_Variables,
+                .success     = true,
+                .message     = "",
+            },
+            .body = dap::VariablesResponseBody{
+                .variables = std::vector<dap::Variable>{
+                    {
+                        .name               = "local-var-name",
+                        .value              = "42",
+                        .type               = "int",
+                        .variablesReference = 1,
+                    },
+                },
+            },
+        };
+        sender.send(variables_response);
+    }
+    {
         dap::ContinueResponse continue_response = dap::ContinueResponse{
             {
                 .seq         = 3,
