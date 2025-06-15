@@ -225,6 +225,7 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
             // TODO: 只返回一个线程即可，当前只有肯定是在 stopped
             // 返回 response即可
             // 继续处理消息
+            break_read_input                      = false;
 
             dap::ThreadsResponse threads_response = dap::ThreadsResponse{
                 {
@@ -252,11 +253,29 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
             // TODO: 格式化标准的dap协议，返回
             // 返回 response 即可
             // 继续处理消息
+            break_read_input = false;
 
-            unsigned int                 stack_level = get_rvm_call_stack_level(frame->rvm);
+            dap::StackTraceRequest request;
+            auto                   err = json_decode(message_body, &request);
+            if (err != nullptr) {
+                // 错误处理
+                printf("json_decode StackTraceRequest error:%s", err->message.c_str());
+                fflush(stdout);
+                continue;
+            }
+
+
+            unsigned int stack_level   = get_rvm_call_stack_level(frame->rvm);
+
+            int          start_frame   = request.arguments.startFrame;
+            int          levels_to_get = request.arguments.levels; // 0表示获取全部
+            start_frame                = std::max(0, start_frame);
+            levels_to_get              = std::max(0, levels_to_get);
+            int endFrame               = levels_to_get > 0 ? start_frame + levels_to_get : stack_level;
+            endFrame                   = std::min((unsigned int)(endFrame), stack_level);
 
             std::vector<dap::StackFrame> stack_frames;
-            for (int level = 0; level < stack_level; level++) {
+            for (int level = start_frame; level < endFrame; level++) {
                 CallInfo call_info = get_rvm_call_stack(frame->rvm, level);
 
                 // 格式化一下
@@ -368,7 +387,8 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
                     response.body.variables.push_back(dap::Variable{
                         .name  = local.first,
                         .type  = type,
-                        .value = value,
+                        .value = type + " " + value, // TODO: 对于基础类型，是否没必要展示 type
+                        // TODO: 如果数据太多，需要考虑分页
                     });
                 }
             } else if (request.arguments.variablesReference == 1002) {
@@ -379,7 +399,8 @@ int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
                     response.body.variables.push_back(dap::Variable{
                         .name  = local.first,
                         .type  = type,
-                        .value = value,
+                        .value = type + " " + value, // TODO: 对于基础类型，是否没必要展示 type
+                        // TODO: 如果数据太多，需要考虑分页
                     });
                 }
             }

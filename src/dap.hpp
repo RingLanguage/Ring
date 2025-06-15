@@ -338,9 +338,9 @@ namespace dap {
 
 // stackTrace 请求参数
 struct StackTraceArguments {
-    int                threadId;
-    std::optional<int> startFrame;
-    std::optional<int> levels;
+    int threadId;
+    int startFrame;
+    int levels;
 };
 struct StackTraceRequest : DAPMessage {
     StackTraceArguments arguments;
@@ -360,9 +360,9 @@ struct StackTraceResponse : DAPResponse {
 inline void to_json(json& j, const StackTraceArguments& s) {
     j = json{{"threadId", s.threadId}};
     if (s.startFrame)
-        j["startFrame"] = *s.startFrame;
+        j["startFrame"] = s.startFrame;
     if (s.levels)
-        j["levels"] = *s.levels;
+        j["levels"] = s.levels;
 }
 inline void from_json(const json& j, StackTraceArguments& s) {
     j.at("threadId").get_to(s.threadId);
