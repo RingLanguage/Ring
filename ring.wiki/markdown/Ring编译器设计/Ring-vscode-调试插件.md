@@ -1277,3 +1277,17 @@ stdout 程序的标准输出，有 typescript 那边进行截获
 五、定义 setBreakpoint 的处理逻辑
 
 六、提供 ring build 的能力，能够检测出语法错误
+
+七、variables 能够显示 array
+
+dlv
+![alt text](image-13.png)
+
+lldb
+![alt text](image-14.png)
+
+八、variables 能够显示 struct
+
+![alt text](image-15.png)
+
+golang 的 dlv 命令行 /Users/lizhenhu/go/bin/dlv dap --listen=127.0.0.1:52434 --log-dest=3 from /Users/lizhenhu/Desktop/test/go-example
