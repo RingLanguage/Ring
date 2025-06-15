@@ -20,6 +20,7 @@ B|Ring Command Usage:|B
 B|All Commands:|B
 
         B|run    <filename>                              |B:compile and run Ring program
+        B|build  <filename>                              |B:only check syntax
         B|dump   <filename>                              |B:dump bytecode detail after compile
         B|rdb    <filename>                              |B:debug interactive
 
@@ -110,6 +111,10 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
     auto run_rule = (clipp::command(RING_CMD_T_RUN).set(cmd, RING_COMMAND_RUN),
                      clipp::value("input-file", input_file_name));
 
+    // build command
+    auto build_rule = (clipp::command(RING_CMD_T_BUILD).set(cmd, RING_COMMAND_BUILD),
+                       clipp::value("input-file", input_file_name));
+
     // dump command
     auto dump_rule = ((clipp::command(RING_CMD_T_DUMP).set(cmd, RING_COMMAND_DUMP),
                        clipp::value("input_file_name", input_file_name)));
@@ -124,7 +129,7 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
 
 
     auto ring_command_rule =
-        ((option_rule, run_rule | dump_rule | rdb_rule, shell_args_rule)
+        ((option_rule, run_rule | build_rule | dump_rule | rdb_rule, shell_args_rule)
          | (clipp::command(RING_CMD_T_MAN).set(cmd, RING_COMMAND_MAN), clipp::value("keyword", keyword))
          | clipp::command(RING_CMD_T_VERSION).set(cmd, RING_COMMAND_VERSION)
          | clipp::command(RING_CMD_T_HELP).set(cmd, RING_COMMAND_HELP));
@@ -205,6 +210,8 @@ int main(int argc, char** argv) {
         break;
     case RING_COMMAND_RUN:
         break;
+    case RING_COMMAND_BUILD:
+        break;
     case RING_COMMAND_DUMP:
         break;
     case RING_COMMAND_RDB:
@@ -281,7 +288,10 @@ int main(int argc, char** argv) {
     // Complier force destory memory of front-end.
     destory_front_mem_pool();
 
-    if (ring_command_arg.cmd == RING_COMMAND_DUMP) {
+    if (ring_command_arg.cmd == RING_COMMAND_BUILD) {
+        // build success
+        return 0;
+    } else if (ring_command_arg.cmd == RING_COMMAND_DUMP) {
         // Only dump `main` package bytecode detail.
         package_executer_dump(executer_entry->main_package_executer);
         return 0;

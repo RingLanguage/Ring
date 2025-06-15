@@ -2240,6 +2240,7 @@ typedef enum {
 
 
 #define RING_CMD_T_RUN "run"
+#define RING_CMD_T_BUILD "build"
 #define RING_CMD_T_DUMP "dump"
 #define RING_CMD_T_RDB "rdb"
 #define RING_CMD_T_MAN "man"
@@ -2256,6 +2257,7 @@ enum RING_COMMAND_TYPE {
     RING_COMMAND_UNKNOW,
 
     RING_COMMAND_RUN,
+    RING_COMMAND_BUILD,
     RING_COMMAND_DUMP,
     RING_COMMAND_RDB,
 
