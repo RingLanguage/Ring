@@ -2817,10 +2817,8 @@ struct MemBlock {
 
 #define DEBUG_RVM_INTERACTIVE_STDOUT_FILE "/tmp/ring-debug-vm.stdout.log"
 
-int   ring_repl();
-void  ring_repl_completion(const char* buf, linenoiseCompletions* lc);
-char* ring_repl_hints(const char* buf, int* color, int* bold);
-int   register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args);
+
+int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args);
 
 
 /* --------------------
