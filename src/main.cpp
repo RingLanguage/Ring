@@ -11,49 +11,6 @@
 #include <sys/select.h>
 
 
-// B| 为加粗开始  |B 为加粗结束
-std::string command_help_message = R"(
-B|Ring Command Usage:|B
-
-        ring [options] <command> [arguments]
-
-B|All Commands:|B
-
-        B|run    <filename>                              |B:compile and run Ring program
-        B|build  <filename>                              |B:only check syntax
-        B|dump   <filename>                              |B:dump bytecode detail after compile
-        B|rdb    <filename>                              |B:debug interactive
-
-        B|man    <keyword>                               |B:get prompt of ring by keyword
-        B|version                                        |B:get Ring version
-        B|help                                           |B:get Ring version
-
-B|Options:|B
-
-        B|-O1                                            |B:optimize bytecode with level 1
-
-
-B|Ring Debug Environment Usage:|B
-
-        B|RING_DEBUG=<debug_value>                       |B:enable various debugging facilities.
-
-        <debug_value> are available:
-            trace_func_backtrace=1
-                    Enable trace function backtrace
-            trace_coroutine_sched=1
-                    Enable trace coroutine scheduler
-            trace_closure_free_value=1
-                    Enable trace closure free value
-
-        <debug_value> also can hold a comma-separated list of these settings:
-                  trace_func_backtrace=1,trace_coroutine_sched=1
-
-
-        e.g. RING_DEBUG=trace_func_backtrace=1,trace_coroutine_sched=1,trace_closure_free_value=1 ring run test.ring
-
-)";
-
-
 //
 int RING_DEBUG_TRACE_FUNC_BACKTRACE     = 0;
 int RING_DEBUG_TRACE_COROUTINE_SCHED    = 0;
@@ -137,15 +94,6 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
 
     clipp::parse(argc, argv, ring_command_rule);
 
-    // printf("cmd:%d\n", cmd);
-    // printf("input_file_name:%s\n", input_file_name.c_str());
-    // printf("keyword:%s\n", keyword.c_str());
-    // printf("optimize_level:%d\n", optimize_level);
-    // printf("rdb_interpreter:%s\n", rdb_interpreter.c_str());
-    // printf("shell_args:\n");
-    // for (int i = 0; i < shell_args.size(); i++) {
-    //     printf("[i]:%s\n", shell_args[i].c_str());
-    // }
 
     if (cmd == RING_COMMAND_RUN
         || cmd == RING_COMMAND_DUMP
@@ -188,6 +136,167 @@ Ring_Command_Arg pre_main(int argc, char** argv) {
 
     return global_ring_command_arg;
 }
+
+//
+int main(int argc, char** argv) {
+
+    int exit_code = 0;
+
+
+#ifdef DEBUG_RVM_INTERACTIVE
+
+    FILE*     fp;
+    time_t    t  = time(NULL);
+    struct tm tm = *localtime(&t);
+
+
+    fp           = freopen(DEBUG_RVM_INTERACTIVE_STDOUT_FILE, "a", stdout);
+    if (fp == nullptr) {
+        ring_error_report("reopen stdout failed\n");
+    }
+
+
+    fprintf(stdout, LOG_COLOR_YELLOW);
+    fprintf(stdout, "\n\n"
+                    "@Start debug ring virtual machine in interactive mode...\n"
+                    "@Date: %d-%02d-%02d %02d:%02d:%02d\n"
+                    "@stdout redirect to: %s\n"
+                    "@Stdout<<<\n",
+            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
+            DEBUG_RVM_INTERACTIVE_STDOUT_FILE);
+    fprintf(stdout, LOG_COLOR_CLEAR);
+
+    fflush(stdout);
+#endif
+
+
+    Ring_Command_Arg command_arg;
+    command_arg = pre_main(argc, argv);
+
+    if (command_arg.cmd == RING_COMMAND_RUN) {
+        exit_code = cmd_handler_run(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_BUILD) {
+        exit_code = cmd_handler_build(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_DUMP) {
+        exit_code = cmd_handler_dump(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_RDB) {
+        exit_code = cmd_handler_rdb(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_VERSION) {
+        exit_code = cmd_handler_version(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_MAN) {
+        exit_code = cmd_handler_man(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_HELP) {
+        exit_code = cmd_handler_help(command_arg);
+    }
+
+
+#ifdef DEBUG_RVM_INTERACTIVE
+    fprintf(stdout, LOG_COLOR_YELLOW);
+    fprintf(stdout, "@End interactive session.\n"
+                    "\n\n");
+    fprintf(stdout, LOG_COLOR_CLEAR);
+    fclose(stdout);
+#endif
+
+    return exit_code;
+}
+
+
+int cmd_handler_run(Ring_Command_Arg command_arg) {
+    ExecuterEntry*       executer_entry = nullptr;
+    Ring_VirtualMachine* rvm            = nullptr;
+
+    executer_entry                      = ring_compile_main(command_arg);
+    rvm                                 = ring_virtualmachine_create();
+
+    return ring_exec(rvm, executer_entry);
+}
+
+
+int cmd_handler_build(Ring_Command_Arg command_arg) {
+    ring_compile_main(command_arg);
+    return 0;
+}
+
+int cmd_handler_dump(Ring_Command_Arg command_arg) {
+    ExecuterEntry* executer_entry = nullptr;
+
+    executer_entry                = ring_compile_main(command_arg);
+    // Only dump `main` package bytecode detail.
+    package_executer_dump(executer_entry->main_package_executer);
+    return 0;
+}
+
+int cmd_handler_rdb(Ring_Command_Arg command_arg) {
+    printf(LOG_COLOR_YELLOW);
+    printf("%s\n", RING_VERSION);
+    printf("\n");
+    printf("Start Ring Debugger...\n");
+    printf("\n");
+    printf("Input file:%s\n", command_arg.input_file_name.c_str());
+    printf("Interpreter:%s\n", command_arg.rdb_interpreter.c_str());
+    printf("\n");
+    printf(LOG_COLOR_CLEAR);
+
+    int                  exit_code      = 0;
+    ExecuterEntry*       executer_entry = nullptr;
+    Ring_VirtualMachine* rvm            = nullptr;
+    RVM_DebugConfig*     debug_config   = nullptr;
+
+    debug_config                        = new_debug_config(command_arg);
+
+PROCESS_NEW_SESSION:
+
+    // 处理 rdb 命令
+    RDB_Arg rdb_arg;
+    rdb_arg = cli_rdb_message_process_loop_norun(debug_config);
+    if (rdb_arg.cmd == RDB_COMMAND_RUN) {
+        std::string file = rdb_arg.argument;
+        // rdb_arg 转化为 ring_command_arg
+
+        if (file.size()) {
+            command_arg.input_file_name = file;
+        }
+    }
+
+
+    // 编译
+    executer_entry = ring_compile_main(command_arg);
+    rvm            = ring_virtualmachine_create();
+
+    // 注册 调试 钩子
+    enable_debug_config(debug_config, command_arg);
+    register_debugger(rvm, debug_config);
+
+    // 运行
+    exit_code = ring_exec(rvm, executer_entry);
+
+    printf(LOG_COLOR_GREEN);
+    printf("[@]Process exited, code:%d\n", exit_code);
+    printf(LOG_COLOR_CLEAR);
+
+    goto PROCESS_NEW_SESSION;
+}
+
+int cmd_handler_version(Ring_Command_Arg command_arg) {
+    fprintf(stdout, "%s\n", RING_VERSION);
+    return 0;
+}
+
+int cmd_handler_man(Ring_Command_Arg command_arg) {
+    std::string tmp;
+    tmp = get_man_help(command_arg.keyword.c_str());
+    fprintf(stdout, "%s\n", tmp.c_str());
+    return 0;
+}
+
+int cmd_handler_help(Ring_Command_Arg command_arg) {
+    std::string tmp;
+    tmp = get_help_message();
+    fprintf(stdout, "%s\n", tmp.c_str());
+    return 0;
+}
+
 
 ExecuterEntry* ring_compile_main(Ring_Command_Arg command_arg) {
 
@@ -265,164 +374,6 @@ int ring_exec(Ring_VirtualMachine* rvm, ExecuterEntry* executer_entry) {
     return exit_code;
 }
 
-int run_main(Ring_Command_Arg command_arg) {
-    ExecuterEntry*       executer_entry = nullptr;
-    Ring_VirtualMachine* rvm            = nullptr;
-
-    executer_entry                      = ring_compile_main(command_arg);
-    rvm                                 = ring_virtualmachine_create();
-
-    return ring_exec(rvm, executer_entry);
-}
-
-
-int build_main(Ring_Command_Arg command_arg) {
-    ring_compile_main(command_arg);
-    return 0;
-}
-
-int dump_main(Ring_Command_Arg command_arg) {
-    ExecuterEntry* executer_entry = nullptr;
-
-    executer_entry                = ring_compile_main(command_arg);
-    // Only dump `main` package bytecode detail.
-    package_executer_dump(executer_entry->main_package_executer);
-    return 0;
-}
-
-int rdb_main(Ring_Command_Arg command_arg) {
-    printf(LOG_COLOR_YELLOW);
-    printf("%s\n", RING_VERSION);
-    printf("\n");
-    printf("Start Ring Debugger...\n");
-    printf("\n");
-    printf("Input file:%s\n", command_arg.input_file_name.c_str());
-    printf("Interpreter:%s\n", command_arg.rdb_interpreter.c_str());
-    printf("\n");
-    printf(LOG_COLOR_CLEAR);
-
-    int                  exit_code      = 0;
-    ExecuterEntry*       executer_entry = nullptr;
-    Ring_VirtualMachine* rvm            = nullptr;
-    RVM_DebugConfig*     debug_config   = nullptr;
-
-    debug_config                        = new_debug_config(command_arg);
-
-PROCESS_NEW_SESSION:
-
-    // 处理 rdb 命令
-    RDB_Arg rdb_arg;
-    rdb_arg = cli_rdb_message_process_loop_norun(debug_config);
-    if (rdb_arg.cmd == RDB_COMMAND_RUN) {
-        std::string file = rdb_arg.argument;
-        // rdb_arg 转化为 ring_command_arg
-
-        if (file.size()) {
-            command_arg.input_file_name = file;
-        }
-    }
-
-
-    // 编译
-    executer_entry = ring_compile_main(command_arg);
-    rvm            = ring_virtualmachine_create();
-
-    // 注册 调试 钩子
-    enable_debug_config(debug_config, command_arg);
-    register_debugger(rvm, debug_config);
-
-    // 运行
-    exit_code = ring_exec(rvm, executer_entry);
-
-    printf(LOG_COLOR_GREEN);
-    printf("[@]Process exited, code:%d\n", exit_code);
-    printf(LOG_COLOR_CLEAR);
-
-    goto PROCESS_NEW_SESSION;
-}
-
-int version_main(Ring_Command_Arg command_arg) {
-    fprintf(stdout, "%s\n", RING_VERSION);
-    return 0;
-}
-
-int man_main(Ring_Command_Arg command_arg) {
-    std::string tmp;
-    tmp = get_man_help(command_arg.keyword.c_str());
-    fprintf(stdout, "%s", tmp.c_str());
-    return 0;
-}
-
-int help_main(Ring_Command_Arg command_arg) {
-    std::string tmp;
-    tmp = convert_troff_string_2_c_control(command_help_message);
-    fprintf(stdout, "%s", tmp.c_str());
-    return 0;
-}
-
-//
-int main(int argc, char** argv) {
-
-    int exit_code = 0;
-
-
-#ifdef DEBUG_RVM_INTERACTIVE
-
-    FILE*     fp;
-    time_t    t  = time(NULL);
-    struct tm tm = *localtime(&t);
-
-
-    fp           = freopen(DEBUG_RVM_INTERACTIVE_STDOUT_FILE, "a", stdout);
-    if (fp == nullptr) {
-        ring_error_report("reopen stdout failed\n");
-    }
-
-
-    fprintf(stdout, LOG_COLOR_YELLOW);
-    fprintf(stdout, "\n\n"
-                    "@Start debug ring virtual machine in interactive mode...\n"
-                    "@Date: %d-%02d-%02d %02d:%02d:%02d\n"
-                    "@stdout redirect to: %s\n"
-                    "@Stdout<<<\n",
-            tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec,
-            DEBUG_RVM_INTERACTIVE_STDOUT_FILE);
-    fprintf(stdout, LOG_COLOR_CLEAR);
-
-    fflush(stdout);
-#endif
-
-
-    Ring_Command_Arg command_arg;
-    command_arg = pre_main(argc, argv);
-
-    if (command_arg.cmd == RING_COMMAND_RUN) {
-        exit_code = run_main(command_arg);
-    } else if (command_arg.cmd == RING_COMMAND_BUILD) {
-        exit_code = build_main(command_arg);
-    } else if (command_arg.cmd == RING_COMMAND_DUMP) {
-        exit_code = dump_main(command_arg);
-    } else if (command_arg.cmd == RING_COMMAND_RDB) {
-        exit_code = rdb_main(command_arg);
-    } else if (command_arg.cmd == RING_COMMAND_VERSION) {
-        exit_code = version_main(command_arg);
-    } else if (command_arg.cmd == RING_COMMAND_MAN) {
-        exit_code = man_main(command_arg);
-    } else if (command_arg.cmd == RING_COMMAND_HELP) {
-        exit_code = help_main(command_arg);
-    }
-
-
-#ifdef DEBUG_RVM_INTERACTIVE
-    fprintf(stdout, LOG_COLOR_YELLOW);
-    fprintf(stdout, "@End interactive session.\n"
-                    "\n\n");
-    fprintf(stdout, LOG_COLOR_CLEAR);
-    fclose(stdout);
-#endif
-
-    return exit_code;
-}
 
 RVM_DebugConfig* new_debug_config(Ring_Command_Arg args) {
     RVM_DebugConfig* debug_config      = (RVM_DebugConfig*)mem_alloc(NULL_MEM_POOL, sizeof(RVM_DebugConfig));

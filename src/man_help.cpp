@@ -3,6 +3,52 @@
 #include <cstring>
 #include <string>
 
+// B| 为加粗开始  |B 为加粗结束
+std::string command_help_message = R"(
+    B|Ring Command Usage:|B
+    
+            ring [options] <command> [arguments]
+    
+    B|All Commands:|B
+            B|run    <filename>                              |B:compile and run Ring program
+            B|build  <filename>                              |B:only check syntax
+            B|dump   <filename>                              |B:dump bytecode detail after compile
+            B|rdb    <filename>                              |B:debug interactive
+    
+            B|man    <keyword>                               |B:get prompt of ring by keyword
+            B|version                                        |B:get Ring version
+            B|help                                           |B:get Ring version
+    
+    B|Options:|B
+            B|-O1                                            |B:optimize bytecode with level 1
+    
+    )";
+
+std::string env_help_message     = R"(
+    
+    B|Ring Debug Environment Usage:|B
+    
+            B|RING_DEBUG=<debug_value>                       |B:enable various debugging facilities.
+    
+            <debug_value> are available:
+                trace_func_backtrace=1
+                        Enable trace function backtrace
+                trace_coroutine_sched=1
+                        Enable trace coroutine scheduler
+                trace_closure_free_value=1
+                        Enable trace closure free value
+    
+            <debug_value> also can hold a comma-separated list of these settings:
+                      trace_func_backtrace=1,trace_coroutine_sched=1
+    
+    
+            e.g. RING_DEBUG=trace_func_backtrace=1,trace_coroutine_sched=1,trace_closure_free_value=1 ring run test.ring
+    
+    )";
+
+std::string get_help_message() {
+    return convert_troff_string_2_c_control(command_help_message);
+}
 
 std::string help_list =
     "Your can try those keyword:\n"

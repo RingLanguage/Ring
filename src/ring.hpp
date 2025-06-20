@@ -2822,6 +2822,17 @@ struct MemBlock {
 #define DEBUG_RVM_INTERACTIVE_STDOUT_FILE "/tmp/ring-debug-vm.stdout.log"
 
 
+int              cmd_handler_run(Ring_Command_Arg command_arg);
+int              cmd_handler_build(Ring_Command_Arg command_arg);
+int              cmd_handler_dump(Ring_Command_Arg command_arg);
+int              cmd_handler_rdb(Ring_Command_Arg command_arg);
+int              cmd_handler_version(Ring_Command_Arg command_arg);
+int              cmd_handler_man(Ring_Command_Arg command_arg);
+int              cmd_handler_help(Ring_Command_Arg command_arg);
+
+ExecuterEntry*   ring_compile_main(Ring_Command_Arg command_arg);
+int              ring_exec(Ring_VirtualMachine* rvm, ExecuterEntry* executer_entry);
+
 RVM_DebugConfig* new_debug_config(Ring_Command_Arg args);
 int              enable_debug_config(RVM_DebugConfig* debug_config, Ring_Command_Arg args);
 int              register_debugger(Ring_VirtualMachine* rvm, RVM_DebugConfig* debug_config);
@@ -3710,6 +3721,7 @@ std::string              convert_troff_string_2_c_control(const std::string& inp
  * function definition
  *
  */
+std::string get_help_message();
 std::string get_man_help(const char* keyword);
 // --------------------
 
