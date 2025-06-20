@@ -75,7 +75,7 @@ int dap_dispath_sae(RVM_Frame* frame, const char* event, const char* arg) {
     sender.send(stopped_event);
 
 
-    dap_rdb_cli(frame, event, arg);
+    dap_rdb_message_process_loop(frame, event, arg);
 
     return 0;
 }
@@ -126,7 +126,7 @@ int dap_dispath_line(RVM_Frame* frame, const char* event, const char* arg) {
     DapMessageSender sender(STDERR_FILENO);
     sender.send(stopped_event);
 
-    dap_rdb_cli(frame, event, arg);
+    dap_rdb_message_process_loop(frame, event, arg);
 
 
     return 0;
@@ -189,7 +189,7 @@ int dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
 // 3. 根据消息类型，调用对应的处理函数
 // 4. 如果是 continue 命令，退出 循环，不再处理dap消息
 // 5. 如果是 其他命令，循环处理dap 消息
-int dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
+int dap_rdb_message_process_loop(RVM_Frame* frame, const char* event, const char* arg) {
 
     RVM_DebugConfig*             debug_config = frame->rvm->debug_config;
     std::vector<RVM_BreakPoint>& break_points = frame->rvm->debug_config->break_points;

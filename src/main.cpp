@@ -120,7 +120,8 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
                        clipp::value("input_file_name", input_file_name)));
 
     // rdb command
-    auto rdb_rule = ((clipp::command(RING_CMD_T_RDB).set(cmd, RING_COMMAND_RDB), clipp::value("input_file_name", input_file_name)));
+    auto rdb_rule = ((clipp::command(RING_CMD_T_RDB).set(cmd, RING_COMMAND_RDB),
+                      clipp::value("input_file_name", input_file_name)));
 
     // shell args
     // e.g.  ./bin/ring run ./test.ring args1 args2
@@ -166,7 +167,198 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
 }
 
 
-Ring_Command_Arg ring_command_arg;
+Ring_Command_Arg global_ring_command_arg;
+
+//
+Ring_Command_Arg pre_main(int argc, char** argv) {
+
+    // parse env
+    ring_parse_env();
+    // parse ring command
+    global_ring_command_arg = ring_parse_command(argc, argv);
+
+    switch (global_ring_command_arg.cmd) {
+    case RING_COMMAND_UNKNOW:
+        fprintf(stderr, "Unknow command, type `ring help` find tip.\n");
+        exit(ERROR_CODE_COMMAND_ERROR);
+        break;
+    default:
+        break;
+    }
+
+    return global_ring_command_arg;
+}
+
+ExecuterEntry* ring_compile_main(Ring_Command_Arg command_arg) {
+
+    /*
+     *初始化编译阶段的 Memory Pool
+     *
+     * 在编译完成之后, destory_front_mem_pool
+     * 解耦编译器前后端
+     */
+    init_front_mem_pool();
+
+    /*
+     * 初始化语法处理节点相关的struct
+     */
+    CompilerEntry* compiler_entry = compiler_entry_create();
+    // TODO: 目前main package 只能有一个源文件
+    // main package 源文件即为 ring run 指定的输入文件
+    Package* main_package = package_create_input_file(compiler_entry,
+                                                      (char*)PACKAGE_MAIN,
+                                                      (char*)command_arg.input_file_name.c_str());
+    // 将 shell_args 注册到 main-package 中
+    // 在 main函数中可以通过这种方式获取:
+    // func main(var string[] args) { fmt::println(args); }
+    main_package->shell_args = command_arg.shell_args;
+    //
+    compiler_entry->main_package = main_package;
+
+    /*
+     * 初始化代码生成阶段相关的struct
+     */
+    ExecuterEntry*    executer_entry        = executer_entry_create();
+    Package_Executer* main_package_executer = package_executer_create(executer_entry, (char*)PACKAGE_MAIN);
+    //
+    executer_entry->main_package_executer = main_package_executer;
+
+    // Step-0: 预编译官方std包, 并生成vmcode
+    compile_std_lib(compiler_entry, executer_entry);
+
+    // Step-1: flex 词法分析，
+    // Step-2: bison 语法分析，构建语法树
+    // Step-3: 修正语法树
+    package_compile(main_package);
+
+    // Step-4: 生成虚拟机中间代码
+    ring_generate_vm_code(compiler_entry, executer_entry);
+
+    // Step-5: 链接符号表
+    // Complier force destory memory of front-end.
+    destory_front_mem_pool();
+
+    return executer_entry;
+}
+
+
+int ring_exec(Ring_VirtualMachine* rvm, ExecuterEntry* executer_entry) {
+    int exit_code = 0;
+
+    // Step-6: 加载虚拟机
+    ring_virtualmachine_load_executer(rvm, executer_entry);
+
+    // Step-7: 初始化虚拟机
+    ring_virtualmachine_init(rvm);
+
+    // Step-8: 运行虚拟机
+    try {
+        exit_code = ring_execute_vm_code(rvm);
+    } catch (const RuntimeException& e) {
+        printf("%s\n", e.what());
+        printf("exit status 2\n");
+        exit(2);
+    } catch (...) {
+        printf("Caught an unknown exception.\n");
+    }
+
+    return exit_code;
+}
+
+int run_main(Ring_Command_Arg command_arg) {
+    ExecuterEntry*       executer_entry = nullptr;
+    Ring_VirtualMachine* rvm            = nullptr;
+
+    executer_entry                      = ring_compile_main(command_arg);
+    rvm                                 = ring_virtualmachine_create();
+
+    return ring_exec(rvm, executer_entry);
+}
+
+
+int build_main(Ring_Command_Arg command_arg) {
+    ring_compile_main(command_arg);
+    return 0;
+}
+
+int dump_main(Ring_Command_Arg command_arg) {
+    ExecuterEntry* executer_entry = nullptr;
+
+    executer_entry                = ring_compile_main(command_arg);
+    // Only dump `main` package bytecode detail.
+    package_executer_dump(executer_entry->main_package_executer);
+    return 0;
+}
+
+int rdb_main(Ring_Command_Arg command_arg) {
+    printf(LOG_COLOR_YELLOW);
+    printf("%s\n", RING_VERSION);
+    printf("\n");
+    printf("Start Ring Debugger...\n");
+    printf("\n");
+    printf("Input file:%s\n", command_arg.input_file_name.c_str());
+    printf("Interpreter:%s\n", command_arg.rdb_interpreter.c_str());
+    printf("\n");
+    printf(LOG_COLOR_CLEAR);
+
+    int                  exit_code      = 0;
+    ExecuterEntry*       executer_entry = nullptr;
+    Ring_VirtualMachine* rvm            = nullptr;
+    RVM_DebugConfig*     debug_config   = nullptr;
+
+    debug_config                        = new_debug_config(command_arg);
+
+PROCESS_NEW_SESSION:
+
+    // 处理 rdb 命令
+    RDB_Arg rdb_arg;
+    rdb_arg = cli_rdb_message_process_loop_norun(debug_config);
+    if (rdb_arg.cmd == RDB_COMMAND_RUN) {
+        std::string file = rdb_arg.argument;
+        // rdb_arg 转化为 ring_command_arg
+
+        if (file.size()) {
+            command_arg.input_file_name = file;
+        }
+    }
+
+
+    // 编译
+    executer_entry = ring_compile_main(command_arg);
+    rvm            = ring_virtualmachine_create();
+
+    // 注册 调试 钩子
+    enable_debug_config(debug_config, command_arg);
+    register_debugger(rvm, debug_config);
+
+    // 运行
+    exit_code = ring_exec(rvm, executer_entry);
+
+    printf(LOG_COLOR_GREEN);
+    printf("[@]Process exited, code:%d\n", exit_code);
+    printf(LOG_COLOR_CLEAR);
+
+    goto PROCESS_NEW_SESSION;
+}
+
+int version_main(Ring_Command_Arg command_arg) {
+    fprintf(stdout, "%s\n", RING_VERSION);
+    return 0;
+}
+
+int man_main(Ring_Command_Arg command_arg) {
+    std::string tmp;
+    tmp = get_man_help(command_arg.keyword.c_str());
+    fprintf(stdout, "%s", tmp.c_str());
+    return 0;
+}
+
+int help_main(Ring_Command_Arg command_arg) {
+    std::string tmp;
+    tmp = convert_troff_string_2_c_control(command_help_message);
+    fprintf(stdout, "%s", tmp.c_str());
+    return 0;
+}
 
 //
 int main(int argc, char** argv) {
@@ -200,119 +392,24 @@ int main(int argc, char** argv) {
     fflush(stdout);
 #endif
 
-    // parse and switch ring command
-    ring_parse_env();
-    ring_command_arg = ring_parse_command(argc, argv);
-    switch (ring_command_arg.cmd) {
-    case RING_COMMAND_UNKNOW:
-        fprintf(stderr, "Unknow command, type `ring help` find tip.\n");
-        exit(ERROR_CODE_COMMAND_ERROR);
-        break;
-    case RING_COMMAND_RUN:
-    case RING_COMMAND_BUILD:
-    case RING_COMMAND_DUMP:
-    case RING_COMMAND_RDB:
-        break;
-    case RING_COMMAND_VERSION:
-        printf("%s \n", RING_VERSION);
-        exit(ERROR_CODE_SUCCESS);
-        break;
-    case RING_COMMAND_MAN:
-        ring_give_man_help(ring_command_arg.keyword.c_str());
-        exit(ERROR_CODE_SUCCESS);
-        break;
-    case RING_COMMAND_HELP:
-        command_help_message = convert_troff_string_2_c_control(command_help_message);
-        fprintf(stderr, "%s", command_help_message.c_str());
-        exit(ERROR_CODE_SUCCESS);
-        break;
-    default:
-        break;
-    }
 
+    Ring_Command_Arg command_arg;
+    command_arg = pre_main(argc, argv);
 
-    /*
-     *初始化编译阶段的 Memory Pool
-     *
-     * 在编译完成之后, destory_front_mem_pool
-     * 解耦编译器前后端
-     */
-    init_front_mem_pool();
-
-
-    /*
-     * 初始化语法处理节点相关的struct
-     */
-    CompilerEntry* compiler_entry = compiler_entry_create();
-    // TODO: 目前main package 只能有一个源文件
-    // main package 源文件即为 ring run 指定的输入文件
-    Package* main_package = package_create_input_file(compiler_entry,
-                                                      (char*)PACKAGE_MAIN,
-                                                      (char*)ring_command_arg.input_file_name.c_str());
-    // 将 shell_args 注册到 main-package 中
-    // 在 main函数中可以通过这种方式获取:
-    // func main(var string[] args) { fmt::println(args); }
-    main_package->shell_args = ring_command_arg.shell_args;
-    //
-    compiler_entry->main_package = main_package;
-
-    /*
-     * 初始化代码生成阶段相关的struct
-     */
-    ExecuterEntry*    executer_entry        = executer_entry_create();
-    Package_Executer* main_package_executer = package_executer_create(executer_entry, (char*)PACKAGE_MAIN);
-    //
-    executer_entry->main_package_executer = main_package_executer;
-
-    /*
-     * 初始化虚拟机相关的struct
-     */
-    Ring_VirtualMachine* ring_vm = ring_virtualmachine_create();
-
-
-    // Step-0: 预编译官方std包, 并生成vmcode
-    compile_std_lib(compiler_entry, executer_entry);
-
-    // Step-1: flex 词法分析，
-    // Step-2: bison 语法分析，构建语法树
-    // Step-3: 修正语法树
-    package_compile(main_package);
-
-    // Step-4: 生成虚拟机中间代码
-    ring_generate_vm_code(compiler_entry, executer_entry);
-
-    // Step-5: 链接符号表
-    // Complier force destory memory of front-end.
-    destory_front_mem_pool();
-
-    if (ring_command_arg.cmd == RING_COMMAND_BUILD) {
-        // build success
-        return 0;
-    } else if (ring_command_arg.cmd == RING_COMMAND_DUMP) {
-        // Only dump `main` package bytecode detail.
-        package_executer_dump(executer_entry->main_package_executer);
-        return 0;
-    }
-
-    if (ring_command_arg.cmd == RING_COMMAND_RDB) {
-        register_debugger(ring_vm, ring_command_arg);
-    }
-
-    // Step-6: 加载虚拟机
-    ring_virtualmachine_load_executer(ring_vm, executer_entry);
-
-    // Step-7: 初始化虚拟机
-    ring_virtualmachine_init(ring_vm);
-
-    // Step-8: 运行虚拟机
-    try {
-        exit_code = ring_execute_vm_code(ring_vm);
-    } catch (const RuntimeException& e) {
-        printf("%s\n", e.what());
-        printf("exit status 2\n");
-        exit(2);
-    } catch (...) {
-        printf("Caught an unknown exception.\n");
+    if (command_arg.cmd == RING_COMMAND_RUN) {
+        exit_code = run_main(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_BUILD) {
+        exit_code = build_main(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_DUMP) {
+        exit_code = dump_main(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_RDB) {
+        exit_code = rdb_main(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_VERSION) {
+        exit_code = version_main(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_MAN) {
+        exit_code = man_main(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_HELP) {
+        exit_code = help_main(command_arg);
     }
 
 
@@ -327,11 +424,10 @@ int main(int argc, char** argv) {
     return exit_code;
 }
 
-
-int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
+RVM_DebugConfig* new_debug_config(Ring_Command_Arg args) {
     RVM_DebugConfig* debug_config      = (RVM_DebugConfig*)mem_alloc(NULL_MEM_POOL, sizeof(RVM_DebugConfig));
     debug_config->enable               = true;
-    debug_config->trace_dispatch       = cli_debug_trace_dispatch;
+    debug_config->trace_dispatch       = nullptr;
     debug_config->enable_trace_event   = 0;
     debug_config->stop_at_entry        = true;
     debug_config->display_globals      = false;
@@ -344,6 +440,10 @@ int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
     debug_config->break_points         = std::vector<RVM_BreakPoint>{};
     debug_config->rdb_interpreter      = args.rdb_interpreter;
 
+    return debug_config;
+}
+
+int enable_debug_config(RVM_DebugConfig* debug_config, Ring_Command_Arg args) {
     SET_TRACE_EVENT_ALL(debug_config);
     if (debug_config->stop_at_entry) {
         SET_TRACE_EVENT_SAE(debug_config);
@@ -351,21 +451,17 @@ int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args) {
         UNSET_TRACE_EVENT_SAE(debug_config);
     }
 
-    rvm->debug_config = debug_config;
 
     if (DEBUG_IS_DAP(debug_config)) {
         debug_config->trace_dispatch = dap_debug_trace_dispatch;
     } else {
-        printf(LOG_COLOR_YELLOW);
-        printf("%s\n", RING_VERSION);
-        printf("\n");
-        printf("Start Ring Debugger...\n");
-        printf("\n");
-        printf("Input file:%s\n", args.input_file_name.c_str());
-        printf("Interpreter:%s\n", args.rdb_interpreter.c_str());
-        printf("\n");
-        printf(LOG_COLOR_CLEAR);
+        debug_config->trace_dispatch = cli_debug_trace_dispatch;
     }
 
+    return 0;
+}
+
+int register_debugger(Ring_VirtualMachine* rvm, RVM_DebugConfig* debug_config) {
+    rvm->debug_config = debug_config;
     return 0;
 }

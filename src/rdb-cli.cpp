@@ -88,6 +88,12 @@ std::vector<RDB_Command> rdb_commands = {
         .sub_command = std::vector<RDB_Command>{},
     },
     {
+        .token       = RDB_CMD_T_RUN,
+        .rule        = {},
+        .description = "run a ring-file",
+        .sub_command = std::vector<RDB_Command>{},
+    },
+    {
         .token       = RDB_CMD_T_QUIT,
         .rule        = {},
         .description = "quit rdb",
@@ -260,7 +266,7 @@ int cli_dispath_sae(RVM_Frame* frame, const char* event, const char* arg) {
     printf(LOG_COLOR_CLEAR);
 
 
-    rdb_cli(frame, event, arg);
+    cli_rdb_message_process_loop(frame, event, arg);
 
 
     printf(LOG_COLOR_CLEAR);
@@ -344,7 +350,7 @@ int cli_dispath_line(RVM_Frame* frame, const char* event, const char* arg) {
     printf(LOG_COLOR_CLEAR);
 
 
-    rdb_cli(frame, event, arg);
+    cli_rdb_message_process_loop(frame, event, arg);
 
 
 END_DISPATH_LINE:
@@ -387,16 +393,157 @@ int cli_dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
 }
 
 int cli_dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
-    printf(LOG_COLOR_GREEN);
-    printf("[@]Process exited, code:%d\n", 0);
-    printf(LOG_COLOR_CLEAR);
-
     return 0;
 }
 
 
+// 只处理 setBreakpoint 命令、 run 命令
+RDB_Arg cli_rdb_message_process_loop_norun(RVM_DebugConfig* debug_config) {
+    bool                         is_exit = false;
+    char*                        line;
+    std::string                  call_stack;
+    unsigned int                 breakpoint_line;
+    std::vector<RVM_BreakPoint>& break_points = debug_config->break_points;
+
+    // step-1. config linenoise
+    linenoiseSetMultiLine(1);
+    linenoiseSetCompletionCallback(rdb_input_completion);
+    linenoiseSetHintsCallback(rdb_input_hints);
+    linenoiseHistoryLoad(RDB_HISTORY_FILE);
+    linenoiseHistorySetMaxLen(1024);
+
+
+    RDB_Arg rdb_arg;
+    // step-2. read & parse & exec command
+    while (1) {
+        bool break_read_input = false;
+
+        // step-2.1 read & parse command
+        printf("\n");
+        line = linenoise(RDB_PREFIX);
+        if (line == NULL) {
+            // ctrl-c ctrl-d
+            printf("Exit Ring Debugger...\n");
+            exit(0);
+        }
+        if (strlen(line) == 0) {
+            continue;
+        }
+
+        rdb_arg = rdb_parse_command(line);
+        if (rdb_arg.cmd == RDB_COMMAND_UNKNOW) {
+            RDB_UNKNOW_COMMAND;
+            goto END_GET_LINE;
+        }
+
+
+        // step-2.2 exec command
+        printf(LOG_COLOR_GREEN);
+
+        // 只能处理这几个命令
+        // TODO: 其余命令需要报错
+
+        if (rdb_arg.cmd == RDB_COMMAND_HELP) {
+            printf("[@]%s", rdb_command_help_message.c_str());
+        } else if (rdb_arg.cmd == RDB_COMMAND_CLEAR) {
+            STDOUT_CLEAR_SCREEN;
+        } else if (rdb_arg.cmd == RDB_COMMAND_RUN) {
+            printf("[@]CMD: Run file...\n");
+            // TODO: 如果已经在运行中了，需要 kill or reload or error-report
+            break_read_input = true;
+            // 需要，返回，交给外层去 load 一个新文件
+            // load 完成之后，重新进入命令行处理流程
+        } else if (rdb_arg.cmd == RDB_COMMAND_QUIT) {
+            printf("[@]CMD: Exit Ring Debugger...\n");
+
+            break_read_input = true;
+            is_exit          = true;
+        } else if (rdb_arg.cmd == RDB_COMMAND_BREAK) {
+            if (rdb_arg.break_cmd == RDB_COMMAND_BREAK_SET) {
+                breakpoint_line = atoi(rdb_arg.argument.c_str());
+                printf("[@]Breakpoint %lu set at %d\n",
+                       break_points.size(),
+                       breakpoint_line);
+
+                // TODO:
+                // 1. 添加更多的信息：文件名，函数名
+                // 2. 如果行数所在的代码为空行，需要提示添加失败
+                // 3. 不光能在 main package 设置断点，还支持在其他 package设置断点
+                // break set <line>
+                // break set <filename>:<line>
+                // break set <filename>:<func
+                // break <funcname> 函数入口处设置断点
+                // break <filename>:<funcname>
+                RVM_BreakPoint breakpoint = RVM_BreakPoint{
+                    .package     = nullptr,
+                    .file_name   = nullptr,
+                    .func_name   = nullptr,
+                    .line_number = breakpoint_line,
+                };
+
+                break_points.push_back(breakpoint);
+            } else if (rdb_arg.break_cmd == RDB_COMMAND_BREAK_UNSET) {
+                breakpoint_line = atoi(rdb_arg.argument.c_str());
+                printf("[@]Breakpoint %lu unset at %d\n",
+                       break_points.size(),
+                       breakpoint_line);
+
+                std::vector<RVM_BreakPoint>::iterator iter;
+                for (iter = break_points.begin(); iter != break_points.end();) {
+                    if (iter->line_number == breakpoint_line) {
+                        iter = break_points.erase(iter);
+                    } else {
+                        iter++;
+                    }
+                }
+
+            } else if (rdb_arg.break_cmd == RDB_COMMAND_BREAK_LIST) {
+                printf("[@]Breakpoints:\n");
+                printf("*Num    *Package   *File      *Func      *LineNo \n");
+                for (int i = 0; i < break_points.size(); i++) {
+                    printf("%-7d %-10s %-10s %-10s %-7d\n", i,
+                           break_points[i].package,
+                           break_points[i].file_name,
+                           break_points[i].func_name,
+                           break_points[i].line_number);
+                }
+            } else if (rdb_arg.break_cmd == RDB_COMMAND_BREAK_CLEAR) {
+                printf("[@]Clear all breakpoint \n");
+                break_points.clear();
+            }
+        } else if (rdb_arg.cmd == RDB_COMMAND_GLOBAL
+                   || rdb_arg.cmd == RDB_COMMAND_LOCAL
+                   || rdb_arg.cmd == RDB_COMMAND_CONT
+                   || rdb_arg.cmd == RDB_COMMAND_BT
+                   || rdb_arg.cmd == RDB_COMMAND_STEP
+                   || rdb_arg.cmd == RDB_COMMAND_CODE) {
+            printf("[@]No process is being debugged. \n");
+        }
+
+
+        linenoiseHistoryAdd(line);
+
+    END_GET_LINE:
+        printf(LOG_COLOR_CLEAR);
+        fflush(stdout);
+        free(line);
+        if (break_read_input) {
+            break;
+        }
+    }
+
+
+    linenoiseHistorySave(RDB_HISTORY_FILE);
+    printf(LOG_COLOR_CLEAR);
+
+    if (is_exit) {
+        exit(0);
+    }
+    return rdb_arg;
+}
+
 // 启动命令行交互式输入输出
-int rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
+RDB_Arg cli_rdb_message_process_loop(RVM_Frame* frame, const char* event, const char* arg) {
     bool                         is_exit = false;
     char*                        line;
     std::string                  call_stack;
@@ -413,10 +560,10 @@ int rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
     linenoiseHistorySetMaxLen(1024);
 
 
+    RDB_Arg rdb_arg;
     // step-2. read & parse & exec command
     while (1) {
-        bool    break_read_input = false;
-        RDB_Arg rdb_arg;
+        bool break_read_input = false;
 
         // step-2.1 read & parse command
         printf("\n");
@@ -443,6 +590,8 @@ int rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
             printf("[@]%s", rdb_command_help_message.c_str());
         } else if (rdb_arg.cmd == RDB_COMMAND_CLEAR) {
             STDOUT_CLEAR_SCREEN;
+        } else if (rdb_arg.cmd == RDB_COMMAND_RUN) {
+            printf("[@]A process is being debugged, not allow rerun. \n");
         } else if (rdb_arg.cmd == RDB_COMMAND_QUIT) {
             printf("[@]CMD: Exit Ring Debugger...\n");
 
@@ -620,7 +769,7 @@ int rdb_cli(RVM_Frame* frame, const char* event, const char* arg) {
     if (is_exit) {
         exit(0);
     }
-    return 0;
+    return rdb_arg;
 }
 
 RDB_Arg rdb_parse_command(const char* line) {
@@ -630,10 +779,24 @@ RDB_Arg rdb_parse_command(const char* line) {
     RDB_COMMAND_STEP_TYPE    step_cmd  = RDB_COMMAND_STEP_UNKNOW;
     RDB_COMMAND_CODE_TYPE    code_cmd  = RDB_COMMAND_CODE_UNKNOW;
     std::string              argument;
+    std::vector<std::string> shell_args;
 
 
     //
     argv = splitargs(line);
+
+    // 这里的规则 和 ring main 中的规则一致
+    // shell args
+    // e.g.  ./bin/ring run ./test.ring args1 args2
+    // shell_args 就是 [args1, args2]
+    auto shell_args_rule = clipp::values("shell-args", shell_args);
+    // run rule
+    // TODO:
+    // 这里的命令并不能 像终端中一样，动态读取命令中的文件
+    // 后续需要通过 linenoise 工具支持
+    auto run_rule = (clipp::command(RING_CMD_T_RUN).set(cmd, RDB_COMMAND_RUN) | clipp::command("r").set(cmd, RDB_COMMAND_RUN),
+                     clipp::value("input-file", argument));
+
 
     // break points rule
     auto break_rule =
@@ -661,6 +824,7 @@ RDB_Arg rdb_parse_command(const char* line) {
          | clipp::command(RDB_CMD_T_CONT).set(cmd, RDB_COMMAND_CONT) | clipp::command("c").set(cmd, RDB_COMMAND_CONT)
          | clipp::command(RDB_CMD_T_BT).set(cmd, RDB_COMMAND_BT)
          | clipp::command(RDB_CMD_T_CLEAR).set(cmd, RDB_COMMAND_CLEAR)
+         | (run_rule, shell_args_rule)
          | clipp::command(RDB_CMD_T_QUIT).set(cmd, RDB_COMMAND_QUIT) | clipp::command("q").set(cmd, RDB_COMMAND_QUIT)
          | clipp::command(RDB_CMD_T_HELP).set(cmd, RDB_COMMAND_HELP) | clipp::command("?").set(cmd, RDB_COMMAND_HELP));
 
@@ -668,11 +832,12 @@ RDB_Arg rdb_parse_command(const char* line) {
     clipp::parse(argv, rdb_command_rule);
 
     RDB_Arg result = RDB_Arg{
-        .cmd       = cmd,
-        .break_cmd = break_cmd,
-        .step_cmd  = step_cmd,
-        .code_cmd  = code_cmd,
-        .argument  = argument,
+        .cmd        = cmd,
+        .break_cmd  = break_cmd,
+        .step_cmd   = step_cmd,
+        .code_cmd   = code_cmd,
+        .argument   = argument,
+        .shell_args = shell_args,
     };
     // printf("result info\n");
     return result;
@@ -718,6 +883,7 @@ char* rdb_input_hints(const char* buf, int* color, int* bold) {
 
     if (rdb_arg.cmd == RDB_COMMAND_HELP
         || rdb_arg.cmd == RDB_COMMAND_CLEAR
+        || rdb_arg.cmd == RDB_COMMAND_RUN
         || rdb_arg.cmd == RDB_COMMAND_QUIT
         || rdb_arg.cmd == RDB_COMMAND_GLOBAL
         || rdb_arg.cmd == RDB_COMMAND_LOCAL

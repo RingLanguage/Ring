@@ -1503,6 +1503,7 @@ typedef void (*BuildinFuncGenerate)(Package_Executer*       executer,
 
 
 struct Ring_Buildin_Func {
+    const char*                 package_posit; // 包名
     const char*                 identifier;
 
     int                         param_size;
@@ -2302,6 +2303,7 @@ struct VM_DB_Arg {
 // rdb cmd token
 #define RDB_CMD_T_HELP "help"
 #define RDB_CMD_T_CLEAR "clear"
+#define RDB_CMD_T_RUN "run"
 #define RDB_CMD_T_QUIT "quit"
 
 #define RDB_CMD_T_GLOBAL "global"
@@ -2331,6 +2333,7 @@ enum RDB_COMMAND_TYPE {
 
     RDB_COMMAND_HELP,
     RDB_COMMAND_CLEAR,
+    RDB_COMMAND_RUN,
     RDB_COMMAND_QUIT,
 
     RDB_COMMAND_GLOBAL,
@@ -2376,12 +2379,13 @@ struct RDB_Command {
 
 
 struct RDB_Arg {
-    RDB_COMMAND_TYPE       cmd;
-    RDB_COMMAND_BREAK_TYPE break_cmd;
-    RDB_COMMAND_STEP_TYPE  step_cmd;
-    RDB_COMMAND_CODE_TYPE  code_cmd;
+    RDB_COMMAND_TYPE         cmd;
+    RDB_COMMAND_BREAK_TYPE   break_cmd;
+    RDB_COMMAND_STEP_TYPE    step_cmd;
+    RDB_COMMAND_CODE_TYPE    code_cmd;
 
-    std::string            argument;
+    std::string              argument;
+    std::vector<std::string> shell_args;
 };
 
 
@@ -2818,7 +2822,9 @@ struct MemBlock {
 #define DEBUG_RVM_INTERACTIVE_STDOUT_FILE "/tmp/ring-debug-vm.stdout.log"
 
 
-int register_debugger(Ring_VirtualMachine* rvm, Ring_Command_Arg args);
+RVM_DebugConfig* new_debug_config(Ring_Command_Arg args);
+int              enable_debug_config(RVM_DebugConfig* debug_config, Ring_Command_Arg args);
+int              register_debugger(Ring_VirtualMachine* rvm, RVM_DebugConfig* debug_config);
 
 
 /* --------------------
@@ -3506,9 +3512,7 @@ void       register_lib(Package_Executer* package_executer, char* func_name, RVM
 RVM_Value* new_native_return_list(unsigned int return_size);
 void       destory_native_return_list(RVM_Value* return_list, unsigned int return_size);
 
-void       std_lib_os_exit(Ring_VirtualMachine* rvm,
-                           unsigned int arg_size, RVM_Value* args,
-                           unsigned int* return_size, RVM_Value** return_list);
+
 void       std_lib_os_remove(Ring_VirtualMachine* rvm,
                              unsigned int arg_size, RVM_Value* args,
                              unsigned int* return_size, RVM_Value** return_list);
@@ -3706,7 +3710,7 @@ std::string              convert_troff_string_2_c_control(const std::string& inp
  * function definition
  *
  */
-void ring_give_man_help(const char* keyword);
+std::string get_man_help(const char* keyword);
 // --------------------
 
 /* --------------------
@@ -3815,7 +3819,7 @@ int     dap_dispath_line(RVM_Frame* frame, const char* event, const char* arg);
 int     dap_dispath_call(RVM_Frame* frame, const char* event, const char* arg);
 int     dap_dispath_return(RVM_Frame* frame, const char* event, const char* arg);
 int     dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg);
-int     dap_rdb_cli(RVM_Frame* frame, const char* event, const char* arg);
+int     dap_rdb_message_process_loop(RVM_Frame* frame, const char* event, const char* arg);
 
 
 int     cli_debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg);
@@ -3826,7 +3830,8 @@ int     cli_dispath_call(RVM_Frame* frame, const char* event, const char* arg);
 int     cli_dispath_return(RVM_Frame* frame, const char* event, const char* arg);
 int     cli_dispath_exit(RVM_Frame* frame, const char* event, const char* arg);
 
-int     rdb_cli(RVM_Frame* frame, const char* event, const char* arg);
+RDB_Arg cli_rdb_message_process_loop_norun(RVM_DebugConfig* debug_config);
+RDB_Arg cli_rdb_message_process_loop(RVM_Frame* frame, const char* event, const char* arg);
 RDB_Arg rdb_parse_command(const char* line);
 
 void    rdb_input_completion(const char* buf, linenoiseCompletions* lc);
@@ -3936,6 +3941,11 @@ void         fix_buildin_func_to_yield(Expression*             expression,
                                        Block*                  block,
                                        Function*               func,
                                        Ring_Buildin_Func*      build_func);
+void         fix_buildin_func_to_os_exit(Expression*             expression,
+                                         FunctionCallExpression* function_call_expression,
+                                         Block*                  block,
+                                         Function*               func,
+                                         Ring_Buildin_Func*      build_func);
 
 
 void         generate_buildin_func_len(Package_Executer*       executer,
@@ -3968,6 +3978,11 @@ void         generate_buildin_func_resume(Package_Executer*       executer,
 void         generate_buildin_func_yield(Package_Executer*       executer,
                                          FunctionCallExpression* function_call_expression,
                                          RVM_OpcodeBuffer*       opcode_buffer);
+
+void         generate_buildin_func_os_exit(Package_Executer*       executer,
+                                           FunctionCallExpression* function_call_expression,
+                                           RVM_OpcodeBuffer*       opcode_buffer);
+
 
 // --------------------
 

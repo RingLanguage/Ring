@@ -41,6 +41,7 @@ void destory_front_mem_pool() {
     }
 
     destory_mem_pool(front_mem_pool);
+    front_mem_pool = nullptr;
 }
 
 const char* get_string_constant_literal(const char* str1, const char* str2) {

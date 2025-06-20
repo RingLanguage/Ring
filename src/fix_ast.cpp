@@ -62,7 +62,7 @@ TypeSpecifier func_type_specifier = TypeSpecifier{
     .u           = {.array_t = nullptr},
 };
 
-extern Ring_Command_Arg ring_command_arg;
+extern Ring_Command_Arg global_ring_command_arg;
 
 
 //
@@ -595,7 +595,7 @@ void fix_if_statement(IfStatement* if_statement, Block* block, FunctionTuple* fu
 
     fix_expression(if_statement->condition_expression, block, func);
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_if_statement(if_statement, block, func);
     }
 
@@ -716,7 +716,7 @@ void fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple*
         ring_error_report("for statement type is invalid error\n");
     }
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_for_statement(for_statement, block, func);
     }
 
@@ -1268,7 +1268,7 @@ void fix_binary_concat_expression(Expression*       expression,
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, &string_type_specifier);
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_binary_concat_expression(expression, binary_expression, block, func);
     }
 }
@@ -1444,7 +1444,7 @@ void fix_binary_math_expression(Expression*       expression,
         expression->convert_type[0]->kind = RING_BASIC_TYPE_DOUBLE;
     }
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_binary_match_expression(expression, binary_expression, block, func);
     }
 }
@@ -1573,7 +1573,7 @@ void fix_binary_logical_expression(Expression*       expression,
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, &bool_type_specifier);
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_binary_logical_expression(expression, expression_type, binary_expression, block, func);
     }
 }
@@ -1788,7 +1788,7 @@ void fix_binary_relational_expression(Expression*       expression,
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, &bool_type_specifier);
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_binary_relational_expression(expression, expression_type, binary_expression, block, func);
     }
 }
@@ -1831,7 +1831,7 @@ void fix_unitary_minus_expression(Expression* expression,
     }
 
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_unitary_expression(expression, unitary_expression, block, func);
     }
 
@@ -1875,7 +1875,7 @@ void fix_unitary_not_expression(Expression* expression,
         ring_compile_error_report(&context);
     }
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_unitary_expression(expression, unitary_expression, block, func);
     }
 
@@ -1920,7 +1920,7 @@ void fix_unitary_increase_decrease_expression(Expression* expression,
         ring_compile_error_report(&context);
     }
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_unitary_expression(expression, unitary_expression, block, func);
     }
 
@@ -2945,7 +2945,7 @@ void fix_ternary_condition_expression(Expression*        expression,
         EXPRESSION_ADD_CONVERT_TYPE(expression, true_expression->convert_type[0]);
     }
 
-    if (ring_command_arg.optimize_level > 0) {
+    if (global_ring_command_arg.optimize_level > 0) {
         crop_ternary_condition_expression(expression, ternary_expression, block, func);
     }
 

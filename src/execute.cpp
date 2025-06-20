@@ -2300,7 +2300,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 EXIT:
 
     destory_mem_pool(rvm->meta_pool);
-    // destory_mem_pool(rvm->data_pool);
+    destory_mem_pool(rvm->data_pool);
 
     return exit_code;
 }
