@@ -19,6 +19,23 @@
       "MIMode": "lldb"
     },
     {
+      // 调试 Ring build 命令
+      "name": "Debug Ring build",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/ring",
+      "args": [
+        "-O0",
+        "build",
+        "${workspaceFolder}/test/008-class/class-000.ring"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
       // 调试 Ring dump 命令
       "name": "Debug Ring dump",
       "type": "cppdbg",
@@ -43,12 +60,12 @@
       "program": "${workspaceFolder}/bin/ring",
       "args": [
         "rdb",
-        "${workspaceFolder}/test/008-class/class-000.ring"
+        "${workspaceFolder}/test/060-std-package-debug/debug-var-dump-000.ring"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
       "environment": [],
-      "externalConsole": false,
+      "externalConsole": true,
       "MIMode": "lldb"
     },
     {
@@ -65,7 +82,7 @@
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
       "environment": [],
-      "externalConsole": false,
+      "externalConsole": true,
       "MIMode": "lldb"
     },
     {
