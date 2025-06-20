@@ -4,6 +4,7 @@
 
 Ring_Buildin_Func Ring_Buildin_Funcs[] = {
     {
+        .package_posit         = "",
         .identifier            = "-",
         .param_size            = 0,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -13,6 +14,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = nullptr,
     },
     {
+        .package_posit         = "",
         .identifier            = "len",
         .param_size            = 1,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -22,6 +24,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = generate_buildin_func_len,
     },
     {
+        .package_posit         = "",
         .identifier            = "cap",
         .param_size            = 1,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -31,6 +34,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = generate_buildin_func_cap,
     },
     {
+        .package_posit         = "",
         .identifier            = "push",
         .param_size            = 2,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -40,6 +44,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = generate_buildin_func_push,
     },
     {
+        .package_posit         = "",
         .identifier            = "pop",
         .param_size            = 1,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -49,6 +54,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = generate_buildin_func_pop,
     },
     {
+        .package_posit         = "",
         .identifier            = "to_string",
         .param_size            = 1,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -58,6 +64,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = generate_buildin_func_to_string,
     },
     {
+        .package_posit         = "",
         .identifier            = "to_int64",
         .param_size            = 1,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -67,6 +74,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = generate_buildin_func_to_int64,
     },
     {
+        .package_posit         = "",
         .identifier            = "resume",
         .param_size            = 1,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -76,6 +84,7 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .buildin_func_generate = generate_buildin_func_resume,
     },
     {
+        .package_posit         = "",
         .identifier            = "yield",
         .param_size            = 0,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -83,6 +92,16 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
         .return_types          = std::vector<TypeSpecifier*>{},
         .buildin_func_fix      = fix_buildin_func_to_yield,
         .buildin_func_generate = generate_buildin_func_yield,
+    },
+    {
+        .package_posit         = "os",
+        .identifier            = "exit",
+        .param_size            = 1,
+        .param_types           = std::vector<TypeSpecifier*>{},
+        .return_size           = 0,
+        .return_types          = std::vector<TypeSpecifier*>{},
+        .buildin_func_fix      = fix_buildin_func_to_os_exit,
+        .buildin_func_generate = generate_buildin_func_os_exit,
     },
 };
 
@@ -124,13 +143,19 @@ void check_build_func_param_num(Expression*             expression,
 }
 
 unsigned int is_buildin_function_identifier(char* package_posit, char* identifier) {
-    if (package_posit != nullptr || identifier == nullptr) {
+    if (identifier == nullptr) {
         return 0;
+    }
+
+    if (package_posit == nullptr) {
+        package_posit = (char*)"";
     }
 
     unsigned int size = sizeof(Ring_Buildin_Funcs) / sizeof(Ring_Buildin_Func);
     for (unsigned int i = 1; i < size; i++) {
-        if (str_eq(Ring_Buildin_Funcs[i].identifier, identifier)) {
+
+        if (str_eq(Ring_Buildin_Funcs[i].package_posit, package_posit)
+            && str_eq(Ring_Buildin_Funcs[i].identifier, identifier)) {
             return i;
         }
     }
@@ -545,6 +570,15 @@ void fix_buildin_func_to_yield(Expression*             expression,
     check_build_func_param_num(expression, function_call_expression, block, (Function*)func, build_func);
 }
 
+void fix_buildin_func_to_os_exit(Expression*             expression,
+                                 FunctionCallExpression* function_call_expression,
+                                 Block*                  block,
+                                 Function*               func,
+                                 Ring_Buildin_Func*      build_func) {
+
+    check_build_func_param_num(expression, function_call_expression, block, (Function*)func, build_func);
+}
+
 
 void generate_buildin_func_len(Package_Executer*       executer,
                                FunctionCallExpression* function_call_expression,
@@ -694,4 +728,11 @@ void generate_buildin_func_yield(Package_Executer*       executer,
                                  RVM_OpcodeBuffer*       opcode_buffer) {
 
     generate_vmcode(executer, opcode_buffer, RVM_CODE_YIELD, 0, function_call_expression->line_number);
+}
+
+void generate_buildin_func_os_exit(Package_Executer*       executer,
+                                   FunctionCallExpression* function_call_expression,
+                                   RVM_OpcodeBuffer*       opcode_buffer) {
+
+    generate_vmcode(executer, opcode_buffer, RVM_CODE_EXIT, 0, function_call_expression->line_number);
 }

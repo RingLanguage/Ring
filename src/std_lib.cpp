@@ -109,7 +109,6 @@ std::vector<StdPackageInfo> Std_Lib_List = {
         (char*)"os",
         RING_PACKAGE_STD_PATH_OS,
         std::vector<StdPackageNativeFunction>{
-            {(char*)"exit", std_lib_os_exit, 1, 0},
             {(char*)"remove", std_lib_io_remove, 1, 0},
             {(char*)"getenv", std_lib_os_getenv, 1, 1},
             {(char*)"setenv", std_lib_os_setenv, 2, 0},
@@ -225,22 +224,6 @@ void destory_native_return_list(RVM_Value* return_list, unsigned int return_size
     (list)[(index)].type           = RVM_VALUE_TYPE_STRING; \
     (list)[(index)].u.string_value = (value);
 
-/*
- * Package: os
- * Function: exit
- * Type: @native
- */
-void std_lib_os_exit(Ring_VirtualMachine* rvm,
-                     unsigned int arg_size, RVM_Value* args,
-                     unsigned int* return_size, RVM_Value** return_list) {
-
-    assert(arg_size == 1);
-
-    exit(args->u.int_value);
-
-    *return_size = 0;
-    *return_list = nullptr;
-}
 
 /*
  * Package: os
