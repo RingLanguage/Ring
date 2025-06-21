@@ -31,6 +31,32 @@ body.text: 可选的简短描述文本
 body.description: 可选的详细描述文本
 seq: 序列号，用于协议通信的顺序标识
 
+## terminatedEvent
+
+```json
+{
+  "event": "terminated",
+  "body": {
+    "restart": false
+  },
+  "type": "event",
+  "seq": 123
+}
+```
+
+
+## exitedEvent
+
+```json
+{
+  "event": "exited",
+  "body": {
+    "exitCode": 0
+  },
+  "type": "event",
+  "seq": 124
+}
+```
 
 
 
