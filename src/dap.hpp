@@ -262,17 +262,27 @@ namespace dap {
 struct LaunchRequestArguments {
     std::string                                      program;
     std::vector<std::string>                         args;
-    std::string                                      cwd;
     std::vector<std::pair<std::string, std::string>> environment;
     bool                                             stopAtEntry;
-    std::string                                      console;
-    std::optional<std::string>                       symbolSearchPath;
-
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(
-        LaunchRequestArguments,
-        program, args, cwd, environment,
-        stopAtEntry, console, symbolSearchPath)
 };
+inline void to_json(json& j, const LaunchRequestArguments& s) {
+    j = json{{"program", s.program}};
+    if (s.args.size())
+        j["args"] = s.args;
+    if (s.environment.size())
+        j["environment"] = s.environment;
+    if (s.stopAtEntry)
+        j["stopAtEntry"] = s.stopAtEntry;
+}
+inline void from_json(const json& j, LaunchRequestArguments& s) {
+    j.at("program").get_to(s.program);
+    if (j.contains("args"))
+        s.args = j["args"].get<std::vector<std::string>>();
+    if (j.contains("environment"))
+        s.environment = j["environment"].get<std::vector<std::pair<std::string, std::string>>>();
+    if (j.contains("stopAtEntry"))
+        s.stopAtEntry = j["stopAtEntry"].get<bool>();
+}
 // 错误信息
 struct LaunchErrorBody {
     int                                id;
@@ -719,6 +729,32 @@ struct OutputEvent {
     EventType       event = EventType_Output;
     OutputEventBody body;
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(OutputEvent, seq, type, event, body);
+};
+
+
+struct TerminatedEventBody {
+    bool restart = false; // 是否需要重启
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(TerminatedEventBody, restart);
+};
+struct TerminatedEvent {
+    int                 seq   = 0;
+    MessageType         type  = MessageType_Event;
+    EventType           event = EventType_Terminated;
+    TerminatedEventBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(TerminatedEvent, seq, type, event, body);
+};
+
+
+struct ExitedEventBody {
+    int exitCode;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ExitedEventBody, exitCode);
+};
+struct ExitedEvent {
+    int             seq   = 0;
+    MessageType     type  = MessageType_Event;
+    EventType       event = EventType_Exited;
+    ExitedEventBody body;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ExitedEvent, seq, type, event, body);
 };
 
 

@@ -176,9 +176,143 @@ int dap_dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
 // 2. 退出循环
 // 3. 进程退出
 int dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
-    // printf(LOG_COLOR_GREEN);
-    // printf("[@]Process exited, code:%d\n", 0);
-    // printf(LOG_COLOR_CLEAR);
+
+    // TODO: 这里的 exit code 不正确
+    dap::ExitedEvent exited_event;
+    exited_event.seq           = dap_seq++;
+    exited_event.body.exitCode = false;
+
+    DapMessageSender sender(STDERR_FILENO);
+    sender.send(exited_event);
+
+    return 0;
+}
+
+std::variant<int, dap::LaunchRequest>
+dap_rdb_message_process_loop_norun(RVM_DebugConfig* debug_config) {
+
+    std::vector<RVM_BreakPoint>& break_points = debug_config->break_points;
+
+    DapMessageProcessor          dap_processor(STDIN_FILENO, nullptr);
+    DapMessageSender             dap_sender(STDERR_FILENO);
+
+
+    while (true) {
+
+        bool        break_read_input = false;
+
+        std::string message_body     = dap_processor.get_a_message();
+        if (message_body.empty()) {
+            continue;
+        }
+        if (message_body == "q") {
+            // TODO: 发送 exited 事件
+            exit(0);
+        }
+        dap::DAPMessage dap_message;
+        auto            err = json_decode(message_body, &dap_message);
+        if (err != nullptr) {
+            // 错误处理
+            continue;
+        }
+
+        debug_rdb_with_darkgreen("dap receive request: %s\n", dap_message.command.c_str());
+        // printf("this lizhenhu-debug ring stdout: receive request: %s\n", dap_message.command.c_str());
+        // fflush(stdout);
+
+        // TODO: 处理不同的command
+        if (dap_message.command == dap::Command_Launch) {
+            break_read_input = true;
+
+            dap::LaunchRequest request;
+            auto               err = json_decode(message_body, &request);
+            if (err != nullptr) {
+                // 错误处理
+                printf("json_decode LaunchRequest error:%s", err->message.c_str());
+                fflush(stdout);
+                continue;
+            }
+
+            dap::LaunchResponse response = dap::LaunchResponse{
+                {
+                    .seq         = dap_seq++,
+                    .request_seq = dap_message.seq,
+                    .type        = dap::MessageType_Response,
+                    .command     = dap::Command_Launch,
+                    .success     = true,
+                    .message     = "",
+                },
+            };
+
+            dap_sender.send(response);
+            return request;
+
+        } else if (dap_message.command == dap::Command_SetBreakpoints) {
+            break_read_input = false;
+
+            dap::SetBreakpointsRequest request;
+            auto                       err = json_decode(message_body, &request);
+            if (err != nullptr) {
+                // 错误处理
+                printf("json_decode SetBreakpointsRequest error:%s", err->message.c_str());
+                fflush(stdout);
+                continue;
+            }
+
+            dap::SetBreakpointsResponse response = dap::SetBreakpointsResponse{
+                {
+                    .seq         = dap_seq++,
+                    .request_seq = dap_message.seq,
+                    .type        = dap::MessageType_Response,
+                    .command     = dap::Command_SetBreakpoints,
+                    .success     = true,
+                    .message     = "",
+                },
+                .body = dap::SetBreakpointsResponseBody{
+                    .breakpoints = std::vector<dap::BreakpointResponseInfo>{},
+                },
+            };
+
+            break_points.clear();
+            int break_points_count = 0;
+            // TODO: 这里有很多东西是写死的
+            for (dap::Breakpoint& bp : request.arguments.breakpoints) {
+
+                RVM_BreakPoint breakpoint = RVM_BreakPoint{
+                    .package     = nullptr,
+                    .file_name   = nullptr,
+                    .func_name   = nullptr,
+                    .line_number = (unsigned int)(bp.line),
+                };
+                break_points.push_back(breakpoint);
+
+                response.body.breakpoints.push_back(dap::BreakpointResponseInfo{
+                    .id       = break_points_count++,
+                    .line     = bp.line,
+                    .verified = true,
+                    .message  = "",
+                    .source   = request.arguments.source,
+                });
+            }
+
+            dap_sender.send(response);
+
+        } else if (dap_message.command == dap::Command_Threads) {
+        } else if (dap_message.command == dap::Command_StackTrace) {
+        } else if (dap_message.command == dap::Command_Scopes) {
+        } else if (dap_message.command == dap::Command_Variables) {
+        } else if (dap_message.command == dap::Command_Continue) {
+        } else if (dap_message.command == dap::Command_Next) {
+        } else if (dap_message.command == dap::Command_StepIn) {
+        } else if (dap_message.command == dap::Command_StepOut) {
+        }
+
+
+        if (break_read_input) {
+            break;
+        }
+    }
+
 
     return 0;
 }

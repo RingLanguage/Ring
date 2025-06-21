@@ -1,4 +1,5 @@
 #include "clipp.h"
+#include "dap.hpp"
 #include "linenoise.h"
 #include "ring.hpp"
 #include <cstdio>
@@ -206,7 +207,7 @@ int cmd_handler_run(Ring_Command_Arg command_arg) {
     ExecuterEntry*       executer_entry = nullptr;
     Ring_VirtualMachine* rvm            = nullptr;
 
-    executer_entry                      = ring_compile_main(command_arg);
+    executer_entry                      = ring_compile_main(command_arg.input_file_name, command_arg.shell_args);
     rvm                                 = ring_virtualmachine_create();
 
     return ring_exec(rvm, executer_entry);
@@ -214,14 +215,14 @@ int cmd_handler_run(Ring_Command_Arg command_arg) {
 
 
 int cmd_handler_build(Ring_Command_Arg command_arg) {
-    ring_compile_main(command_arg);
+    ring_compile_main(command_arg.input_file_name, command_arg.shell_args);
     return 0;
 }
 
 int cmd_handler_dump(Ring_Command_Arg command_arg) {
     ExecuterEntry* executer_entry = nullptr;
 
-    executer_entry                = ring_compile_main(command_arg);
+    executer_entry                = ring_compile_main(command_arg.input_file_name, command_arg.shell_args);
     // Only dump `main` package bytecode detail.
     package_executer_dump(executer_entry->main_package_executer);
     return 0;
@@ -238,30 +239,46 @@ int cmd_handler_rdb(Ring_Command_Arg command_arg) {
     printf("\n");
     printf(LOG_COLOR_CLEAR);
 
-    int                  exit_code      = 0;
-    ExecuterEntry*       executer_entry = nullptr;
-    Ring_VirtualMachine* rvm            = nullptr;
-    RVM_DebugConfig*     debug_config   = nullptr;
+    int                      exit_code       = 0;
+    ExecuterEntry*           executer_entry  = nullptr;
+    Ring_VirtualMachine*     rvm             = nullptr;
+    RVM_DebugConfig*         debug_config    = nullptr;
+    std::string              input_file_name = command_arg.input_file_name;
+    std::vector<std::string> shell_args      = command_arg.shell_args;
 
-    debug_config                        = new_debug_config(command_arg);
+    debug_config                             = new_debug_config(command_arg);
 
 PROCESS_NEW_SESSION:
 
-    // 处理 rdb 命令
-    RDB_Arg rdb_arg;
-    rdb_arg = cli_rdb_message_process_loop_norun(debug_config);
-    if (rdb_arg.cmd == RDB_COMMAND_RUN) {
-        std::string file = rdb_arg.argument;
-        // rdb_arg 转化为 ring_command_arg
 
-        if (file.size()) {
-            command_arg.input_file_name = file;
+    // 处理 rdb 命令
+    // 有可能是命令模式，有可能是dap模式
+    if (DEBUG_IS_DAP(debug_config)) {
+        auto result = dap_rdb_message_process_loop_norun(debug_config);
+        if (dap::LaunchRequest* req = std::get_if<dap::LaunchRequest>(&result)) {
+            input_file_name = req->arguments.program;
+            shell_args      = req->arguments.args;
+        }
+
+    } else {
+        RDB_Arg rdb_arg;
+        rdb_arg = cli_rdb_message_process_loop_norun(debug_config);
+        if (rdb_arg.cmd == RDB_COMMAND_RUN) {
+            if (rdb_arg.argument.size()) {
+                input_file_name = rdb_arg.argument;
+                shell_args      = rdb_arg.shell_args;
+            }
         }
     }
 
 
+    if (input_file_name.empty()) {
+        // TODO: error-report
+    }
+
+
     // 编译
-    executer_entry = ring_compile_main(command_arg);
+    executer_entry = ring_compile_main(input_file_name, shell_args);
     rvm            = ring_virtualmachine_create();
 
     // 注册 调试 钩子
@@ -298,35 +315,27 @@ int cmd_handler_help(Ring_Command_Arg command_arg) {
 }
 
 
-ExecuterEntry* ring_compile_main(Ring_Command_Arg command_arg) {
+ExecuterEntry* ring_compile_main(std::string              input_file_name,
+                                 std::vector<std::string> shell_args) {
 
-    /*
-     *初始化编译阶段的 Memory Pool
-     *
-     * 在编译完成之后, destory_front_mem_pool
-     * 解耦编译器前后端
-     */
+    // 初始化编译阶段的 Memory Pool
     init_front_mem_pool();
 
-    /*
-     * 初始化语法处理节点相关的struct
-     */
+    // 初始化语法处理节点相关的struct
     CompilerEntry* compiler_entry = compiler_entry_create();
     // TODO: 目前main package 只能有一个源文件
     // main package 源文件即为 ring run 指定的输入文件
     Package* main_package = package_create_input_file(compiler_entry,
                                                       (char*)PACKAGE_MAIN,
-                                                      (char*)command_arg.input_file_name.c_str());
+                                                      (char*)input_file_name.c_str());
     // 将 shell_args 注册到 main-package 中
     // 在 main函数中可以通过这种方式获取:
     // func main(var string[] args) { fmt::println(args); }
-    main_package->shell_args = command_arg.shell_args;
+    main_package->shell_args = shell_args;
     //
     compiler_entry->main_package = main_package;
 
-    /*
-     * 初始化代码生成阶段相关的struct
-     */
+    // 初始化代码生成阶段相关的struct
     ExecuterEntry*    executer_entry        = executer_entry_create();
     Package_Executer* main_package_executer = package_executer_create(executer_entry, (char*)PACKAGE_MAIN);
     //

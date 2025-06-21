@@ -2,6 +2,7 @@
 #ifndef RING_INCLUDE_H
 #define RING_INCLUDE_H
 
+#include "dap.hpp"
 #include "linenoise.h"
 #include <cstdio>
 #include <cstring>
@@ -2830,7 +2831,8 @@ int              cmd_handler_version(Ring_Command_Arg command_arg);
 int              cmd_handler_man(Ring_Command_Arg command_arg);
 int              cmd_handler_help(Ring_Command_Arg command_arg);
 
-ExecuterEntry*   ring_compile_main(Ring_Command_Arg command_arg);
+ExecuterEntry*   ring_compile_main(std::string              input_file_name,
+                                   std::vector<std::string> shell_args);
 int              ring_exec(Ring_VirtualMachine* rvm, ExecuterEntry* executer_entry);
 
 RVM_DebugConfig* new_debug_config(Ring_Command_Arg args);
@@ -3824,13 +3826,16 @@ unsigned int        rvm_free_fvb(Ring_VirtualMachine* rvm, RVM_FreeValueBlock* f
  *
  */
 
-int     dap_debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg);
-int     dap_dispath_sae(RVM_Frame* frame, const char* event, const char* arg);
-int     dap_dispath_opcode(RVM_Frame* frame, const char* event, const char* arg);
-int     dap_dispath_line(RVM_Frame* frame, const char* event, const char* arg);
-int     dap_dispath_call(RVM_Frame* frame, const char* event, const char* arg);
-int     dap_dispath_return(RVM_Frame* frame, const char* event, const char* arg);
-int     dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg);
+int dap_debug_trace_dispatch(RVM_Frame* frame, const char* event, const char* arg);
+int dap_dispath_sae(RVM_Frame* frame, const char* event, const char* arg);
+int dap_dispath_opcode(RVM_Frame* frame, const char* event, const char* arg);
+int dap_dispath_line(RVM_Frame* frame, const char* event, const char* arg);
+int dap_dispath_call(RVM_Frame* frame, const char* event, const char* arg);
+int dap_dispath_return(RVM_Frame* frame, const char* event, const char* arg);
+int dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg);
+
+std::variant<int, dap::LaunchRequest>
+        dap_rdb_message_process_loop_norun(RVM_DebugConfig* debug_config);
 int     dap_rdb_message_process_loop(RVM_Frame* frame, const char* event, const char* arg);
 
 

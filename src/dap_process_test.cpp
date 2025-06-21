@@ -376,10 +376,14 @@ int process_dap_handler_test_2() {
 缺失seq 字段
 {"seq1":1, "type":"request", "command":"initialize"}
 
-正常
+
+launch
+{"seq":1, "type":"request", "command":"launch", "arguments":{"program":"/Users/lizhenhu/Desktop/Ring/test/060-std-package-debug/debug-var-dump-000.ring","args":[],"cwd":"","environment":[],"stopAtEntry":true,"console":"","symbolSearchPath":""}}
+
+threads
 {"seq":1, "type":"request", "command":"threads", "arguments":{}}
 
-{"seq":1, "type":"request", "command":"stackTrace", "arguments":{}}
+stackTrace
 {"seq":1, "type":"request", "command":"stackTrace", "arguments":{"threadId":1,"startFrame":0,"levels":20}}
 
 continue
