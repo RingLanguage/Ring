@@ -129,11 +129,25 @@ struct DAPResponse {
 
 // Source 类型
 struct Source {
-    std::string                name;
-    std::optional<std::string> path;
-    std::optional<int>         sourceReference;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(Source, name, path, sourceReference);
+    std::string name;
+    std::string path;
+    int         sourceReference;
 };
+inline void to_json(json& j, const Source& c) {
+    j = json{{"name", c.name}};
+    if (c.path.size())
+        j["path"] = c.path;
+    if (c.sourceReference)
+        j["stopAtEntry"] = c.sourceReference;
+}
+
+inline void from_json(const json& j, Source& c) {
+    j.at("name").get_to(c.name);
+    if (j.contains("path"))
+        c.path = j["path"].get<std::string>();
+    if (j.contains("sourceReference"))
+        c.sourceReference = j["sourceReference"].get<int>();
+}
 
 // StackFrame 类型
 struct StackFrame {

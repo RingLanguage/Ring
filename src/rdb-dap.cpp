@@ -171,16 +171,11 @@ int dap_dispath_return(RVM_Frame* frame, const char* event, const char* arg) {
 }
 
 
-// TODO:
-// 1. 发送 exited 事件
-// 2. 退出循环
-// 3. 进程退出
 int dap_dispath_exit(RVM_Frame* frame, const char* event, const char* arg) {
 
-    // TODO: 这里的 exit code 不正确
     dap::ExitedEvent exited_event;
     exited_event.seq           = dap_seq++;
-    exited_event.body.exitCode = false;
+    exited_event.body.exitCode = frame->exit_code;
 
     DapMessageSender sender(STDERR_FILENO);
     sender.send(exited_event);

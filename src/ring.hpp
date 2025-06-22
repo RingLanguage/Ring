@@ -2492,6 +2492,7 @@ struct RVM_Frame {
     std::vector<std::pair<std::string, RVM_Value*>> locals;
 
     const char*                                     event;
+    int                                             exit_code;
 };
 
 typedef enum {

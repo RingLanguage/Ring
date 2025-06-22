@@ -444,12 +444,15 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
             // 4.
             const char* event;
+            int         exit_code = 0;
+
             if (opcode == RVM_CODE_INVOKE_FUNC || opcode == RVM_CODE_INVOKE_METHOD) {
                 event = TRACE_EVENT_CALL;
             } else if (opcode == RVM_CODE_FUNCTION_FINISH) {
                 event = TRACE_EVENT_RETURN;
             } else if (opcode == RVM_CODE_EXIT) {
-                event = TRACE_EVENT_EXIT;
+                event     = TRACE_EVENT_EXIT;
+                exit_code = STACK_GET_INT_OFFSET(-1);
             } else {
                 event = TRACE_EVENT_OPCODE;
             }
@@ -487,6 +490,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
                 .globals            = globals,
                 .locals             = locals,
                 .event              = event,
+                .exit_code          = exit_code,
             };
             rvm->debug_config->trace_dispatch(&frame, event, "");
         }

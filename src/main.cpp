@@ -256,8 +256,10 @@ PROCESS_NEW_SESSION:
     if (DEBUG_IS_DAP(debug_config)) {
         auto result = dap_rdb_message_process_loop_norun(debug_config);
         if (dap::LaunchRequest* req = std::get_if<dap::LaunchRequest>(&result)) {
-            input_file_name = req->arguments.program;
-            shell_args      = req->arguments.args;
+            input_file_name             = req->arguments.program;
+            shell_args                  = req->arguments.args;
+
+            debug_config->stop_at_entry = req->arguments.stopAtEntry;
         }
 
     } else {
@@ -405,6 +407,7 @@ RVM_DebugConfig* new_debug_config(Ring_Command_Arg args) {
 
 int enable_debug_config(RVM_DebugConfig* debug_config, Ring_Command_Arg args) {
     SET_TRACE_EVENT_ALL(debug_config);
+
     if (debug_config->stop_at_entry) {
         SET_TRACE_EVENT_SAE(debug_config);
     } else {
