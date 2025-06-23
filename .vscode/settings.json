@@ -111,7 +111,8 @@
     "numbers": "cpp",
     "semaphore": "cpp",
     "codecvt": "cpp",
-    "__availability": "cpp"
+    "__availability": "cpp",
+    "__assertion_handler": "cpp"
   },
   "editor.formatOnSave": true,
   "code-runner.executorMap": {

@@ -76,8 +76,8 @@
       "program": "${workspaceFolder}/bin/ring",
       "args": [
         "--interpreter=dap",
-        "rdb",
-        "${workspaceFolder}/test/008-class/class-000.ring"
+        "rdb"
+        // ,"${workspaceFolder}/test/008-class/class-000.ring"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
