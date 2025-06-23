@@ -75,6 +75,7 @@ var (
 		"023-array-string",
 		"024-array-class",
 		"025-array-closure",
+		"026-array-slice",
 
 		"030-if",
 		"031-for",
