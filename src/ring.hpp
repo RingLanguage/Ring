@@ -61,6 +61,8 @@ typedef struct KeyExpression                KeyExpression;
 typedef struct MemberExpression             MemberExpression;
 typedef struct DimensionExpression          DimensionExpression;
 typedef struct SubDimensionExpression       SubDimensionExpression;
+typedef struct SliceExpression              SliceExpression;
+typedef struct SubSliceExpression           SubSliceExpression;
 typedef struct BinaryExpression             BinaryExpression;
 typedef struct TernaryExpression            TernaryExpression;
 typedef struct FunctionCallExpression       FunctionCallExpression;
@@ -974,8 +976,10 @@ typedef enum {
     RVM_CODE_PUSH_BOOL,
     RVM_CODE_PUSH_INT_1BYTE, // operand 0-255
     RVM_CODE_PUSH_INT_2BYTE, // operand 256-65535
-    RVM_CODE_PUSH_INT,       // bigger 65535
-    RVM_CODE_PUSH_INT64,     // bigger 65535
+    RVM_CODE_PUSH_INT__1,
+
+    RVM_CODE_PUSH_INT,   // bigger 65535
+    RVM_CODE_PUSH_INT64, // bigger 65535
     RVM_CODE_PUSH_DOUBLE,
     RVM_CODE_PUSH_STRING,
 
@@ -1097,6 +1101,10 @@ typedef enum {
     RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB,
     RVM_CODE_FOR_RANGE_ARRAY_CLOSURE,
     RVM_CODE_FOR_RANGE_FINISH,
+
+    // slice array/string
+    RVM_CODE_SLICE_ARRAY,
+    RVM_CODE_SLICE_STRING,
 
     // class
     RVM_CODE_NEW_CLASS_OB_LITERAL,
@@ -1451,6 +1459,7 @@ typedef enum {
     EXPRESSION_TYPE_CLASS_OBJECT_LITERAL,
 
     EXPRESSION_TYPE_ARRAY_INDEX,
+    EXPRESSION_TYPE_SLICE,
     EXPRESSION_TYPE_MEMBER,
     EXPRESSION_TYPE_ELEMENT_ACCESS,
 
@@ -1667,6 +1676,7 @@ struct Expression {
         BinaryExpression*             binary_expression;
         Expression*                   unitary_expression;
         ArrayIndexExpression*         array_index_expression;
+        SliceExpression*              slice_expression;
         NewArrayExpression*           new_array_expression;
         ArrayLiteralExpression*       array_literal_expression;
         ClassObjectLiteralExpression* class_object_literal_expression;
@@ -1805,6 +1815,24 @@ struct SubDimensionExpression {
     // field: num_expression
     // when new array, num_expression is array size.
     // when access array, num_expression is index.
+};
+
+typedef enum {
+    SLICE_OPERAND_TYPE_UNKNOW,
+    SLICE_OPERAND_TYPE_ARRAY,
+    SLICE_OPERAND_TYPE_STRING,
+} SliceOperandType;
+struct SliceExpression {
+    unsigned int        line_number;
+
+    SliceOperandType    slice_operand_type; // UPDATED_BY_FIX_AST
+    Expression*         operand;
+    SubSliceExpression* sub_slice;
+};
+struct SubSliceExpression {
+    unsigned int line_number;
+    Expression*  start_expr;
+    Expression*  end_expr;
 };
 
 typedef enum {
@@ -2539,6 +2567,7 @@ typedef enum {
     ERROR_REDEFINITE_LOCAL_VARIABLE             = 200024, // 重复定义的局部变量
     ERROR_ARRAY_LITERAL_INVALID_ITEM            = 200025, // 数组字面量中，不合法的元素
     ERROR_ARRAY_LITERAL_MISMATCH_TYPE           = 200026, // 不合法的数组常量语句，类型不匹配
+    ERROR_SLICE_OPERATOR_MISMATCH_TYPE          = 200027, // 不合法的 slice 操作数类型
 
     ERROR_REDEFINITE_CLASS                      = 200030, // 重复定义 class
     ERROR_REDEFINITE_MEMBER_IN_CLASS            = 200031, // 重复定义 class field/method
@@ -2931,6 +2960,8 @@ Expression*                   create_expression_from_function_call(FunctionCallE
 Expression*                   create_expression_from_member_call(MemberCallExpression* member_call_expression);
 Expression*                   create_expression_from_array_literal(ArrayLiteralExpression* array_literal);
 Expression*                   create_expression_from_class_object_literal(ClassObjectLiteralExpression* object_literal);
+Expression*                   create_expression_from_slice_expression(SliceExpression* slice_expr);
+
 Expression*                   create_expression_assign(AssignExpression* assign_expression);
 Expression*                   create_expression_ternary(Expression* condition, Expression* true_expression, Expression* false_expression);
 Expression*                   create_expression_launch(LaunchExpressionType          type,
@@ -3006,6 +3037,9 @@ DimensionExpression*          create_dimension_expression(SubDimensionExpression
 DimensionExpression*          create_dimension_expression_with_exclam(char* dimension_literal);
 SubDimensionExpression*       create_sub_dimension_expression(Expression* num_expression);
 SubDimensionExpression*       sub_dimension_expression_list_add_item(SubDimensionExpression* list, SubDimensionExpression* item);
+
+SliceExpression*              create_slice_expression(Expression* operand, SubSliceExpression* sub_slice_expression);
+SubSliceExpression*           create_sub_slice_expression(Expression* start_expr, Expression* end_expr);
 
 TypeSpecifier*                create_type_specifier(Ring_BasicType basic_type);
 TypeSpecifier*                create_type_specifier_array(TypeSpecifier* sub_type, DimensionExpression* dimension);
@@ -3167,6 +3201,10 @@ void             fix_array_index_expression(Expression*           expression,
                                             ArrayIndexExpression* array_index_expression,
                                             Block*                block,
                                             FunctionTuple*        func);
+void             fix_slice_expression(Expression*      expression,
+                                      SliceExpression* slice_expression,
+                                      Block*           block,
+                                      FunctionTuple*   func);
 void             fix_new_array_expression(Expression* expression, NewArrayExpression* new_array_expression, Block* block, FunctionTuple* func);
 void             fix_dimension_expression(DimensionExpression* dimension_expression, Block* block, FunctionTuple* func);
 void             fix_array_literal_expression(Expression* expression, ArrayLiteralExpression* array_literal_expression, Block* block, FunctionTuple* func);
@@ -3346,7 +3384,12 @@ void              generate_vmcode_from_new_array_expression(Package_Executer*   
                                                             RVM_OpcodeBuffer*   opcode_buffer);
 void              generate_vmcode_from_class_object_literal_expreesion(Package_Executer* executer, ClassObjectLiteralExpression* literal_expression, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_array_literal_expreesion(Package_Executer* executer, ArrayLiteralExpression* array_literal_expression, RVM_OpcodeBuffer* opcode_buffer);
-void              generate_vmcode_from_array_index_expression(Package_Executer* executer, ArrayIndexExpression* array_index_expression, RVM_OpcodeBuffer* opcode_buffer);
+void              generate_vmcode_from_array_index_expression(Package_Executer*     executer,
+                                                              ArrayIndexExpression* array_index_expression,
+                                                              RVM_OpcodeBuffer*     opcode_buffer);
+void              generate_vmcode_from_slice_expression(Package_Executer* executer,
+                                                        SliceExpression*  slice_expression,
+                                                        RVM_OpcodeBuffer* opcode_buffer);
 
 void              generate_vmcode(Package_Executer* executer, RVM_OpcodeBuffer* opcode_buffer, RVM_Opcode opcode, unsigned int operand, unsigned int line_number);
 
@@ -3777,6 +3820,10 @@ RVM_String*         rvm_gc_new_string_meta(Ring_VirtualMachine* rvm);
 void                rvm_fill_string(Ring_VirtualMachine* rvm, RVM_String* string, unsigned int capacity);
 RVM_String*         rvm_deep_copy_string(Ring_VirtualMachine* rvm, RVM_String* src);
 RVM_String*         concat_string(Ring_VirtualMachine* rvm, RVM_String* a, RVM_String* b);
+RVM_String*         rvm_slice_string(Ring_VirtualMachine* rvm,
+                                     RVM_String*          src,
+                                     long long            start,
+                                     long long            end);
 unsigned int        rvm_free_string(Ring_VirtualMachine* rvm, RVM_String* string);
 
 
@@ -3793,6 +3840,10 @@ RVM_Array*          rvm_new_array(Ring_VirtualMachine* rvm,
                                   Ring_BasicType       item_type_kind,
                                   RVM_ClassDefinition* class_definition);
 RVM_Array*          rvm_deep_copy_array(Ring_VirtualMachine* rvm, RVM_Array* src);
+RVM_Array*          rvm_slice_array(Ring_VirtualMachine* rvm,
+                                    RVM_Array*           src,
+                                    long long            start,
+                                    long long            end);
 void                rvm_array_growth(Ring_VirtualMachine* rvm, RVM_Array* array);
 unsigned int        rvm_free_array(Ring_VirtualMachine* rvm, RVM_Array* array);
 

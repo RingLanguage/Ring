@@ -107,6 +107,8 @@ std::string formate_expression(Expression* expression) {
 
     case EXPRESSION_TYPE_ARRAY_INDEX:
         break;
+    case EXPRESSION_TYPE_SLICE:
+        break;
     case EXPRESSION_TYPE_MEMBER:
         break;
 

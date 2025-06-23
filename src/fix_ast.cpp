@@ -422,6 +422,9 @@ BEGIN:
     case EXPRESSION_TYPE_ARRAY_INDEX:
         fix_array_index_expression(expression, expression->u.array_index_expression, block, func);
         break;
+    case EXPRESSION_TYPE_SLICE:
+        fix_slice_expression(expression, expression->u.slice_expression, block, func);
+        break;
     case EXPRESSION_TYPE_MEMBER:
         fix_field_member_expression(expression, expression->u.member_expression, block, func);
         break;
@@ -2394,6 +2397,85 @@ void fix_array_index_expression(Expression*           expression,
 
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, type);
+}
+
+void fix_slice_expression(Expression*      expression,
+                          SliceExpression* slice_expression,
+                          Block*           block,
+                          FunctionTuple*   func) {
+
+    assert(slice_expression != nullptr);
+
+    char*     package_posit    = nullptr;
+    char*     array_identifier = slice_expression->operand->u.identifier_expression->identifier;
+    Variable* variable         = nullptr;
+
+    Package*  package          = resolve_package(package_posit, slice_expression->line_number, block);
+    variable                   = resolve_variable(package,
+                                                  array_identifier,
+                                                  block);
+
+    // Ring-Compiler-Error-Report ERROR_UNDEFINITE_VARIABLE
+    if (variable == nullptr) {
+        DEFINE_ERROR_REPORT_STR;
+        compile_err_buf = sprintf_string(
+            "use undeclared identifier `%s`; E:%d.",
+            array_identifier,
+            ERROR_UNDEFINITE_VARIABLE);
+
+        ErrorReportContext context = {
+            .package                 = nullptr,
+            .package_unit            = get_package_unit(),
+            .source_file_name        = get_package_unit()->current_file_name,
+            .line_content            = package_unit_get_line_content(slice_expression->line_number),
+            .line_number             = slice_expression->line_number,
+            .column_number           = package_unit_get_column_number(),
+            .error_message           = std::string(compile_err_buf),
+            .advice                  = std::string(compile_adv_buf),
+            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+            .ring_compiler_file      = (char*)__FILE__,
+            .ring_compiler_file_line = __LINE__,
+        };
+        ring_compile_error_report(&context);
+    }
+
+    TypeSpecifier* type_specifier = variable->decl->type_specifier;
+    // Ring-Compiler-Error-Report ERROR_SLICE_OPERATOR_MISMATCH_TYPE
+    if (type_specifier->kind != RING_BASIC_TYPE_ARRAY && type_specifier->kind != RING_BASIC_TYPE_STRING) {
+        DEFINE_ERROR_REPORT_STR;
+        compile_err_buf = sprintf_string(
+            "`%s` is not an array/string; E:%d.",
+            array_identifier,
+            ERROR_SLICE_OPERATOR_MISMATCH_TYPE);
+
+        ErrorReportContext context = {
+            .package                 = nullptr,
+            .package_unit            = get_package_unit(),
+            .source_file_name        = get_package_unit()->current_file_name,
+            .line_content            = package_unit_get_line_content(slice_expression->line_number),
+            .line_number             = slice_expression->line_number,
+            .column_number           = package_unit_get_column_number(),
+            .error_message           = std::string(compile_err_buf),
+            .advice                  = std::string(compile_adv_buf),
+            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+            .ring_compiler_file      = (char*)__FILE__,
+            .ring_compiler_file_line = __LINE__,
+        };
+        ring_compile_error_report(&context);
+    }
+
+    fix_expression(slice_expression->operand, block, func);
+    fix_expression(slice_expression->sub_slice->start_expr, block, func);
+    fix_expression(slice_expression->sub_slice->end_expr, block, func);
+
+    if (type_specifier->kind == RING_BASIC_TYPE_ARRAY) {
+        slice_expression->slice_operand_type = SLICE_OPERAND_TYPE_ARRAY;
+    } else if (type_specifier->kind == RING_BASIC_TYPE_STRING) {
+        slice_expression->slice_operand_type = SLICE_OPERAND_TYPE_STRING;
+    }
+
+    EXPRESSION_CLEAR_CONVERT_TYPE(expression);
+    EXPRESSION_ADD_CONVERT_TYPE(expression, type_specifier);
 }
 
 void fix_new_array_expression(Expression*         expression,

@@ -419,6 +419,62 @@ RVM_String* concat_string(Ring_VirtualMachine* rvm, RVM_String* a, RVM_String* b
     return string;
 }
 
+
+RVM_String* rvm_slice_string(Ring_VirtualMachine* rvm,
+                             RVM_String*          src,
+                             long long            start,
+                             long long            end) {
+    // 处理默认值
+    long long actual_start = (start == -1) ? 0 : start;
+    long long actual_end   = (end == -1) ? src->length : end;
+
+    // 边界检查
+    if (actual_start < 0) {
+        actual_start = 0;
+    }
+    if (actual_end > src->length) {
+        actual_end = src->length;
+    }
+    if (actual_start > actual_end) {
+        // 返回空字符串（容量也8字节对齐）
+        RVM_String* empty = rvm_gc_new_string_meta(rvm);
+        empty->capacity   = ROUND_UP8(1); // 至少8字节
+        return empty;
+    }
+
+    // 计算新字符串长度
+    unsigned int new_length = actual_end - actual_start;
+
+    // 创建新字符串
+    RVM_String* new_string = rvm_gc_new_string_meta(rvm);
+    new_string->length     = new_length;
+    new_string->capacity   = ROUND_UP8(new_length);
+
+    // 分配内存并拷贝数据
+    unsigned int alloc_size = sizeof(char) * new_string->capacity;
+    new_string->data        = (char*)mem_alloc(rvm->data_pool, alloc_size);
+
+    // 执行切片拷贝
+    memcpy(new_string->data, src->data + actual_start, new_length);
+
+    // 填充对齐部分（可选，保持内存干净）
+    if (new_string->capacity > new_length) {
+        memset(new_string->data + new_length, 0,
+               new_string->capacity - new_length);
+    }
+
+    // 更新内存统计
+    rvm_heap_alloc_size_incr(rvm, alloc_size);
+    debug_rvm_heap_alloc_with_green("rvm_slice_string: %p length:%u capacity:%u alloc_size:%u [heap_size:%lld]",
+                                    new_string,
+                                    new_string->length,
+                                    new_string->capacity,
+                                    alloc_size,
+                                    rvm_heap_size(rvm));
+
+    return new_string;
+}
+
 unsigned int rvm_free_string(Ring_VirtualMachine* rvm, RVM_String* string) {
     assert(string != nullptr);
 
@@ -666,6 +722,114 @@ RVM_Array* rvm_deep_copy_array(Ring_VirtualMachine* rvm, RVM_Array* src) {
                                     rvm_heap_size(rvm));
 
     return array;
+}
+
+RVM_Array* rvm_slice_array(Ring_VirtualMachine* rvm,
+                           RVM_Array*           src,
+                           long long            start,
+                           long long            end) {
+    // 处理默认值
+    long long actual_start = (start == -1) ? 0 : start;
+    long long actual_end   = (end == -1) ? src->length : end;
+
+    // 边界检查
+    if (actual_start < 0) {
+        actual_start = 0;
+    }
+    if (actual_end > src->length) {
+        actual_end = src->length;
+    }
+    if (actual_start > actual_end) {
+        // 返回空数组
+        return rvm_gc_new_array_meta(rvm, src->type, src->item_type_kind,
+                                     src->class_ref, src->dimension);
+    }
+
+    // 计算新数组长度
+    unsigned long long new_length = actual_end - actual_start;
+
+    // 创建新数组
+    RVM_Array* new_array = rvm_gc_new_array_meta(rvm,
+                                                 src->type,
+                                                 src->item_type_kind,
+                                                 src->class_ref,
+                                                 src->dimension);
+    new_array->length    = new_length;
+    new_array->capacity  = ROUND_UP8(new_length);
+
+    // 根据不同类型进行切片拷贝
+    switch (src->type) {
+    case RVM_ARRAY_BOOL: {
+        new_array->u.bool_array = (bool*)mem_alloc(rvm->data_pool, sizeof(bool) * new_length);
+        memcpy(new_array->u.bool_array, src->u.bool_array + actual_start, sizeof(bool) * new_length);
+        rvm_heap_alloc_size_incr(rvm, sizeof(bool) * new_length);
+        break;
+    }
+    case RVM_ARRAY_INT: {
+        new_array->u.int_array = (int*)mem_alloc(rvm->data_pool, sizeof(int) * new_length);
+        memcpy(new_array->u.int_array, src->u.int_array + actual_start, sizeof(int) * new_length);
+        rvm_heap_alloc_size_incr(rvm, sizeof(int) * new_length);
+        break;
+    }
+    case RVM_ARRAY_INT64: {
+        new_array->u.int64_array = (long long*)mem_alloc(rvm->data_pool, sizeof(long long) * new_length);
+        memcpy(new_array->u.int64_array, src->u.int64_array + actual_start, sizeof(long long) * new_length);
+        rvm_heap_alloc_size_incr(rvm, sizeof(long long) * new_length);
+        break;
+    }
+    case RVM_ARRAY_DOUBLE: {
+        new_array->u.double_array = (double*)mem_alloc(rvm->data_pool, sizeof(double) * new_length);
+        memcpy(new_array->u.double_array, src->u.double_array + actual_start, sizeof(double) * new_length);
+        rvm_heap_alloc_size_incr(rvm, sizeof(double) * new_length);
+        break;
+    }
+    case RVM_ARRAY_STRING: {
+        new_array->u.string_array = (RVM_String**)mem_alloc(rvm->data_pool, sizeof(RVM_String*) * new_length);
+        // 字符串需要深拷贝
+        for (unsigned int i = 0; i < new_length; i++) {
+            new_array->u.string_array[i] = rvm_deep_copy_string(rvm, src->u.string_array[actual_start + i]);
+        }
+        // 字符串数组本身的内存大小
+        rvm_heap_alloc_size_incr(rvm, sizeof(RVM_String*) * new_length);
+        break;
+    }
+    case RVM_ARRAY_CLASS_OBJECT: {
+        new_array->u.class_ob_array = (RVM_ClassObject**)mem_alloc(rvm->data_pool, sizeof(RVM_ClassObject*) * new_length);
+        // 类对象需要深拷贝
+        for (unsigned int i = 0; i < new_length; i++) {
+            new_array->u.class_ob_array[i] = rvm_deep_copy_class_ob(rvm, src->u.class_ob_array[actual_start + i]);
+        }
+        // 类对象数组本身的内存大小
+        rvm_heap_alloc_size_incr(rvm, sizeof(RVM_ClassObject*) * new_length);
+        break;
+    }
+    case RVM_ARRAY_A: {
+        // TODO: 这里的 cap 不需要对到 8
+        new_array->u.a_array = (RVM_Array**)mem_alloc(rvm->data_pool, sizeof(RVM_Array*) * new_length);
+        // 数组元素需要深拷贝
+        for (unsigned int i = 0; i < new_length; i++) {
+            new_array->u.a_array[i] = rvm_deep_copy_array(rvm, src->u.a_array[actual_start + i]);
+        }
+        // 数组指针本身的内存大小
+        rvm_heap_alloc_size_incr(rvm, sizeof(RVM_Array*) * new_length);
+        break;
+    }
+    case RVM_ARRAY_CLOSURE: {
+        new_array->u.closure_array = (RVM_Closure**)mem_alloc(rvm->data_pool, sizeof(RVM_Closure*) * new_length);
+        // 闭包需要深拷贝
+        for (unsigned int i = 0; i < new_length; i++) {
+            new_array->u.closure_array[i] = rvm_deep_copy_closure(rvm, src->u.closure_array[actual_start + i]);
+        }
+        // 闭包数组本身的内存大小
+        rvm_heap_alloc_size_incr(rvm, sizeof(RVM_Closure*) * new_length);
+        break;
+    }
+    default:
+        // 未知类型，返回空数组
+        break;
+    }
+
+    return new_array;
 }
 
 // 两倍增长，默认为8

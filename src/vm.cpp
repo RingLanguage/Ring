@@ -34,6 +34,8 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_PUSH_BOOL, "push_bool", OPCODE_OPERAND_TYPE_1BYTE_A, "+1", 1, "push constant bool value to stack", "[]-->[int]", "So(0).bool = A.bool"},
     {RVM_CODE_PUSH_INT_1BYTE, "push_int_1byte", OPCODE_OPERAND_TYPE_1BYTE_A, "+1", 1, "push 1byte int constant value to stack", "[]-->[int]", "So(0).int = A.int"},
     {RVM_CODE_PUSH_INT_2BYTE, "push_int_2byte", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push 2byte int constant value to stack", "[]-->[int]", "So(0).int = As.int"},
+    {RVM_CODE_PUSH_INT__1, "push_int__1", OPCODE_OPERAND_TYPE_0BYTE, "+1", 1, "push -1 to stack", "[]-->[int]", "So(0).int = -1"},
+
     {RVM_CODE_PUSH_INT, "push_int", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant int value to stack", "[]-->[int]", "So(0).int = C(As).int"},
     {RVM_CODE_PUSH_INT64, "push_int64", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant int64 value to stack", "[]-->[int]", "So(0).int64 = C(As).int64"},
     {RVM_CODE_PUSH_DOUBLE, "push_double", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant double value to stack", "[]-->[double]", "So(0).double = C(As).double"},
@@ -165,6 +167,11 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB, "range_array_class_ob", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range object value for array", "", ""},
     {RVM_CODE_FOR_RANGE_ARRAY_CLOSURE, "range_array_closure", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range closure value for array", "", ""},
     {RVM_CODE_FOR_RANGE_FINISH, "for_range_finish", OPCODE_OPERAND_TYPE_2BYTE_As, "-2", -2, "", "", ""},
+
+
+    // slice array/string
+    {RVM_CODE_SLICE_ARRAY, "slice_array", OPCODE_OPERAND_TYPE_0BYTE, "-2", -2, "", "", ""},
+    {RVM_CODE_SLICE_STRING, "slice_string", OPCODE_OPERAND_TYPE_0BYTE, "-2", -2, "", "", ""},
 
 
     // class

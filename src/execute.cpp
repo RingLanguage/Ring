@@ -32,6 +32,11 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     (VM_CUR_CO_STACK_DATA[(index)].u.array_value)
 #define STACK_GET_CLOSURE_INDEX(index) \
     (VM_CUR_CO_STACK_DATA[(index)].u.closure_value)
+// TODO: 感觉这个实现的不好
+#define STACK_GET_INTORINT64_INDEX(index)                         \
+    ((VM_CUR_CO_STACK_DATA[(index)].type == RVM_VALUE_TYPE_INT) ? \
+         (VM_CUR_CO_STACK_DATA[(index)].u.int_value) :            \
+         (VM_CUR_CO_STACK_DATA[(index)].u.int64_value))
 
 // 通过栈顶偏移 offset 获取 VM_CUR_CO_STACK_DATA
 #define STACK_GET_TYPE_OFFSET(offset) \
@@ -52,7 +57,8 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     STACK_GET_ARRAY_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
 #define STACK_GET_CLOSURE_OFFSET(offset) \
     STACK_GET_CLOSURE_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
-
+#define STACK_GET_INTORINT64_OFFSET(offset) \
+    STACK_GET_INTORINT64_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
 
 // 通过绝对索引 设置 VM_CUR_CO_STACK_DATA
 #define STACK_SET_BOOL_INDEX(index, value)                            \
@@ -512,6 +518,12 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_STACK_TOP_INDEX += 1;
             VM_CUR_CO_PC += 3;
             break;
+        case RVM_CODE_PUSH_INT__1:
+            STACK_SET_INT_OFFSET(0, -1);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+            VM_CUR_CO_PC += 1;
+            break;
+
         case RVM_CODE_PUSH_INT:
             const_index = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             STACK_SET_INT_OFFSET(0, constant_list[const_index].u.int_value);
@@ -1487,6 +1499,33 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_PC += 3;
             break;
 
+
+        // slice array/string
+        case RVM_CODE_SLICE_ARRAY: {
+            long long end   = STACK_GET_INTORINT64_OFFSET(-1);
+            long long start = STACK_GET_INTORINT64_OFFSET(-2);
+            array_value     = STACK_GET_ARRAY_OFFSET(-3);
+            VM_CUR_CO_STACK_TOP_INDEX -= 3;
+
+            assert_throw_nil_array(array_value == nullptr);
+            array_value = rvm_slice_array(rvm, array_value,
+                                          start, end);
+            STACK_SET_ARRAY_OFFSET(0, array_value);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_SLICE_STRING: {
+            long long end   = STACK_GET_INTORINT64_OFFSET(-1);
+            long long start = STACK_GET_INTORINT64_OFFSET(-2);
+            string_value    = STACK_GET_STRING_OFFSET(-3);
+            VM_CUR_CO_STACK_TOP_INDEX -= 3;
+
+            string_value = rvm_slice_string(rvm, string_value,
+                                            start, end);
+            STACK_SET_STRING_OFFSET(0, string_value);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+            VM_CUR_CO_PC += 1;
+        } break;
 
         // class
         case RVM_CODE_NEW_CLASS_OB_LITERAL:

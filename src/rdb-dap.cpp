@@ -237,6 +237,9 @@ dap_rdb_message_process_loop_norun(RVM_DebugConfig* debug_config) {
                     .success     = true,
                     .message     = "",
                 },
+                .body = dap::LaunchResponseBody{
+                    // .error = nullptr,
+                },
             };
 
             dap_sender.send(response);

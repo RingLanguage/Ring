@@ -170,6 +170,17 @@ Expression* create_expression_from_class_object_literal(ClassObjectLiteralExpres
     return expression;
 }
 
+Expression* create_expression_from_slice_expression(SliceExpression* slice_expr) {
+    debug_ast_info_with_yellow("\t");
+
+    Expression* expression         = (Expression*)mem_alloc(get_front_mem_pool(), sizeof(Expression));
+    expression->line_number        = package_unit_get_line_number();
+    expression->convert_type       = nullptr; // UPDATED_BY_FIX_AST
+    expression->type               = EXPRESSION_TYPE_SLICE;
+    expression->u.slice_expression = slice_expr;
+    return expression;
+}
+
 Expression* create_expression_assign(AssignExpression* assign_expression) {
     // debug_ast_info_with_yellow("assign_expression->assign_identifier:%s", assign_expression->assign_identifier);
 
@@ -1154,6 +1165,23 @@ SubDimensionExpression* sub_dimension_expression_list_add_item(SubDimensionExpre
     pos->index++;
     pos->next = item;
     return list;
+}
+
+SliceExpression* create_slice_expression(Expression* operand, SubSliceExpression* sub_slice_expression) {
+    SliceExpression* slice_expression    = (SliceExpression*)mem_alloc(get_front_mem_pool(), sizeof(SliceExpression));
+    slice_expression->line_number        = package_unit_get_line_number();
+    slice_expression->slice_operand_type = SLICE_OPERAND_TYPE_UNKNOW; // UPDATED_BY_FIX_AST
+    slice_expression->operand            = operand;
+    slice_expression->sub_slice          = sub_slice_expression;
+    return slice_expression;
+}
+
+SubSliceExpression* create_sub_slice_expression(Expression* start_expr, Expression* end_expr) {
+    SubSliceExpression* sub_slice = (SubSliceExpression*)mem_alloc(get_front_mem_pool(), sizeof(SubSliceExpression));
+    sub_slice->line_number        = package_unit_get_line_number();
+    sub_slice->start_expr         = start_expr;
+    sub_slice->end_expr           = end_expr;
+    return sub_slice;
 }
 
 TypeSpecifier* create_type_specifier(Ring_BasicType basic_type) {

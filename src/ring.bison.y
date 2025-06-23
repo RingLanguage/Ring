@@ -64,6 +64,8 @@ int yylex();
     ReturnStatement*                    m_return_statement;
     DimensionExpression*                m_dimension_expression;
     SubDimensionExpression*             m_sub_dimension_expression;
+    SliceExpression*                    m_slice_expression;
+    SubSliceExpression*                 m_sub_slice_expression;
 
     Package*                            m_package;
 
@@ -214,6 +216,7 @@ int yylex();
 %type <m_expression> left_value_expression
 %type <m_expression> right_value_expression_list
 %type <m_expression> right_value_expression
+%type <m_expression> slice_literal_expression
 %type <m_assign_expression> assign_expression
 
 %type <m_function_call_expression> function_call_expression
@@ -248,6 +251,9 @@ int yylex();
 %type <m_return_statement> return_statement
 %type <m_dimension_expression> dimension_expression
 %type <m_sub_dimension_expression> sub_dimension_expression sub_dimension_expression_list
+
+%type <m_slice_expression> slice_expression
+%type <m_sub_slice_expression> sub_slice_expression
 
 %type <m_package> package_definition
 
@@ -1173,6 +1179,7 @@ unitary_expression
         $$ = create_expression_unitary(EXPRESSION_TYPE_ARITHMETIC_UNITARY_MINUS, $2);
     }
     | postfix_expression
+    | slice_literal_expression
     ;
 
 postfix_expression
@@ -1254,6 +1261,42 @@ sub_dimension_expression
         debug_bison_info_with_green("[RULE::sub_dimension_expression:2]");
         $$ = create_sub_dimension_expression(nullptr);
     }
+
+slice_literal_expression
+    : slice_expression
+    {
+        debug_bison_info_with_green("[RULE::slice_literal_expression:slice_expression]\t ");
+        $$ = create_expression_from_slice_expression($1);
+    }
+    ;
+slice_expression
+    : IDENTIFIER TOKEN_LB sub_slice_expression TOKEN_RB
+    {
+        $$ = create_slice_expression(create_expression_identifier($1), $3);
+    }
+    ;
+
+sub_slice_expression
+    : expression_arithmetic_operation_additive TOKEN_COLON expression_arithmetic_operation_additive
+    {
+        debug_bison_info_with_green("[RULE::slice_expression:1] low:high");
+        $$ = create_sub_slice_expression($1, $3);
+    }
+    | TOKEN_COLON expression_arithmetic_operation_additive
+    {
+        debug_bison_info_with_green("[RULE::slice_expression:3] :high");
+        $$ = create_sub_slice_expression(nullptr, $2);
+    }
+    | expression_arithmetic_operation_additive TOKEN_COLON
+    {
+        debug_bison_info_with_green("[RULE::slice_expression:4] low:");
+        $$ = create_sub_slice_expression($1, nullptr);
+    }
+    | TOKEN_COLON
+    {
+        debug_bison_info_with_green("[RULE::slice_expression:6] :");
+        $$ = create_sub_slice_expression(nullptr, nullptr);
+    }
     ;
 
 primary_not_new_array
@@ -1294,6 +1337,10 @@ primary_not_call_expression
     | function_call_expression
     {
         $$ = create_expression_from_function_call($1);
+    }
+    | slice_literal_expression 
+    {
+        debug_bison_info_with_green("[RULE::primary_new_creation:slice_literal_expression]\t ");
     }
     ;
 

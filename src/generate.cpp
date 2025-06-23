@@ -1167,6 +1167,9 @@ void generate_vmcode_from_expression(Package_Executer* executer,
     case EXPRESSION_TYPE_ARRAY_INDEX:
         generate_vmcode_from_array_index_expression(executer, expression->u.array_index_expression, opcode_buffer);
         break;
+    case EXPRESSION_TYPE_SLICE:
+        generate_vmcode_from_slice_expression(executer, expression->u.slice_expression, opcode_buffer);
+        break;
 
     case EXPRESSION_TYPE_NEW_ARRAY:
         generate_vmcode_from_new_array_expression(executer, expression->u.new_array_expression, opcode_buffer);
@@ -2507,6 +2510,38 @@ void generate_vmcode_from_array_index_expression(Package_Executer*     executer,
         }
         // access value by array-object and index-expression
         generate_vmcode(executer, opcode_buffer, opcode, 0, array_index_expression->line_number);
+    }
+}
+
+void generate_vmcode_from_slice_expression(Package_Executer* executer,
+                                           SliceExpression*  slice_expression,
+                                           RVM_OpcodeBuffer* opcode_buffer) {
+
+    debug_generate_info_with_darkgreen("\t");
+    assert(slice_expression != nullptr);
+
+    // operand
+    generate_vmcode_from_expression(executer, slice_expression->operand, opcode_buffer);
+
+    // start_expr
+    if (slice_expression->sub_slice->start_expr != nullptr) {
+        generate_vmcode_from_expression(executer, slice_expression->sub_slice->start_expr, opcode_buffer);
+    } else {
+        generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT__1, 0, slice_expression->line_number);
+    }
+
+    // end_expr
+    if (slice_expression->sub_slice->end_expr != nullptr) {
+        generate_vmcode_from_expression(executer, slice_expression->sub_slice->end_expr, opcode_buffer);
+    } else {
+        generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT__1, 0, slice_expression->line_number);
+    }
+
+    // slice_array slice_string
+    if (slice_expression->slice_operand_type == SLICE_OPERAND_TYPE_ARRAY) {
+        generate_vmcode(executer, opcode_buffer, RVM_CODE_SLICE_ARRAY, 0, slice_expression->line_number);
+    } else if (slice_expression->slice_operand_type == SLICE_OPERAND_TYPE_STRING) {
+        generate_vmcode(executer, opcode_buffer, RVM_CODE_SLICE_STRING, 0, slice_expression->line_number);
     }
 }
 
