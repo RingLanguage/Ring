@@ -6,15 +6,15 @@ import {
 }
 
 
-fn test_slice_bool_array() {
-    fmt::printf("test_slice_bool_array ------------\n");
+fn test_slice_string_array() {
+    fmt::printf("test_slice_string_array ------------\n");
 
-    var bool[] local_bool_array_2 = bool[]{false, true, false, true, false, true, false, true, false, true};
+    var string[] local_string_array_2 = string[]{"1.1", "2.2", "3.3", "4.4", "5.5", "6.6", "7.7", "8.8", "9.9", "10.10", "11.11", "12.12", "13.13", "14.14", "15.15", "16.16"};
 
     // 测试不同长度数组的切片
-    test_bool_slices(local_bool_array_2);
+    test_string_slices(local_string_array_2);
 }
-fn test_bool_slices(var bool[] arr) {
+fn test_string_slices(var string[] arr) {
     var int len = len(arr);
 	var int start = 0;
 	var int end = 0;
@@ -39,5 +39,5 @@ fn test_bool_slices(var bool[] arr) {
 
 
 fn main() {
-	test_slice_bool_array();
+	test_slice_string_array();
 }
