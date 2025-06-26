@@ -569,6 +569,17 @@ struct TypeSpecifier {
      || ((type)->kind == RING_BASIC_TYPE_INT64) \
      || ((type)->kind == RING_BASIC_TYPE_DOUBLE))
 
+#define TYPE_IS_BOOL(type) \
+    (((type)->kind == RING_BASIC_TYPE_BOOL))
+#define TYPE_IS_INT(type) \
+    (((type)->kind == RING_BASIC_TYPE_INT))
+#define TYPE_IS_INT64(type) \
+    (((type)->kind == RING_BASIC_TYPE_INT64))
+#define TYPE_IS_DOUBLE(type) \
+    (((type)->kind == RING_BASIC_TYPE_DOUBLE))
+#define TYPE_IS_STRING(type) \
+    (((type)->kind == RING_BASIC_TYPE_STRING))
+
 // 比较运算符 > >= < <= == !=
 #define TYPE_IS_COMPARE_EQ(type)                 \
     (((type)->kind == RING_BASIC_TYPE_BOOL)      \
@@ -1434,7 +1445,6 @@ typedef enum {
 
     EXPRESSION_TYPE_TERNARY, // 三目运算
 
-    EXPRESSION_TYPE_CONCAT,
     EXPRESSION_TYPE_ARITHMETIC_ADD,
     EXPRESSION_TYPE_ARITHMETIC_SUB,
     EXPRESSION_TYPE_ARITHMETIC_MUL,
@@ -1490,14 +1500,13 @@ typedef enum {
 
 typedef enum {
     ASSIGN_EXPRESSION_TYPE_UNKNOW = 0,
-    ASSIGN_EXPRESSION_TYPE_ASSIGN,        // =
-    ASSIGN_EXPRESSION_TYPE_MULTI_ASSIGN,  // a, b = 1, 2
-    ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN,    // +=
-    ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN,    // -=
-    ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN,    // *=
-    ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN,    // /=
-    ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN,    // %=
-    ASSIGN_EXPRESSION_TYPE_CONCAT_ASSIGN, // .=
+    ASSIGN_EXPRESSION_TYPE_ASSIGN,       // =
+    ASSIGN_EXPRESSION_TYPE_MULTI_ASSIGN, // a, b = 1, 2
+    ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN,   // +=
+    ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN,   // -=
+    ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN,   // *=
+    ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN,   // /=
+    ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN,   // %=
 } AssignExpressionType;
 
 
@@ -3334,13 +3343,10 @@ void              generate_pop_to_leftvalue_identifier(Package_Executer* execute
 void              generate_pop_to_leftvalue_member(Package_Executer* executer, MemberExpression* member_expression, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_pop_to_leftvalue_array_index(Package_Executer* executer, ArrayIndexExpression* array_index_expression, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_logical_expression(Package_Executer* executer, BinaryExpression* expression, RVM_OpcodeBuffer* opcode_buffer, RVM_Opcode opcode);
-void              generate_vmcode_from_concat_expression(Package_Executer* executer,
-                                                         BinaryExpression* expression,
-                                                         RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_binary_expression(Package_Executer* executer,
-                                                         BinaryExpression* expression,
-                                                         RVM_OpcodeBuffer* opcode_buffer,
-                                                         RVM_Opcode        opcode);
+                                                         ExpressionType    expression_type,
+                                                         BinaryExpression* binary_expression,
+                                                         RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_relational_expression(Package_Executer* executer,
                                                              ExpressionType    expression_type,
                                                              BinaryExpression* expression,

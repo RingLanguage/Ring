@@ -1138,11 +1138,6 @@ expression_arithmetic_operation_additive
         debug_bison_info_with_green("[RULE::expression_arithmetic_operation_additive]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_ARITHMETIC_SUB, $1, $3);
     }
-    | expression_arithmetic_operation_additive TOKEN_2DOT expression_arithmetic_operation_multiplicative
-    {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_additive]\t ");
-        $$ = create_expression_binary(EXPRESSION_TYPE_CONCAT, $1, $3);
-    }
     ;
 
 expression_arithmetic_operation_multiplicative

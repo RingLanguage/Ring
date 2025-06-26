@@ -1087,27 +1087,12 @@ void generate_vmcode_from_expression(Package_Executer* executer,
     case EXPRESSION_TYPE_IDENTIFIER:
         generate_vmcode_from_identifier_expression(executer, expression->u.identifier_expression, opcode_buffer);
         break;
-    case EXPRESSION_TYPE_CONCAT:
-        generate_vmcode_from_concat_expression(executer, expression->u.binary_expression, opcode_buffer);
-        break;
     case EXPRESSION_TYPE_ARITHMETIC_ADD:
-        generate_vmcode_from_binary_expression(executer, expression->u.binary_expression, opcode_buffer, RVM_CODE_ADD_INT);
-        break;
-
     case EXPRESSION_TYPE_ARITHMETIC_SUB:
-        generate_vmcode_from_binary_expression(executer, expression->u.binary_expression, opcode_buffer, RVM_CODE_SUB_INT);
-        break;
-
     case EXPRESSION_TYPE_ARITHMETIC_MUL:
-        generate_vmcode_from_binary_expression(executer, expression->u.binary_expression, opcode_buffer, RVM_CODE_MUL_INT);
-        break;
-
     case EXPRESSION_TYPE_ARITHMETIC_DIV:
-        generate_vmcode_from_binary_expression(executer, expression->u.binary_expression, opcode_buffer, RVM_CODE_DIV_INT);
-        break;
-
     case EXPRESSION_TYPE_ARITHMETIC_MOD:
-        generate_vmcode_from_binary_expression(executer, expression->u.binary_expression, opcode_buffer, RVM_CODE_MOD_INT);
+        generate_vmcode_from_binary_expression(executer, expression->type, expression->u.binary_expression, opcode_buffer);
         break;
 
     case EXPRESSION_TYPE_LOGICAL_AND:
@@ -1204,13 +1189,16 @@ void generate_vmcode_from_assign_expression(Package_Executer* executer,
     assert(expression != nullptr);
 
 
+    assert(expression->operand->convert_type != nullptr);
+    TypeSpecifier* operand_type = expression->operand->convert_type[0];
+
+
     // += -= *= /= %= .=
     if (expression->type == ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN
         || expression->type == ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN
         || expression->type == ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN
         || expression->type == ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN
-        || expression->type == ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN
-        || expression->type == ASSIGN_EXPRESSION_TYPE_CONCAT_ASSIGN) {
+        || expression->type == ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN) {
         generate_vmcode_from_expression(executer, expression->left, opcode_buffer);
     }
 
@@ -1224,30 +1212,32 @@ void generate_vmcode_from_assign_expression(Package_Executer* executer,
 
 
     // += -= *= /= %= .=
-    unsigned int opcode_offset = 0;
-    if (expression->operand->convert_type != nullptr
-        && expression->operand->convert_type[0]->kind == RING_BASIC_TYPE_DOUBLE) {
-        opcode_offset += 2;
-    }
-    switch (expression->type) {
-    case ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN:
-        generate_vmcode(executer, opcode_buffer, RVM_Opcode(RVM_CODE_ADD_INT + opcode_offset), 0, expression->line_number);
-        break;
-    case ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN:
-        generate_vmcode(executer, opcode_buffer, RVM_Opcode(RVM_CODE_SUB_INT + opcode_offset), 0, expression->line_number);
-        break;
-    case ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN:
-        generate_vmcode(executer, opcode_buffer, RVM_Opcode(RVM_CODE_MUL_INT + opcode_offset), 0, expression->line_number);
-        break;
-    case ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN:
-        generate_vmcode(executer, opcode_buffer, RVM_Opcode(RVM_CODE_DIV_INT + opcode_offset), 0, expression->line_number);
-        break;
-    case ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN:
-        generate_vmcode(executer, opcode_buffer, RVM_Opcode(RVM_CODE_MOD_INT + opcode_offset), 0, expression->line_number);
-        break;
+    if (expression->type == ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN
+        || expression->type == ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN
+        || expression->type == ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN
+        || expression->type == ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN
+        || expression->type == ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN) {
 
-    default:
-        break;
+        RVM_Opcode opcode = RVM_CODE_UNKNOW;
+        switch (expression->type) {
+        case ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN: opcode = RVM_CODE_ADD_INT; break;
+        case ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN: opcode = RVM_CODE_SUB_INT; break;
+        case ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN: opcode = RVM_CODE_MUL_INT; break;
+        case ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN: opcode = RVM_CODE_DIV_INT; break;
+        case ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN: opcode = RVM_CODE_MOD_INT; break;
+        default: break;
+        }
+
+
+        if (TYPE_IS_INT64(operand_type)) {
+            opcode = RVM_Opcode(opcode + 1);
+        } else if (TYPE_IS_DOUBLE(operand_type)) {
+            opcode = RVM_Opcode(opcode + 2);
+        } else if (TYPE_IS_STRING(operand_type)) {
+            opcode = RVM_CODE_CONCAT;
+        }
+
+        generate_vmcode(executer, opcode_buffer, opcode, 0, expression->line_number);
     }
 
 
@@ -1480,81 +1470,47 @@ void generate_vmcode_from_logical_expression(Package_Executer* executer,
     opcode_buffer_set_label(opcode_buffer, end_label, opcode_buffer->code_size);
 }
 
-void generate_vmcode_from_concat_expression(Package_Executer* executer,
-                                            BinaryExpression* expression,
+
+void generate_vmcode_from_binary_expression(Package_Executer* executer,
+                                            ExpressionType    expression_type,
+                                            BinaryExpression* binary_expression,
                                             RVM_OpcodeBuffer* opcode_buffer) {
 
     debug_generate_info_with_darkgreen("\t");
-    if (expression == nullptr) {
+
+    if (binary_expression == nullptr) {
         return;
     }
-    Expression* left  = expression->left_expression;
-    Expression* right = expression->right_expression;
+
+    Expression* left  = binary_expression->left_expression;
+    Expression* right = binary_expression->right_expression;
+    assert(left->convert_type != nullptr);
+    assert(right->convert_type != nullptr);
+    TypeSpecifier* left_type  = left->convert_type[0];
+    TypeSpecifier* right_type = right->convert_type[0];
+    RVM_Opcode     opcode     = RVM_CODE_UNKNOW;
+
+    switch (expression_type) {
+    case EXPRESSION_TYPE_ARITHMETIC_ADD: opcode = RVM_CODE_ADD_INT; break;
+    case EXPRESSION_TYPE_ARITHMETIC_SUB: opcode = RVM_CODE_SUB_INT; break;
+    case EXPRESSION_TYPE_ARITHMETIC_MUL: opcode = RVM_CODE_MUL_INT; break;
+    case EXPRESSION_TYPE_ARITHMETIC_DIV: opcode = RVM_CODE_DIV_INT; break;
+    case EXPRESSION_TYPE_ARITHMETIC_MOD: opcode = RVM_CODE_MOD_INT; break;
+    default: break;
+    }
+
+    if (TYPE_IS_INT64(left_type) || TYPE_IS_INT64(right_type)) {
+        opcode = RVM_Opcode(opcode + 1);
+    } else if (TYPE_IS_DOUBLE(left_type) || TYPE_IS_DOUBLE(right_type)) {
+        opcode = RVM_Opcode(opcode + 2);
+    } else if ((TYPE_IS_STRING(left_type) || TYPE_IS_STRING(right_type))) {
+        opcode = RVM_CODE_CONCAT;
+    }
 
     generate_vmcode_from_expression(executer, left, opcode_buffer);
     generate_vmcode_from_expression(executer, right, opcode_buffer);
 
-    generate_vmcode(executer, opcode_buffer, RVM_CODE_CONCAT, 0, expression->line_number);
-}
-
-
-void generate_vmcode_from_binary_expression(Package_Executer* executer,
-                                            BinaryExpression* expression,
-                                            RVM_OpcodeBuffer* opcode_buffer,
-                                            RVM_Opcode        opcode) {
-
-    debug_generate_info_with_darkgreen("\t");
-
-    assert(opcode == RVM_CODE_ADD_INT
-           || opcode == RVM_CODE_SUB_INT
-           || opcode == RVM_CODE_MUL_INT
-           || opcode == RVM_CODE_DIV_INT
-           || opcode == RVM_CODE_MOD_INT);
-
-    if (expression == nullptr) {
-        return;
-    }
-
-    Expression* left  = expression->left_expression;
-    Expression* right = expression->right_expression;
-
-
-    if (left->convert_type != nullptr
-        && left->convert_type[0]->kind == RING_BASIC_TYPE_STRING
-        && right->convert_type != nullptr
-        && right->convert_type[0]->kind == RING_BASIC_TYPE_STRING) {
-        // TODO: 要在语义检查里严格检查
-        // 肯定是eq ne gt ge lt le
-        opcode = RVM_Opcode(opcode + 3);
-        goto END;
-    }
-
-    if (left->type == EXPRESSION_TYPE_LITERAL_INT64
-        || right->type == EXPRESSION_TYPE_LITERAL_INT64) {
-        opcode = RVM_Opcode(opcode + 1);
-    } else if ((left->convert_type != nullptr
-                && left->convert_type[0]->kind == RING_BASIC_TYPE_INT64)
-               || (right->convert_type != nullptr
-                   && right->convert_type[0]->kind == RING_BASIC_TYPE_INT64)) {
-        opcode = RVM_Opcode(opcode + 1);
-    }
-
-
-    if (left->type == EXPRESSION_TYPE_LITERAL_DOUBLE
-        || right->type == EXPRESSION_TYPE_LITERAL_DOUBLE) {
-        opcode = RVM_Opcode(opcode + 2);
-    } else if ((left->convert_type != nullptr
-                && left->convert_type[0]->kind == RING_BASIC_TYPE_DOUBLE)
-               || (right->convert_type != nullptr
-                   && right->convert_type[0]->kind == RING_BASIC_TYPE_DOUBLE)) {
-        opcode = RVM_Opcode(opcode + 2);
-    }
-
-END:
-    generate_vmcode_from_expression(executer, left, opcode_buffer);
-    generate_vmcode_from_expression(executer, right, opcode_buffer);
-
-    generate_vmcode(executer, opcode_buffer, opcode, 0, expression->line_number);
+    generate_vmcode(executer, opcode_buffer, opcode, 0, binary_expression->line_number);
 }
 
 void generate_vmcode_from_relational_expression(Package_Executer* executer,

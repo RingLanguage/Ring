@@ -372,9 +372,6 @@ BEGIN:
         break;
 
 
-    case EXPRESSION_TYPE_CONCAT:
-        fix_binary_concat_expression(expression, expression->u.binary_expression, block, func);
-        break;
     case EXPRESSION_TYPE_ARITHMETIC_ADD:
     case EXPRESSION_TYPE_ARITHMETIC_SUB:
     case EXPRESSION_TYPE_ARITHMETIC_MUL:
@@ -1202,7 +1199,7 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
 
 /*
  * fix_binary_concat_expression
- * 修正二元操作符 `..` 的语义检查, 字符串的拼接
+ * 修正二元操作符 `+` 的语义检查, 字符串的拼接
  */
 void fix_binary_concat_expression(Expression*       expression,
                                   BinaryExpression* binary_expression,
@@ -1211,53 +1208,31 @@ void fix_binary_concat_expression(Expression*       expression,
     assert(expression != nullptr);
     assert(binary_expression != nullptr);
 
-    Expression* left_expression  = binary_expression->left_expression;
-    Expression* right_expression = binary_expression->right_expression;
+    Expression* left  = binary_expression->left_expression;
+    Expression* right = binary_expression->right_expression;
 
-    fix_expression(left_expression, block, func);
-    fix_expression(right_expression, block, func);
+    fix_expression(left, block, func);
+    fix_expression(right, block, func);
+
+    TypeSpecifier* left_type  = left->convert_type[0];
+    TypeSpecifier* right_type = right->convert_type[0];
 
 
     // Ring-Compiler-Error-Report ERROR_CONCAT_OPERATOR_MISMATCH_TYPE
-    if (left_expression->convert_type_size != 1
-        || right_expression->convert_type_size != 1) {
+    if (!TYPE_IS_STRING(left_type)
+        || !TYPE_IS_STRING(right_type)) {
         DEFINE_ERROR_REPORT_STR;
 
         compile_err_buf = sprintf_string(
-            "Type error: string concat operator `..` can only be applied to string; E:%d.",
+            "Type error: string concat operator `+` can only be applied to string; E:%d.",
             ERROR_CONCAT_OPERATOR_MISMATCH_TYPE);
 
         ErrorReportContext context = {
             .package                 = nullptr,
             .package_unit            = get_package_unit(),
             .source_file_name        = get_package_unit()->current_file_name,
-            .line_content            = package_unit_get_line_content(left_expression->line_number),
-            .line_number             = left_expression->line_number,
-            .column_number           = package_unit_get_column_number(),
-            .error_message           = std::string(compile_err_buf),
-            .advice                  = std::string(compile_adv_buf),
-            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
-            .ring_compiler_file      = (char*)__FILE__,
-            .ring_compiler_file_line = __LINE__,
-        };
-        ring_compile_error_report(&context);
-    }
-
-    // Ring-Compiler-Error-Report ERROR_CONCAT_OPERATOR_MISMATCH_TYPE
-    if (left_expression->convert_type[0]->kind != RING_BASIC_TYPE_STRING
-        || right_expression->convert_type[0]->kind != RING_BASIC_TYPE_STRING) {
-        DEFINE_ERROR_REPORT_STR;
-
-        compile_err_buf = sprintf_string(
-            "Type error: string concat operator `..` can only be applied to string; E:%d.",
-            ERROR_CONCAT_OPERATOR_MISMATCH_TYPE);
-
-        ErrorReportContext context = {
-            .package                 = nullptr,
-            .package_unit            = get_package_unit(),
-            .source_file_name        = get_package_unit()->current_file_name,
-            .line_content            = package_unit_get_line_content(left_expression->line_number),
-            .line_number             = left_expression->line_number,
+            .line_content            = package_unit_get_line_content(left->line_number),
+            .line_number             = left->line_number,
             .column_number           = package_unit_get_column_number(),
             .error_message           = std::string(compile_err_buf),
             .advice                  = std::string(compile_adv_buf),
@@ -1348,6 +1323,14 @@ void fix_binary_math_expression(Expression*       expression,
 
     TypeSpecifier* left_type  = left->convert_type[0];
     TypeSpecifier* right_type = right->convert_type[0];
+
+    // 是否为字符串拼接运算
+    if (expression_type == EXPRESSION_TYPE_ARITHMETIC_ADD
+        && (TYPE_IS_STRING(left_type) || TYPE_IS_STRING(right_type))) {
+        fix_binary_concat_expression(expression, binary_expression, block, func);
+        return;
+    }
+
 
     if (!TYPE_IS_NUM(left_type)) {
         DEFINE_ERROR_REPORT_STR;

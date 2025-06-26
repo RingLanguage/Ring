@@ -70,8 +70,6 @@ std::string formate_expression(Expression* expression) {
         break;
 
 
-    case EXPRESSION_TYPE_CONCAT:
-        break;
     case EXPRESSION_TYPE_ARITHMETIC_ADD:
     case EXPRESSION_TYPE_ARITHMETIC_SUB:
     case EXPRESSION_TYPE_ARITHMETIC_MUL:
