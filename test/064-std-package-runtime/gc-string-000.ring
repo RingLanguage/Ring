@@ -50,7 +50,7 @@ fn main() {
     debug::assert(runtime::heap_size() - init_heap_size == 40L); // 16 + 16 + 8
 
 
-    string_value_2 = string_value_0 .. string_value_1;
+    string_value_2 = string_value_0 + string_value_1;
 
 
     debug::assert(runtime::heap_size() - init_heap_size == 72L); // 16 + 16 + 8 + 32

@@ -15,10 +15,10 @@ import {
 fn main() {
       var string string_value;
 
-      string_value = string_value .. "a";
-      string_value = string_value .. "b";
-      string_value = string_value .. "c";
-      string_value = string_value .. 1;
+      string_value = string_value + "a";
+      string_value = string_value + "b";
+      string_value = string_value + "c";
+      string_value = string_value + 1;
 
       fmt::println(string_value);
 

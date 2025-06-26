@@ -68,10 +68,10 @@ fn main() {
     global_job_array_0[2].Int ++;
     global_job_array_0[3].Int ++;
 
-    global_job_array_0[0].String = global_job_array_0[0].String .. "-test";
-    global_job_array_0[1].String = global_job_array_0[1].String .. "-test";
-    global_job_array_0[2].String = global_job_array_0[2].String .. "-test";
-    global_job_array_0[3].String = global_job_array_0[3].String .. "-test";
+    global_job_array_0[0].String = global_job_array_0[0].String + "-test";
+    global_job_array_0[1].String = global_job_array_0[1].String + "-test";
+    global_job_array_0[2].String = global_job_array_0[2].String + "-test";
+    global_job_array_0[3].String = global_job_array_0[3].String + "-test";
 
     global_job_array_0[0].printInfo();
     global_job_array_0[1].printInfo();

@@ -94,13 +94,13 @@ fn return_closure() -> (FuncType1) {
 		level0_local_int_value_0++;
 		level0_local_int64_value_0++;
 		level0_local_double_value_0++;
-		level0_local_string_value_0 = level0_local_string_value_0 .. to_string(len(level0_local_string_value_0));
+		level0_local_string_value_0 = level0_local_string_value_0 + to_string(len(level0_local_string_value_0));
 
 		level0_local_job_value_0.Bool = not level0_local_job_value_0.Bool;
 		level0_local_job_value_0.Int++;
 		level0_local_job_value_0.Int64++;
 		level0_local_job_value_0.Double++;
-		level0_local_job_value_0.String = level0_local_job_value_0.String .. to_string(len(level0_local_job_value_0.String));
+		level0_local_job_value_0.String = level0_local_job_value_0.String + to_string(len(level0_local_job_value_0.String));
 
 		fmt::printf("----------- in closure block\n");
 		fmt::printf("[closure block] level0_local_bool_value_0={}\n", level0_local_bool_value_0);

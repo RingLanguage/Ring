@@ -32,8 +32,8 @@ fn main() {
     fmt::println_string(string_value_2);
 
 
-    string_value_1 = "1" .. "2" .. "3";
-    string_value_2 = "12" .. "3";
+    string_value_1 = "1" + "2" + "3";
+    string_value_2 = "12" + "3";
     fmt::println_string(string_value_1);
     fmt::println_string(string_value_2);
 
@@ -68,9 +68,9 @@ fn main() {
 
     fmt::println_string(string_value_1);
     fmt::println_string(string_value_2);
-    fmt::println_string(string_value_1 .. string_value_2);
+    fmt::println_string(string_value_1 + string_value_2);
 
-    string_value = string_value_1 .. string_value_2;
+    string_value = string_value_1 + string_value_2;
     fmt::println_string(string_value);
 
 }

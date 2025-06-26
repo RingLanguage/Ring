@@ -14,9 +14,9 @@ import {
 
 fn main() {
 	var string local_string_value_0;
-	local_string_value_0 = "123" .. "456";
+	local_string_value_0 = "123" + "456";
 	fmt::println(local_string_value_0);
 
-	local_string_value_0 = "123" .. "456" .. "789";
+	local_string_value_0 = "123" + "456" + "789";
 	fmt::println(local_string_value_0);
 }
