@@ -18,9 +18,9 @@ fn join(var string[] elems, var string sep) -> (string) {
 	var int i = 0;
 
 	for(i = 0; i < len(elems); i++) {
-		result = result .. elems[i];
+		result = result + elems[i];
 		if (i != len(elems) - 1) {
-			result = result .. sep;
+			result = result + sep;
 		}
 	}
 	
