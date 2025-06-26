@@ -150,6 +150,8 @@ var (
 	IS_EXPORT_TEST_DETAIL_SUMMARY = 0
 	TEST_DETAIL_SUMMARY           = "./test/ring-测试用例表.md.raw"
 	TEST_PATH                     = "./test"
+
+	SHELL_COMMAND_TIMEOUT = 10 * time.Second // shell 命令超时时间
 )
 
 const (
@@ -193,7 +195,7 @@ func main() {
 		fmt.Printf("%-25s %-80s %-80s %s\n", "Model", "SourceCodeFile", "ResultFile", "Result")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), SHELL_COMMAND_TIMEOUT)
 	defer cancel()
 
 	for loop := 0; loop < TEST_LOOP_NUM; loop++ {
