@@ -29,6 +29,7 @@ UNAME= uname
 # 最后在 src/Makefile
 # -j10 10进程并发编译
 all:
+	compiledb -n make
 	@cd src && $(MAKE) check && $(MAKE) $(TARGET) -j20
 
 
