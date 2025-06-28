@@ -6,10 +6,13 @@
 #include <dirent.h>
 #include <errno.h>
 #include <libgen.h>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
+
+using json = nlohmann::json;
 
 
 extern RVM_Opcode_Info RVM_Opcode_Infos[];
@@ -1828,4 +1831,101 @@ std::string convert_troff_string_2_c_control(const std::string& input) {
     }
 
     return output;
+}
+
+std::string rvm_value_json_encode(RVM_Value* value,
+                                  const int  indent,
+                                  const char indent_char) {
+    try {
+        json j = rvm_value_to_json(value);
+        return j.dump(indent, indent_char).c_str();
+    } catch (const std::exception& e) {
+        return std::string("rvm_value_json_encode failed:") + e.what();
+    }
+}
+
+// 将 RVM_Value 转换为 nlohmann::json
+json rvm_value_to_json(RVM_Value* value) {
+    switch (value->type) {
+    case RVM_VALUE_TYPE_BOOL:
+        return json(bool(value->u.bool_value));
+    case RVM_VALUE_TYPE_INT:
+        return json(value->u.int_value);
+    case RVM_VALUE_TYPE_INT64:
+        return json(value->u.int64_value);
+    case RVM_VALUE_TYPE_DOUBLE:
+        return json(value->u.double_value);
+    case RVM_VALUE_TYPE_STRING: {
+        std::string tmp(value->u.string_value->data, value->u.string_value->length);
+        return json(tmp);
+    }
+    case RVM_VALUE_TYPE_CLASS_OB:
+        return rvm_class_ob_to_json(value->u.class_ob_value);
+    case RVM_VALUE_TYPE_ARRAY:
+        return rvm_array_to_json(value->u.array_value);
+    default:
+        return json(nullptr); // 无法识别的类型返回 null
+    }
+}
+
+json rvm_class_ob_to_json(RVM_ClassObject* obj) {
+    json j = json::object();
+    if (!obj)
+        return j;
+
+    for (unsigned int i = 0; i < obj->field_count; i++) {
+        const char* field_name = CLASS_GET_FIELD_IDENT(obj->class_ref, i);
+        j[field_name]          = rvm_value_to_json(&obj->field_list[i]);
+    }
+    return j;
+}
+
+
+json rvm_array_to_json(RVM_Array* arr) {
+    json j = json::array();
+    if (!arr) {
+        return j;
+    }
+
+    switch (arr->type) {
+    case RVM_ARRAY_BOOL:
+        for (size_t i = 0; i < arr->length; ++i) {
+            j.push_back(arr->u.bool_array[i]);
+        }
+        break;
+    case RVM_ARRAY_INT:
+        for (size_t i = 0; i < arr->length; ++i) {
+            j.push_back(arr->u.int_array[i]);
+        }
+        break;
+    case RVM_ARRAY_INT64:
+        for (size_t i = 0; i < arr->length; ++i) {
+            j.push_back(arr->u.int64_array[i]);
+        }
+        break;
+    case RVM_ARRAY_DOUBLE:
+        for (size_t i = 0; i < arr->length; ++i) {
+            j.push_back(arr->u.double_array[i]);
+        }
+        break;
+    case RVM_ARRAY_STRING:
+        for (size_t i = 0; i < arr->length; ++i) {
+            std::string tmp(arr->u.string_array[i]->data, arr->u.string_array[i]->length);
+            j.push_back(tmp);
+        }
+        break;
+    case RVM_ARRAY_CLASS_OBJECT:
+        for (size_t i = 0; i < arr->length; ++i) {
+            j.push_back(rvm_class_ob_to_json(arr->u.class_ob_array[i]));
+        }
+        break;
+    case RVM_ARRAY_A:
+        for (size_t i = 0; i < arr->length; ++i) {
+            j.push_back(rvm_array_to_json(arr->u.a_array[i]));
+        }
+        break;
+    default:
+        break;
+    }
+    return j;
 }

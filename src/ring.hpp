@@ -6,6 +6,7 @@
 #include "linenoise.h"
 #include <cstdio>
 #include <cstring>
+#include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -13,6 +14,8 @@
 #include <vector>
 
 #define RING_VERSION "ring-v0.3.0-beta Copyright (C) 2021-2025 ring.wiki, ZhenhuLi"
+
+using json = nlohmann::json;
 
 
 typedef struct Ring_Command_Arg             Ring_Command_Arg;
@@ -727,6 +730,9 @@ struct RVM_ClassDefinition {
     unsigned int method_size;
     RVM_Method*  method_list;
 };
+
+#define CLASS_GET_FIELD_IDENT(rvm_class_def, field_index) \
+    ((rvm_class_def)->field_list[(field_index)].identifier)
 
 
 typedef enum {
@@ -3649,6 +3655,13 @@ void       std_lib_debug_var_dump(Ring_VirtualMachine* rvm,
                                   unsigned int arg_size, RVM_Value* args,
                                   unsigned int* return_size, RVM_Value** return_list);
 
+void       std_lib_encoding_json_encode(Ring_VirtualMachine* rvm,
+                                        unsigned int arg_size, RVM_Value* args,
+                                        unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_encoding_json_encode_indent(Ring_VirtualMachine* rvm,
+                                               unsigned int arg_size, RVM_Value* args,
+                                               unsigned int* return_size, RVM_Value** return_list);
+
 void       std_lib_reflect_typeof(Ring_VirtualMachine* rvm,
                                   unsigned int arg_size, RVM_Value* args,
                                   unsigned int* return_size, RVM_Value** return_list);
@@ -3765,6 +3778,14 @@ std::string              sprintf_string(const char* format, ...);
 std::string              sprintf_string_va(const char* format, va_list args);
 
 std::string              convert_troff_string_2_c_control(const std::string& input);
+
+std::string              rvm_value_json_encode(RVM_Value* value,
+                                               const int  indent      = -1,
+                                               const char indent_char = ' ');
+json                     rvm_value_to_json(RVM_Value* value);
+json                     rvm_class_ob_to_json(RVM_ClassObject* obj);
+json                     rvm_array_to_json(RVM_Array* arr);
+
 // --------------------
 
 

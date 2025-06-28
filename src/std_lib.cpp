@@ -17,25 +17,27 @@
  * 通过 更改Makefile 编译宏 DEBUG_STD_LIB 来控制调试标准库路径
  */
 #ifdef DEBUG_STD_LIB
-char RING_PACKAGE_STD_PATH_DEBUG[]   = "/Users/bytedance/Desktop/Ring/std/debug/";
-char RING_PACKAGE_STD_PATH_FMT[]     = "/Users/bytedance/Desktop/Ring/std/fmt/";
-char RING_PACKAGE_STD_PATH_IO[]      = "/Users/bytedance/Desktop/Ring/std/io/";
-char RING_PACKAGE_STD_PATH_MATH[]    = "/Users/bytedance/Desktop/Ring/std/math/";
-char RING_PACKAGE_STD_PATH_OS[]      = "/Users/bytedance/Desktop/Ring/std/os/";
-char RING_PACKAGE_STD_PATH_REFLECT[] = "/Users/bytedance/Desktop/Ring/std/reflect/";
-char RING_PACKAGE_STD_PATH_RUNTIME[] = "/Users/bytedance/Desktop/Ring/std/runtime/";
-char RING_PACKAGE_STD_PATH_STRINGS[] = "/Users/bytedance/Desktop/Ring/std/strings";
-char RING_PACKAGE_STD_PATH_TIME[]    = "/Users/bytedance/Desktop/Ring/std/time/";
+char RING_PACKAGE_STD_PATH_DEBUG[]    = "/Users/bytedance/Desktop/Ring/std/debug/";
+char RING_PACKAGE_STD_PATH_ENCODING[] = "/Users/bytedance/Desktop/Ring/std/encoding/";
+char RING_PACKAGE_STD_PATH_FMT[]      = "/Users/bytedance/Desktop/Ring/std/fmt/";
+char RING_PACKAGE_STD_PATH_IO[]       = "/Users/bytedance/Desktop/Ring/std/io/";
+char RING_PACKAGE_STD_PATH_MATH[]     = "/Users/bytedance/Desktop/Ring/std/math/";
+char RING_PACKAGE_STD_PATH_OS[]       = "/Users/bytedance/Desktop/Ring/std/os/";
+char RING_PACKAGE_STD_PATH_REFLECT[]  = "/Users/bytedance/Desktop/Ring/std/reflect/";
+char RING_PACKAGE_STD_PATH_RUNTIME[]  = "/Users/bytedance/Desktop/Ring/std/runtime/";
+char RING_PACKAGE_STD_PATH_STRINGS[]  = "/Users/bytedance/Desktop/Ring/std/strings";
+char RING_PACKAGE_STD_PATH_TIME[]     = "/Users/bytedance/Desktop/Ring/std/time/";
 #else
-char RING_PACKAGE_STD_PATH_DEBUG[]   = "/usr/local/lib/ring/std/debug/";
-char RING_PACKAGE_STD_PATH_FMT[]     = "/usr/local/lib/ring/std/fmt/";
-char RING_PACKAGE_STD_PATH_IO[]      = "/usr/local/lib/ring/std/io/";
-char RING_PACKAGE_STD_PATH_MATH[]    = "/usr/local/lib/ring/std/math/";
-char RING_PACKAGE_STD_PATH_OS[]      = "/usr/local/lib/ring/std/os/";
-char RING_PACKAGE_STD_PATH_REFLECT[] = "/usr/local/lib/ring/std/reflect/";
-char RING_PACKAGE_STD_PATH_RUNTIME[] = "/usr/local/lib/ring/std/runtime/";
-char RING_PACKAGE_STD_PATH_STRINGS[] = "/usr/local/lib/ring/std/strings/";
-char RING_PACKAGE_STD_PATH_TIME[]    = "/usr/local/lib/ring/std/time/";
+char RING_PACKAGE_STD_PATH_DEBUG[]    = "/usr/local/lib/ring/std/debug/";
+char RING_PACKAGE_STD_PATH_ENCODING[] = "/usr/local/lib/ring/std/encoding/";
+char RING_PACKAGE_STD_PATH_FMT[]      = "/usr/local/lib/ring/std/fmt/";
+char RING_PACKAGE_STD_PATH_IO[]       = "/usr/local/lib/ring/std/io/";
+char RING_PACKAGE_STD_PATH_MATH[]     = "/usr/local/lib/ring/std/math/";
+char RING_PACKAGE_STD_PATH_OS[]       = "/usr/local/lib/ring/std/os/";
+char RING_PACKAGE_STD_PATH_REFLECT[]  = "/usr/local/lib/ring/std/reflect/";
+char RING_PACKAGE_STD_PATH_RUNTIME[]  = "/usr/local/lib/ring/std/runtime/";
+char RING_PACKAGE_STD_PATH_STRINGS[]  = "/usr/local/lib/ring/std/strings/";
+char RING_PACKAGE_STD_PATH_TIME[]     = "/usr/local/lib/ring/std/time/";
 #endif
 
 /*
@@ -61,6 +63,15 @@ std::vector<StdPackageInfo> Std_Lib_List = {
         std::vector<StdPackageNativeFunction>{
             {(char*)"assert", std_lib_debug_assert, 1, 0},
             {(char*)"var_dump", std_lib_debug_var_dump, 1, 0},
+        },
+    },
+
+    {
+        (char*)"encoding",
+        RING_PACKAGE_STD_PATH_ENCODING,
+        std::vector<StdPackageNativeFunction>{
+            {(char*)"json_encode", std_lib_encoding_json_encode, 1, 1},
+            {(char*)"json_encode_indent", std_lib_encoding_json_encode_indent, 1, 1},
         },
     },
 
@@ -946,6 +957,44 @@ void std_lib_debug_var_dump(Ring_VirtualMachine* rvm,
 
     *return_size = 0;
     *return_list = nullptr;
+}
+
+/*
+ * Package: encoding
+ * Function: std_lib_encoding_json_encode
+ * Type: @native
+ */
+void std_lib_encoding_json_encode(Ring_VirtualMachine* rvm,
+                                  unsigned int arg_size, RVM_Value* args,
+                                  unsigned int* return_size, RVM_Value** return_list) {
+
+    assert(arg_size == 1);
+    assert(args[0].type == RVM_VALUE_TYPE_ARRAY || args[0].type == RVM_VALUE_TYPE_CLASS_OB);
+
+    std::string result = rvm_value_json_encode(&args[0]);
+
+    *return_size       = 1;
+    *return_list       = new_native_return_list(*return_size);
+    RETURN_LIST_SET_STRING(*return_list, 0, rvm_gc_new_rvm_string(rvm, result.c_str()));
+}
+
+/*
+ * Package: encoding
+ * Function: std_lib_encoding_json_encode_indent
+ * Type: @native
+ */
+void std_lib_encoding_json_encode_indent(Ring_VirtualMachine* rvm,
+                                         unsigned int arg_size, RVM_Value* args,
+                                         unsigned int* return_size, RVM_Value** return_list) {
+
+    assert(arg_size == 1);
+    assert(args[0].type == RVM_VALUE_TYPE_ARRAY || args[0].type == RVM_VALUE_TYPE_CLASS_OB);
+
+    std::string result = rvm_value_json_encode(&args[0], 4, ' ');
+
+    *return_size       = 1;
+    *return_list       = new_native_return_list(*return_size);
+    RETURN_LIST_SET_STRING(*return_list, 0, rvm_gc_new_rvm_string(rvm, result.c_str()));
 }
 
 
