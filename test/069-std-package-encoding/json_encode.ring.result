@@ -1,0 +1,300 @@
+{Bool:true Int:42 Int64:1234567890 Double:3.141590 String:Hello, Ring! Job1Value:{Bool:true Int:1 Int64:2 Double:3.300000 String:String} BoolArray:[true false true false true] IntArray:[1 2 3 4 5] Int64Array:[1 2 3 4 5] DoubleArray:[1.000000 2.000000 3.000000 4.000000 5.000000] StringArray:[a b b d e] Job1Array:[{Bool:true Int:1 Int64:2 Double:3.300000 String:String} {Bool:true Int:1 Int64:2 Double:3.300000 String:String}] BoolArray2:[[true true] [false false]] IntArray2:[[1 2] [3 4]] Int64Array2:[[1 2] [3 4]] DoubleArray2:[[1.100000 2.200000] [3.300000 4.400000]] StringArray2:[[x y] [z w]] Job1Array2:[[{Bool:true Int:1 Int64:2 Double:3.300000 String:String} {Bool:true Int:1 Int64:2 Double:3.300000 String:String}] [{Bool:true Int:1 Int64:2 Double:3.300000 String:String} {Bool:true Int:1 Int64:2 Double:3.300000 String:String}]]}
+Job(fields:18, methods:0) => {
+    Bool: bool(true)
+    Int: int(42)
+    Int64: int64(1234567890)
+    Double: double(3.141590)
+    String: string(len:12, cap:16) => "Hello, Ring!"
+    Job1Value: Job1(fields:5, methods:0) => {
+        Bool: bool(true)
+        Int: int(1)
+        Int64: int64(2)
+        Double: double(3.300000)
+        String: string(len:6, cap:8) => "String"
+    }
+    BoolArray: bool[!1](len:5 cap:8) => [
+        [0] -> true
+        [1] -> false
+        [2] -> true
+        [3] -> false
+        [4] -> true
+    ]
+    IntArray: int[!1](len:5 cap:8) => [
+        [0] -> 1
+        [1] -> 2
+        [2] -> 3
+        [3] -> 4
+        [4] -> 5
+    ]
+    Int64Array: int64[!1](len:5 cap:8) => [
+        [0] -> 1
+        [1] -> 2
+        [2] -> 3
+        [3] -> 4
+        [4] -> 5
+    ]
+    DoubleArray: double[!1](len:5 cap:8) => [
+        [0] -> 1.000000
+        [1] -> 2.000000
+        [2] -> 3.000000
+        [3] -> 4.000000
+        [4] -> 5.000000
+    ]
+    StringArray: string[!1](len:5 cap:8) => [
+        [0] -> string(len:1, cap:8) => "a"
+        [1] -> string(len:1, cap:8) => "b"
+        [2] -> string(len:1, cap:8) => "b"
+        [3] -> string(len:1, cap:8) => "d"
+        [4] -> string(len:1, cap:8) => "e"
+    ]
+    Job1Array: Job1[!1](len:2 cap:8) => [
+        [0] -> Job1(fields:5, methods:0) => {
+            Bool: bool(true)
+            Int: int(1)
+            Int64: int64(2)
+            Double: double(3.300000)
+            String: string(len:6, cap:8) => "String"
+        }
+        [1] -> Job1(fields:5, methods:0) => {
+            Bool: bool(true)
+            Int: int(1)
+            Int64: int64(2)
+            Double: double(3.300000)
+            String: string(len:6, cap:8) => "String"
+        }
+    ]
+    BoolArray2: bool[!2](len:2 cap:2) => [
+        [0] -> bool[!1](len:2 cap:8) => [
+            [0] -> true
+            [1] -> true
+        ]
+        [1] -> bool[!1](len:2 cap:8) => [
+            [0] -> false
+            [1] -> false
+        ]
+    ]
+    IntArray2: int[!2](len:2 cap:2) => [
+        [0] -> int[!1](len:2 cap:8) => [
+            [0] -> 1
+            [1] -> 2
+        ]
+        [1] -> int[!1](len:2 cap:8) => [
+            [0] -> 3
+            [1] -> 4
+        ]
+    ]
+    Int64Array2: int64[!2](len:2 cap:2) => [
+        [0] -> int64[!1](len:2 cap:8) => [
+            [0] -> 1
+            [1] -> 2
+        ]
+        [1] -> int64[!1](len:2 cap:8) => [
+            [0] -> 3
+            [1] -> 4
+        ]
+    ]
+    DoubleArray2: double[!2](len:2 cap:2) => [
+        [0] -> double[!1](len:2 cap:8) => [
+            [0] -> 1.100000
+            [1] -> 2.200000
+        ]
+        [1] -> double[!1](len:2 cap:8) => [
+            [0] -> 3.300000
+            [1] -> 4.400000
+        ]
+    ]
+    StringArray2: string[!2](len:2 cap:2) => [
+        [0] -> string[!1](len:2 cap:8) => [
+            [0] -> string(len:1, cap:8) => "x"
+            [1] -> string(len:1, cap:8) => "y"
+        ]
+        [1] -> string[!1](len:2 cap:8) => [
+            [0] -> string(len:1, cap:8) => "z"
+            [1] -> string(len:1, cap:8) => "w"
+        ]
+    ]
+    Job1Array2: Job1[!2](len:2 cap:2) => [
+        [0] -> Job1[!1](len:2 cap:8) => [
+            [0] -> Job1(fields:5, methods:0) => {
+                Bool: bool(true)
+                Int: int(1)
+                Int64: int64(2)
+                Double: double(3.300000)
+                String: string(len:6, cap:8) => "String"
+            }
+            [1] -> Job1(fields:5, methods:0) => {
+                Bool: bool(true)
+                Int: int(1)
+                Int64: int64(2)
+                Double: double(3.300000)
+                String: string(len:6, cap:8) => "String"
+            }
+        ]
+        [1] -> Job1[!1](len:2 cap:8) => [
+            [0] -> Job1(fields:5, methods:0) => {
+                Bool: bool(true)
+                Int: int(1)
+                Int64: int64(2)
+                Double: double(3.300000)
+                String: string(len:6, cap:8) => "String"
+            }
+            [1] -> Job1(fields:5, methods:0) => {
+                Bool: bool(true)
+                Int: int(1)
+                Int64: int64(2)
+                Double: double(3.300000)
+                String: string(len:6, cap:8) => "String"
+            }
+        ]
+    ]
+}
+{"Bool":true,"BoolArray":[true,false,true,false,true],"BoolArray2":[[true,true],[false,false]],"Double":3.14159,"DoubleArray":[1.0,2.0,3.0,4.0,5.0],"DoubleArray2":[[1.1,2.2],[3.3,4.4]],"Int":42,"Int64":1234567890,"Int64Array":[1,2,3,4,5],"Int64Array2":[[1,2],[3,4]],"IntArray":[1,2,3,4,5],"IntArray2":[[1,2],[3,4]],"Job1Array":[{"Bool":true,"Double":3.3,"Int":1,"Int64":2,"String":"String"},{"Bool":true,"Double":3.3,"Int":1,"Int64":2,"String":"String"}],"Job1Array2":[[{"Bool":true,"Double":3.3,"Int":1,"Int64":2,"String":"String"},{"Bool":true,"Double":3.3,"Int":1,"Int64":2,"String":"String"}],[{"Bool":true,"Double":3.3,"Int":1,"Int64":2,"String":"String"},{"Bool":true,"Double":3.3,"Int":1,"Int64":2,"String":"String"}]],"Job1Value":{"Bool":true,"Double":3.3,"Int":1,"Int64":2,"String":"String"},"String":"Hello, Ring!","StringArray":["a","b","b","d","e"],"StringArray2":[["x","y"],["z","w"]]}
+{
+    "Bool": true,
+    "BoolArray": [
+        true,
+        false,
+        true,
+        false,
+        true
+    ],
+    "BoolArray2": [
+        [
+            true,
+            true
+        ],
+        [
+            false,
+            false
+        ]
+    ],
+    "Double": 3.14159,
+    "DoubleArray": [
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0
+    ],
+    "DoubleArray2": [
+        [
+            1.1,
+            2.2
+        ],
+        [
+            3.3,
+            4.4
+        ]
+    ],
+    "Int": 42,
+    "Int64": 1234567890,
+    "Int64Array": [
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "Int64Array2": [
+        [
+            1,
+            2
+        ],
+        [
+            3,
+            4
+        ]
+    ],
+    "IntArray": [
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "IntArray2": [
+        [
+            1,
+            2
+        ],
+        [
+            3,
+            4
+        ]
+    ],
+    "Job1Array": [
+        {
+            "Bool": true,
+            "Double": 3.3,
+            "Int": 1,
+            "Int64": 2,
+            "String": "String"
+        },
+        {
+            "Bool": true,
+            "Double": 3.3,
+            "Int": 1,
+            "Int64": 2,
+            "String": "String"
+        }
+    ],
+    "Job1Array2": [
+        [
+            {
+                "Bool": true,
+                "Double": 3.3,
+                "Int": 1,
+                "Int64": 2,
+                "String": "String"
+            },
+            {
+                "Bool": true,
+                "Double": 3.3,
+                "Int": 1,
+                "Int64": 2,
+                "String": "String"
+            }
+        ],
+        [
+            {
+                "Bool": true,
+                "Double": 3.3,
+                "Int": 1,
+                "Int64": 2,
+                "String": "String"
+            },
+            {
+                "Bool": true,
+                "Double": 3.3,
+                "Int": 1,
+                "Int64": 2,
+                "String": "String"
+            }
+        ]
+    ],
+    "Job1Value": {
+        "Bool": true,
+        "Double": 3.3,
+        "Int": 1,
+        "Int64": 2,
+        "String": "String"
+    },
+    "String": "Hello, Ring!",
+    "StringArray": [
+        "a",
+        "b",
+        "b",
+        "d",
+        "e"
+    ],
+    "StringArray2": [
+        [
+            "x",
+            "y"
+        ],
+        [
+            "z",
+            "w"
+        ]
+    ]
+}
