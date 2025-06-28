@@ -1291,3 +1291,6 @@ lldb
 ![alt text](image-15.png)
 
 golang 的 dlv 命令行 /Users/lizhenhu/go/bin/dlv dap --listen=127.0.0.1:52434 --log-dest=3 from /Users/lizhenhu/Desktop/test/go-example
+
+
+九、支持快速运行

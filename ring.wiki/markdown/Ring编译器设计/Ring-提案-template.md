@@ -8,7 +8,7 @@ Last updated: [Date]
 
 Status: [Draft/Design/Release]
 
-Discussion at https://github.com/GeneralSandman/Ring/issue/NNNNN.
+Discussion at https://github.com/RingLanguage/Ring/issue/NNNNN.
 
 ## Abstract
 

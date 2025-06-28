@@ -7,7 +7,7 @@
 > 
 > 编程示例
 > 
-> https://github.com/GeneralSandman/Ring/tree/main/test
+> https://github.com/RingLanguage/Ring/tree/main/test
 
 ### 运行编程示例
 
@@ -29,7 +29,7 @@ make
 > 
 > 自动化测试shell脚本，主要就是运行自动化测试case，通过标准输出到文件中，并与预期结果进行比较。如果相同，则测试通过。
 > 
-> https://github.com/GeneralSandman/Ring/blob/main/automated-testing.sh
+> https://github.com/RingLanguage/Ring/blob/main/automated-testing.sh
 > 
 
 

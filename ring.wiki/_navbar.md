@@ -1,5 +1,5 @@
 * 快速使用**Ring**💡
-  - [**Ring** Github ⚓️](https://github.com/GeneralSandman/Ring)
+  - [**Ring** Github ⚓️](https://github.com/RingLanguage/Ring)
   - [环境设置与使用💻](./markdown/Ring使用/环境设置.md)
   - [**Ring** 基本语法编程示例⛴](./markdown/Ring使用/Ring基本语法编程示例.md)
   - [Bug Report🩺](./markdown/Ring使用/bug-report.md)

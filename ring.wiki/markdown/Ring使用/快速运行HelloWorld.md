@@ -3,7 +3,7 @@
 
 ```shell
 
-git clone https://github.com/GeneralSandman/Ring
+git clone https://github.com/RingLanguage/Ring
 
 cd Ring
 

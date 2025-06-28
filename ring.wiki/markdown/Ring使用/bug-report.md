@@ -3,7 +3,7 @@
 点击下方链接提Bug:
 
 
-https://github.com/GeneralSandman/Ring/issues/new
+https://github.com/RingLanguage/Ring/issues/new
 
 
 请注明：
