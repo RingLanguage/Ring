@@ -97,6 +97,7 @@ var (
 		"066-std-package-time",
 		"067-std-package-math",
 		"068-std-package-strings",
+		"069-std-package-encoding",
 	}
 
 	NOT_TEST_FILES = []string{

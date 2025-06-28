@@ -32,12 +32,12 @@ $main()    <./test/001-basic-type/string-003.ring:16,76>
  ├──0       0       push_string                   0                   27                
  ├──1       3       pop_stack_string              4                                     
  ├──2       6       push_stack_string             4                   28                
- ├──3       9       push_func                     1, 4                                  
+ ├──3       9       push_func                     2, 4                                  
  ├──4       12      invoke_func_native            1                                     
  ├──5       14      push_string                   1                   31                
  ├──6       17      pop_stack_string              5                                     
  ├──7       20      push_stack_string             5                   32                
- ├──8       23      push_func                     1, 4                                  
+ ├──8       23      push_func                     2, 4                                  
  ├──9       26      invoke_func_native            1                                     
  ├──10      28      push_string                   2                   35                
  ├──11      31      push_string                   3                                     
@@ -50,24 +50,24 @@ $main()    <./test/001-basic-type/string-003.ring:16,76>
  ├──18      48      concat                                                              
  ├──19      49      pop_stack_string              5                                     
  ├──20      52      push_stack_string             4                   37                
- ├──21      55      push_func                     1, 4                                  
+ ├──21      55      push_func                     2, 4                                  
  ├──22      58      invoke_func_native            1                                     
  ├──23      60      push_stack_string             5                   38                
- ├──24      63      push_func                     1, 4                                  
+ ├──24      63      push_func                     2, 4                                  
  ├──25      66      invoke_func_native            1                                     
  ├──26      68      push_stack_string             4                   41                
  ├──27      71      push_stack_string             5                                     
  ├──28      74      eq_string                                                           
  ├──29      75      jump_if_false                 96                  47                
  ├──30      78      push_string                   6                   42                
- ├──31      81      push_func                     1, 4                                  
+ ├──31      81      push_func                     2, 4                                  
  ├──32      84      invoke_func_native            1                                     
  ├──33      86      push_bool                     1                   43                
  ├──34      88      push_func                     0, 0                                  
  ├──35      91      invoke_func_native            1                                     
  ├──36      93      jump                          114                 47                
  ├──37      96      push_string                   7                   45                
- ├──38      99      push_func                     1, 4                                  
+ ├──38      99      push_func                     2, 4                                  
  ├──39      102     invoke_func_native            1                                     
  ├──40      104     push_bool                     0                   46                
  ├──41      106     push_func                     0, 0                                  
@@ -78,14 +78,14 @@ $main()    <./test/001-basic-type/string-003.ring:16,76>
  ├──46      120     eq_string                                                           
  ├──47      121     jump_if_false                 142                 57                
  ├──48      124     push_string                   10                  52                
- ├──49      127     push_func                     1, 4                                  
+ ├──49      127     push_func                     2, 4                                  
  ├──50      130     invoke_func_native            1                                     
  ├──51      132     push_bool                     0                   53                
  ├──52      134     push_func                     0, 0                                  
  ├──53      137     invoke_func_native            1                                     
  ├──54      139     jump                          160                 57                
  ├──55      142     push_string                   11                  55                
- ├──56      145     push_func                     1, 4                                  
+ ├──56      145     push_func                     2, 4                                  
  ├──57      148     invoke_func_native            1                                     
  ├──58      150     push_bool                     1                   56                
  ├──59      152     push_func                     0, 0                                  
@@ -96,36 +96,36 @@ $main()    <./test/001-basic-type/string-003.ring:16,76>
  ├──64      166     eq_string                                                           
  ├──65      167     jump_if_false                 188                 65                
  ├──66      170     push_string                   13                  60                
- ├──67      173     push_func                     1, 4                                  
+ ├──67      173     push_func                     2, 4                                  
  ├──68      176     invoke_func_native            1                                     
  ├──69      178     push_bool                     1                   61                
  ├──70      180     push_func                     0, 0                                  
  ├──71      183     invoke_func_native            1                                     
  ├──72      185     jump                          206                 65                
  ├──73      188     push_string                   14                  63                
- ├──74      191     push_func                     1, 4                                  
+ ├──74      191     push_func                     2, 4                                  
  ├──75      194     invoke_func_native            1                                     
  ├──76      196     push_bool                     0                   64                
  ├──77      198     push_func                     0, 0                                  
  ├──78      201     invoke_func_native            1                                     
  ├──79      203     jump                          206                 63                
  ├──80      206     push_stack_string             4                   69                
- ├──81      209     push_func                     1, 4                                  
+ ├──81      209     push_func                     2, 4                                  
  ├──82      212     invoke_func_native            1                                     
  ├──83      214     push_stack_string             5                   70                
- ├──84      217     push_func                     1, 4                                  
+ ├──84      217     push_func                     2, 4                                  
  ├──85      220     invoke_func_native            1                                     
  ├──86      222     push_stack_string             4                   71                
  ├──87      225     push_stack_string             5                                     
  ├──88      228     concat                                                              
- ├──89      229     push_func                     1, 4                                  
+ ├──89      229     push_func                     2, 4                                  
  ├──90      232     invoke_func_native            1                                     
  ├──91      234     push_stack_string             4                   73                
  ├──92      237     push_stack_string             5                                     
  ├──93      240     concat                                                              
  ├──94      241     pop_stack_string              3                                     
  ├──95      244     push_stack_string             3                   74                
- ├──96      247     push_func                     1, 4                                  
+ ├──96      247     push_func                     2, 4                                  
  ├──97      250     invoke_func_native            1                                     
  ├──98      252     pop_defer                                         76                
  ├──99      253     function_finish                                                     

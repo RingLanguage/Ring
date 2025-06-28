@@ -102,27 +102,27 @@ $main()    <./test/004-derive-function/function-006.ring:32,109>
  ├──28      61      push_func                     0, 0                                  
  ├──29      64      invoke_func_native            1                                     
  ├──30      66      push_stack_int                0                   47                
- ├──31      69      push_func                     1, 1                                  
+ ├──31      69      push_func                     2, 1                                  
  ├──32      72      invoke_func_native            1                                     
  ├──33      74      push_stack_int                1                   48                
- ├──34      77      push_func                     1, 1                                  
+ ├──34      77      push_func                     2, 1                                  
  ├──35      80      invoke_func_native            1                                     
  ├──36      82      push_stack_int                2                   49                
- ├──37      85      push_func                     1, 1                                  
+ ├──37      85      push_func                     2, 1                                  
  ├──38      88      invoke_func_native            1                                     
  ├──39      90      push_stack_int                3                   50                
- ├──40      93      push_func                     1, 1                                  
+ ├──40      93      push_func                     2, 1                                  
  ├──41      96      invoke_func_native            1                                     
  ├──42      98      push_stack_int                4                   51                
- ├──43      101     push_func                     1, 1                                  
+ ├──43      101     push_func                     2, 1                                  
  ├──44      104     invoke_func_native            1                                     
  ├──45      106     push_stack_int                5                   52                
- ├──46      109     push_func                     1, 1                                  
+ ├──46      109     push_func                     2, 1                                  
  ├──47      112     invoke_func_native            1                                     
  ├──48      114     push_string                   0                   57                
- ├──49      117     push_func                     1, 4                                  
+ ├──49      117     push_func                     2, 4                                  
  ├──50      120     invoke_func_native            1                                     
- ├──51      122     push_func                     9, 0                58                
+ ├──51      122     push_func                     10, 0               58                
  ├──52      125     invoke_func                   0                                     
  ├──53      127     pop_stack_int                 0                                     
  ├──54      130     push_stack_int                0                   59                
@@ -156,27 +156,27 @@ $main()    <./test/004-derive-function/function-006.ring:32,109>
  ├──82      191     push_func                     0, 0                                  
  ├──83      194     invoke_func_native            1                                     
  ├──84      196     push_stack_int                0                   66                
- ├──85      199     push_func                     1, 1                                  
+ ├──85      199     push_func                     2, 1                                  
  ├──86      202     invoke_func_native            1                                     
  ├──87      204     push_stack_int                1                   67                
- ├──88      207     push_func                     1, 1                                  
+ ├──88      207     push_func                     2, 1                                  
  ├──89      210     invoke_func_native            1                                     
  ├──90      212     push_stack_int                2                   68                
- ├──91      215     push_func                     1, 1                                  
+ ├──91      215     push_func                     2, 1                                  
  ├──92      218     invoke_func_native            1                                     
  ├──93      220     push_stack_int                3                   69                
- ├──94      223     push_func                     1, 1                                  
+ ├──94      223     push_func                     2, 1                                  
  ├──95      226     invoke_func_native            1                                     
  ├──96      228     push_stack_int                4                   70                
- ├──97      231     push_func                     1, 1                                  
+ ├──97      231     push_func                     2, 1                                  
  ├──98      234     invoke_func_native            1                                     
  ├──99      236     push_stack_int                5                   71                
- ├──100     239     push_func                     1, 1                                  
+ ├──100     239     push_func                     2, 1                                  
  ├──101     242     invoke_func_native            1                                     
  ├──102     244     push_string                   1                   74                
- ├──103     247     push_func                     1, 4                                  
+ ├──103     247     push_func                     2, 4                                  
  ├──104     250     invoke_func_native            1                                     
- ├──105     252     push_func                     9, 1                75                
+ ├──105     252     push_func                     10, 1               75                
  ├──106     255     invoke_func                   0                                     
  ├──107     257     pop_stack_int                 1                                     
  ├──108     260     pop_stack_int                 0                                     
@@ -211,27 +211,27 @@ $main()    <./test/004-derive-function/function-006.ring:32,109>
  ├──137     324     push_func                     0, 0                                  
  ├──138     327     invoke_func_native            1                                     
  ├──139     329     push_stack_int                0                   83                
- ├──140     332     push_func                     1, 1                                  
+ ├──140     332     push_func                     2, 1                                  
  ├──141     335     invoke_func_native            1                                     
  ├──142     337     push_stack_int                1                   84                
- ├──143     340     push_func                     1, 1                                  
+ ├──143     340     push_func                     2, 1                                  
  ├──144     343     invoke_func_native            1                                     
  ├──145     345     push_stack_int                2                   85                
- ├──146     348     push_func                     1, 1                                  
+ ├──146     348     push_func                     2, 1                                  
  ├──147     351     invoke_func_native            1                                     
  ├──148     353     push_stack_int                3                   86                
- ├──149     356     push_func                     1, 1                                  
+ ├──149     356     push_func                     2, 1                                  
  ├──150     359     invoke_func_native            1                                     
  ├──151     361     push_stack_int                4                   87                
- ├──152     364     push_func                     1, 1                                  
+ ├──152     364     push_func                     2, 1                                  
  ├──153     367     invoke_func_native            1                                     
  ├──154     369     push_stack_int                5                   88                
- ├──155     372     push_func                     1, 1                                  
+ ├──155     372     push_func                     2, 1                                  
  ├──156     375     invoke_func_native            1                                     
  ├──157     377     push_string                   2                   91                
- ├──158     380     push_func                     1, 4                                  
+ ├──158     380     push_func                     2, 4                                  
  ├──159     383     invoke_func_native            1                                     
- ├──160     385     push_func                     9, 2                92                
+ ├──160     385     push_func                     10, 2               92                
  ├──161     388     invoke_func                   0                                     
  ├──162     390     pop_stack_int                 2                                     
  ├──163     393     pop_stack_int                 1                                     
@@ -267,22 +267,22 @@ $main()    <./test/004-derive-function/function-006.ring:32,109>
  ├──193     460     push_func                     0, 0                                  
  ├──194     463     invoke_func_native            1                                     
  ├──195     465     push_stack_int                0                   101               
- ├──196     468     push_func                     1, 1                                  
+ ├──196     468     push_func                     2, 1                                  
  ├──197     471     invoke_func_native            1                                     
  ├──198     473     push_stack_int                1                   102               
- ├──199     476     push_func                     1, 1                                  
+ ├──199     476     push_func                     2, 1                                  
  ├──200     479     invoke_func_native            1                                     
  ├──201     481     push_stack_int                2                   103               
- ├──202     484     push_func                     1, 1                                  
+ ├──202     484     push_func                     2, 1                                  
  ├──203     487     invoke_func_native            1                                     
  ├──204     489     push_stack_int                3                   104               
- ├──205     492     push_func                     1, 1                                  
+ ├──205     492     push_func                     2, 1                                  
  ├──206     495     invoke_func_native            1                                     
  ├──207     497     push_stack_int                4                   105               
- ├──208     500     push_func                     1, 1                                  
+ ├──208     500     push_func                     2, 1                                  
  ├──209     503     invoke_func_native            1                                     
  ├──210     505     push_stack_int                5                   106               
- ├──211     508     push_func                     1, 1                                  
+ ├──211     508     push_func                     2, 1                                  
  ├──212     511     invoke_func_native            1                                     
  ├──213     513     pop_defer                                         109               
  ├──214     514     function_finish                                                     

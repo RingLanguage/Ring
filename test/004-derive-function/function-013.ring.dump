@@ -36,7 +36,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──9       19      logical_and                                                         
  ├──10      20      jump_if_false                 34                  38                
  ├──11      23      push_string                   0                   14                
- ├──12      26      push_func                     1, 4                                  
+ ├──12      26      push_func                     2, 4                                  
  ├──13      29      invoke_func_native            1                                     
  ├──14      31      jump                          375                 38                
  ├──15      34      push_int_1byte                10                  15                
@@ -51,7 +51,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──24      53      logical_and                                                         
  ├──25      54      jump_if_false                 68                  17                
  ├──26      57      push_string                   1                   16                
- ├──27      60      push_func                     1, 4                                  
+ ├──27      60      push_func                     2, 4                                  
  ├──28      63      invoke_func_native            1                                     
  ├──29      65      jump                          375                 17                
  ├──30      68      push_int_1byte                20                                    
@@ -66,7 +66,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──39      87      logical_and                                                         
  ├──40      88      jump_if_false                 102                 19                
  ├──41      91      push_string                   2                   18                
- ├──42      94      push_func                     1, 4                                  
+ ├──42      94      push_func                     2, 4                                  
  ├──43      97      invoke_func_native            1                                     
  ├──44      99      jump                          375                 19                
  ├──45      102     push_int_1byte                30                                    
@@ -81,7 +81,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──54      121     logical_and                                                         
  ├──55      122     jump_if_false                 136                 21                
  ├──56      125     push_string                   3                   20                
- ├──57      128     push_func                     1, 4                                  
+ ├──57      128     push_func                     2, 4                                  
  ├──58      131     invoke_func_native            1                                     
  ├──59      133     jump                          375                 21                
  ├──60      136     push_int_1byte                40                                    
@@ -96,7 +96,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──69      155     logical_and                                                         
  ├──70      156     jump_if_false                 170                 23                
  ├──71      159     push_string                   4                   22                
- ├──72      162     push_func                     1, 4                                  
+ ├──72      162     push_func                     2, 4                                  
  ├──73      165     invoke_func_native            1                                     
  ├──74      167     jump                          375                 23                
  ├──75      170     push_int_1byte                50                                    
@@ -111,7 +111,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──84      189     logical_and                                                         
  ├──85      190     jump_if_false                 204                 25                
  ├──86      193     push_string                   5                   24                
- ├──87      196     push_func                     1, 4                                  
+ ├──87      196     push_func                     2, 4                                  
  ├──88      199     invoke_func_native            1                                     
  ├──89      201     jump                          375                 25                
  ├──90      204     push_int_1byte                60                                    
@@ -126,7 +126,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──99      223     logical_and                                                         
  ├──100     224     jump_if_false                 238                 27                
  ├──101     227     push_string                   6                   26                
- ├──102     230     push_func                     1, 4                                  
+ ├──102     230     push_func                     2, 4                                  
  ├──103     233     invoke_func_native            1                                     
  ├──104     235     jump                          375                 27                
  ├──105     238     push_int_1byte                70                                    
@@ -141,7 +141,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──114     257     logical_and                                                         
  ├──115     258     jump_if_false                 272                 29                
  ├──116     261     push_string                   7                   28                
- ├──117     264     push_func                     1, 4                                  
+ ├──117     264     push_func                     2, 4                                  
  ├──118     267     invoke_func_native            1                                     
  ├──119     269     jump                          375                 29                
  ├──120     272     push_int_1byte                80                                    
@@ -156,7 +156,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──129     291     logical_and                                                         
  ├──130     292     jump_if_false                 306                 31                
  ├──131     295     push_string                   8                   30                
- ├──132     298     push_func                     1, 4                                  
+ ├──132     298     push_func                     2, 4                                  
  ├──133     301     invoke_func_native            1                                     
  ├──134     303     jump                          375                 31                
  ├──135     306     push_int_1byte                90                                    
@@ -171,7 +171,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──144     325     logical_and                                                         
  ├──145     326     jump_if_false                 340                 33                
  ├──146     329     push_string                   9                   32                
- ├──147     332     push_func                     1, 4                                  
+ ├──147     332     push_func                     2, 4                                  
  ├──148     335     invoke_func_native            1                                     
  ├──149     337     jump                          375                 33                
  ├──150     340     push_stack_int                0                                     
@@ -179,11 +179,11 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──152     345     eq_int                                                              
  ├──153     346     jump_if_false                 360                 35                
  ├──154     349     push_string                   10                  34                
- ├──155     352     push_func                     1, 4                                  
+ ├──155     352     push_func                     2, 4                                  
  ├──156     355     invoke_func_native            1                                     
  ├──157     357     jump                          375                 35                
  ├──158     360     push_string                   11                  36                
- ├──159     363     push_func                     1, 4                                  
+ ├──159     363     push_func                     2, 4                                  
  ├──160     366     invoke_func_native            1                                     
  ├──161     368     push_int_1byte                0                   37                
  ├──162     370     return                        1                                     
@@ -211,23 +211,23 @@ $main()    <./test/004-derive-function/function-013.ring:45,61>
  ├──5       11      le_int                                                              
  ├──6       12      jump_if_false                 78                                    
  ├──7       15      push_stack_int                0                   51                
- ├──8       18      push_func                     9, 0                                  
+ ├──8       18      push_func                     10, 0                                 
  ├──9       21      invoke_func                   1                                     
  ├──10      23      pop_stack_int                 1                                     
  ├──11      26      push_string                   12                  53                
- ├──12      29      push_func                     1, 4                                  
+ ├──12      29      push_func                     2, 4                                  
  ├──13      32      invoke_func_native            1                                     
  ├──14      34      push_stack_int                0                   54                
- ├──15      37      push_func                     1, 1                                  
+ ├──15      37      push_func                     2, 1                                  
  ├──16      40      invoke_func_native            1                                     
  ├──17      42      push_stack_int                1                   55                
- ├──18      45      push_func                     1, 1                                  
+ ├──18      45      push_func                     2, 1                                  
  ├──19      48      invoke_func_native            1                                     
  ├──20      50      push_string                   12                  56                
- ├──21      53      push_func                     1, 4                                  
+ ├──21      53      push_func                     2, 4                                  
  ├──22      56      invoke_func_native            1                                     
  ├──23      58      push_string                   13                  58                
- ├──24      61      push_func                     1, 4                                  
+ ├──24      61      push_func                     2, 4                                  
  ├──25      64      invoke_func_native            1                                     
  ├──26      66      push_stack_int                0                   50                
  ├──27      69      push_int_1byte                10                                    

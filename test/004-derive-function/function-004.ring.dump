@@ -23,16 +23,16 @@ $func_use_local_variable_hidden_global()    <./test/004-derive-function/function
  ├──0       0       push_int_1byte                234                 17                
  ├──1       2       pop_stack_int                 0                                     
  ├──2       5       push_stack_int                0                   18                
- ├──3       8       push_func                     1, 1                                  
+ ├──3       8       push_func                     2, 1                                  
  ├──4       11      invoke_func_native            1                                     
  ├──5       13      push_stack_int                0                   19                
- ├──6       16      push_func                     1, 1                                  
+ ├──6       16      push_func                     2, 1                                  
  ├──7       19      invoke_func_native            1                                     
  ├──8       21      push_stack_int                0                   20                
- ├──9       24      push_func                     1, 1                                  
+ ├──9       24      push_func                     2, 1                                  
  ├──10      27      invoke_func_native            1                                     
  ├──11      29      push_stack_int                0                   21                
- ├──12      32      push_func                     1, 1                                  
+ ├──12      32      push_func                     2, 1                                  
  ├──13      35      invoke_func_native            1                                     
  ├──14      37      push_stack_int                0                   22                
  ├──15      40      push_int_1byte                234                                   
@@ -66,7 +66,7 @@ $main()    <./test/004-derive-function/function-004.ring:32,52>
  ├──0       0       push_int_1byte                1                   34                
  ├──1       2       pop_static_int                0                                     
  ├──2       5       push_static_int               0                   35                
- ├──3       8       push_func                     1, 1                                  
+ ├──3       8       push_func                     2, 1                                  
  ├──4       11      invoke_func_native            1                                     
  ├──5       13      push_static_int               0                   36                
  ├──6       16      push_int_1byte                1                                     
@@ -89,15 +89,15 @@ $main()    <./test/004-derive-function/function-004.ring:32,52>
  ├──23      52      push_func                     0, 0                                  
  ├──24      55      invoke_func_native            1                                     
  ├──25      57      push_string                   0                   40                
- ├──26      60      push_func                     1, 4                                  
+ ├──26      60      push_func                     2, 4                                  
  ├──27      63      invoke_func_native            1                                     
- ├──28      65      push_func                     9, 1                42                
+ ├──28      65      push_func                     10, 1               42                
  ├──29      68      invoke_func                   0                                     
  ├──30      70      push_string                   0                   43                
- ├──31      73      push_func                     1, 4                                  
+ ├──31      73      push_func                     2, 4                                  
  ├──32      76      invoke_func_native            1                                     
  ├──33      78      push_static_int               0                   45                
- ├──34      81      push_func                     1, 1                                  
+ ├──34      81      push_func                     2, 1                                  
  ├──35      84      invoke_func_native            1                                     
  ├──36      86      push_static_int               0                   46                
  ├──37      89      push_int_1byte                1                                     
@@ -120,7 +120,7 @@ $main()    <./test/004-derive-function/function-004.ring:32,52>
  ├──54      125     push_func                     0, 0                                  
  ├──55      128     invoke_func_native            1                                     
  ├──56      130     push_string                   0                   50                
- ├──57      133     push_func                     1, 4                                  
+ ├──57      133     push_func                     2, 4                                  
  ├──58      136     invoke_func_native            1                                     
  ├──59      138     pop_defer                                         52                
  ├──60      139     function_finish                                                     
