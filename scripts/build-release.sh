@@ -114,7 +114,7 @@ clone_source_code() {
         exit 1
 
     fi
-    git clone https://github.com/GeneralSandman/Ring $WORKSPACE
+    git clone https://github.com/RingLanguage/Ring $WORKSPACE
     cd $WORKSPACE
 
     if [[ "$TAG" != "main" ]]; then
