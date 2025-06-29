@@ -169,6 +169,14 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_FOR_RANGE_FINISH, "for_range_finish", OPCODE_OPERAND_TYPE_2BYTE_As, "-2", -2, "", "", ""},
 
 
+    // 新版
+    {RVM_CODE_FOR_RANGE_INIT_STEP, "for_range_init_step", OPCODE_OPERAND_TYPE_2BYTE_As, "-2", -2, "", "", ""},
+    {RVM_CODE_FOR_RANGE_INIT_LINEAR, "for_range_init_linear", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
+    {RVM_CODE_FOR_RANGE_HAS_NEXT, "for_range_has_next", OPCODE_OPERAND_TYPE_2BYTE_As, "0", 0, "", "", ""},
+    {RVM_CODE_FOR_RANGE_GET_NEXT, "for_range_get_next", OPCODE_OPERAND_TYPE_2BYTE_As, "0", 0, "", "", ""},
+    {RVM_CODE_FOR_RANGE_FINISH_2, "for_range_finish_2", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "", ""},
+
+
     // slice array/string
     {RVM_CODE_SLICE_ARRAY, "slice_array", OPCODE_OPERAND_TYPE_0BYTE, "-2", -2, "", "", ""},
     {RVM_CODE_SLICE_STRING, "slice_string", OPCODE_OPERAND_TYPE_0BYTE, "-2", -2, "", "", ""},

@@ -619,10 +619,17 @@ void fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple*
         fix_expression(for_statement->u.ternary_statement->condition_expression, block, func);
         fix_expression(for_statement->u.ternary_statement->post_expression, block, func);
     } else if (for_statement->type == FOR_STATEMENT_TYPE_RANGE) {
-        Expression* left    = for_statement->u.range_statement->left;
-        Expression* operand = for_statement->u.range_statement->operand;
+        Expression*      left       = for_statement->u.range_statement->left;
+        Expression*      operand    = for_statement->u.range_statement->operand;
+        RangeExpression* range_expr = for_statement->u.range_statement->range_expr;
+
         fix_expression(left, block, func);
         fix_expression(operand, block, func);
+        fix_range_expression(nullptr, range_expr, block, func);
+        if (operand == nullptr) {
+            // TODO: 临时兼容一下
+            return;
+        }
 
         // Ring-Compiler-Error-Report ERROR_FOR_RANGE_INVALID_LEFT_VALUE
         if (left->convert_type_size != 1
@@ -2459,6 +2466,25 @@ void fix_slice_expression(Expression*      expression,
 
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, type_specifier);
+}
+
+void fix_range_expression(Expression*      expression,
+                          RangeExpression* range_expression,
+                          Block*           block,
+                          FunctionTuple*   func) {
+
+    assert(range_expression != nullptr);
+
+
+    assert(range_expression->type == RANGE_EXPRESSION_TYPE_LINEAR);
+
+    // TODO: 这里需要继续拆分
+    fix_expression(range_expression->u.linear_range_expr->collection_expr,
+                   block, func);
+
+    // // RangeExpression 的类型是一个 int 类型
+    // EXPRESSION_CLEAR_CONVERT_TYPE(expression);
+    // EXPRESSION_ADD_CONVERT_TYPE(expression, &int_type_specifier);
 }
 
 void fix_new_array_expression(Expression*         expression,

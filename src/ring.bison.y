@@ -14,7 +14,7 @@ int yylex();
 %locations                       // 开启locations
 %glr-parser                      // 使用 GLR 解析
 %expect    6                     // legitimate 0 shift/reduce conflicts
-%expect-rr 0                     // legitimate 0 reduce/reduce conflicts
+%expect-rr 1                     // legitimate 0 reduce/reduce conflicts
 
 // 在 array_literal_expression 的 class_type_specifier dimension_expression TOKEN_LC expression_list TOKEN_RC
 // 存在 reduce/reduce conflicts, 需要使用 %code_completion 进行处理
@@ -66,6 +66,10 @@ int yylex();
     SubDimensionExpression*             m_sub_dimension_expression;
     SliceExpression*                    m_slice_expression;
     SubSliceExpression*                 m_sub_slice_expression;
+
+    RangeExpression*                    m_range_expression;
+    StepRangeExpression*                m_step_range_expression;
+    LinearRangeExpression*              m_linear_range_expression;
 
     Package*                            m_package;
 
@@ -254,6 +258,11 @@ int yylex();
 
 %type <m_slice_expression> slice_expression
 %type <m_sub_slice_expression> sub_slice_expression
+
+%type <m_range_expression>          range_expression
+%type <m_step_range_expression>     step_range_expression
+%type <m_linear_range_expression>   linear_range_expression
+
 
 %type <m_package> package_definition
 
@@ -648,14 +657,19 @@ for_statement
     | TOKEN_FOR TOKEN_LP      IDENTIFIER TOKEN_ASSIGN TOKEN_RANGE left_value_expression      TOKEN_RP block 
     {
         debug_bison_info_with_green("[RULE::for_statement:range]\t ");
-        
+        // TODO: 后续删掉
         $$ = create_for_range_statement(create_expression_identifier($3), $6, $8);
     }
     | TOKEN_FOR TOKEN_LP      IDENTIFIER TOKEN_ASSIGN TOKEN_RANGE derive_value_literal_expression      TOKEN_RP block 
     {
         debug_bison_info_with_green("[RULE::for_statement:range]\t ");
-        
+        // TODO: 后续删掉
         $$ = create_for_range_statement(create_expression_identifier($3), $6, $8);
+    }
+    | TOKEN_FOR left_value_expression_list TOKEN_ASSIGN TOKEN_RANGE range_expression block
+    {
+        debug_bison_info_with_green("[RULE::for_statement:rangev2]\t ");
+        $$ = create_for_range_statement_v2($2, $5, $6);
     }
     ;
 
@@ -1574,5 +1588,32 @@ jump_tag_statement
     }
     ;
 
+
+range_expression
+    : linear_range_expression
+    {
+        $$ = create_range_expression_from_linear_range($1);
+    }
+    ;
+
+/*
+step_range_expression
+    : 
+    {
+
+    }
+    ;
+*/
+
+linear_range_expression
+    : left_value_expression
+    {
+        $$ = create_linear_range_expression($1);
+    }
+    | derive_value_literal_expression
+    {
+        $$ = create_linear_range_expression($1);
+    }
+    ;
 
 %%

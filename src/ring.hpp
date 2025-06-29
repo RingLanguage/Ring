@@ -66,6 +66,12 @@ typedef struct DimensionExpression          DimensionExpression;
 typedef struct SubDimensionExpression       SubDimensionExpression;
 typedef struct SliceExpression              SliceExpression;
 typedef struct SubSliceExpression           SubSliceExpression;
+typedef struct RangeExpression              RangeExpression;
+typedef struct StepRangeExpression          StepRangeExpression;
+typedef struct LinearRangeExpression        LinearRangeExpression;
+
+typedef class RVM_RangeIterator             RVM_RangeIterator;
+
 typedef struct BinaryExpression             BinaryExpression;
 typedef struct TernaryExpression            TernaryExpression;
 typedef struct FunctionCallExpression       FunctionCallExpression;
@@ -181,6 +187,7 @@ typedef enum : unsigned char {
     RVM_VALUE_TYPE_CLASS_OB,
     RVM_VALUE_TYPE_ARRAY,
     RVM_VALUE_TYPE_CLOSURE,
+    RVM_VALUE_RANGE_ITERATOR,
 
 } RVM_Value_Type;
 
@@ -201,14 +208,16 @@ typedef enum : int {
 typedef struct {
     RVM_Value_Type type;
     union {
-        RVM_Bool         bool_value;
-        int              int_value;
-        long long        int64_value;
-        double           double_value;
-        RVM_String*      string_value;
-        RVM_ClassObject* class_ob_value;
-        RVM_Array*       array_value;
-        RVM_Closure*     closure_value;
+        RVM_Bool           bool_value;
+        int                int_value;
+        long long          int64_value;
+        double             double_value;
+        RVM_String*        string_value;
+        RVM_ClassObject*   class_ob_value;
+        RVM_Array*         array_value;
+        RVM_Closure*       closure_value;
+        RVM_RangeIterator* range_iterator_value;
+        // range_iterator_value 只用在栈上，用于临时存放
     } u;
 
 } RVM_Value;
@@ -1119,6 +1128,12 @@ typedef enum {
     RVM_CODE_FOR_RANGE_ARRAY_CLOSURE,
     RVM_CODE_FOR_RANGE_FINISH,
 
+    RVM_CODE_FOR_RANGE_INIT_STEP,
+    RVM_CODE_FOR_RANGE_INIT_LINEAR,
+    RVM_CODE_FOR_RANGE_HAS_NEXT,
+    RVM_CODE_FOR_RANGE_GET_NEXT,
+    RVM_CODE_FOR_RANGE_FINISH_2,
+
     // slice array/string
     RVM_CODE_SLICE_ARRAY,
     RVM_CODE_SLICE_STRING,
@@ -1851,6 +1866,70 @@ struct SubSliceExpression {
 };
 
 typedef enum {
+    RANGE_EXPRESSION_TYPE_UNKNOW = 0,
+    RANGE_EXPRESSION_TYPE_STEP,
+    RANGE_EXPRESSION_TYPE_LINEAR,
+} RangeExpressionType;
+struct RangeExpression {
+    unsigned int        line_number;
+
+    RangeExpressionType type;
+    union {
+        StepRangeExpression*   step_range_expr;
+        LinearRangeExpression* linear_range_expr;
+    } u;
+};
+// 算术步长范围
+struct StepRangeExpression {
+    unsigned int line_number;
+
+    Expression*  start_expr;
+    Expression*  end_expr;
+    Expression*  step_expr;
+    // true  end_expr为闭区间
+    // false end_expr开区间
+    bool is_inclusive;
+};
+// 线性范围
+struct LinearRangeExpression {
+    unsigned int line_number;
+
+    // 目前只支持数组
+    // 后续可以支持map
+    Expression* collection_expr; // 数组，字符串，map
+};
+
+// TODO: iterator 移到一个专门的文件中
+using RVM_RangeIterator_RangeValue = std::variant<int>;
+class RVM_RangeIterator {
+public:
+    virtual bool                         has_next() = 0;
+    virtual RVM_RangeIterator_RangeValue get_next() = 0;
+};
+
+class RVM_LinearRangeIterator : public RVM_RangeIterator {
+private:
+    RVM_Array* array_value;
+    long long  index; // 数组的索引
+
+public:
+    RVM_LinearRangeIterator(RVM_Array* array_value) :
+        array_value(array_value),
+        index(0) {
+        };
+    virtual bool has_next() {
+        printf("RVM_LinearRangeIterator has_next length:%lld index:%lld\n", array_value->length, index);
+        return index < array_value->length;
+    };
+    virtual RVM_RangeIterator_RangeValue get_next() {
+        printf("RVM_LinearRangeIterator get_next\n");
+        return array_value->u.int_array[index++];
+    };
+};
+// TODO: iterator 移到一个专门的文件中
+
+
+typedef enum {
     FUNCTION_CALL_TYPE_UNKNOW,
     FUNCTION_CALL_TYPE_FUNC,
     FUNCTION_CALL_TYPE_CLOSURE,
@@ -2204,8 +2283,9 @@ struct ForTernaryStatement {
 };
 
 struct ForRangeStatement {
-    Expression* left;
-    Expression* operand;
+    Expression*      left;
+    Expression*      operand; // TODO: 老版本，后续删除掉 只保留 range_expr
+    RangeExpression* range_expr;
 };
 
 struct DoForStatement {
@@ -3028,7 +3108,12 @@ ElseIfStatement*              create_elseif_statement(Expression* expression, Bl
 ElseIfStatement*              elseif_statement_add_item(ElseIfStatement* list, ElseIfStatement* elseif_statement);
 Statement*                    create_statement_from_for(ForStatement* for_statement);
 ForStatement*                 create_for_ternary_statement(Expression* init_expression, Expression* condition_expression, Expression* post_expression, Block* block);
-ForStatement*                 create_for_range_statement(Expression* left, Expression* operand, Block* block);
+ForStatement*                 create_for_range_statement(Expression* left,
+                                                         Expression* operand,
+                                                         Block*      block);
+ForStatement*                 create_for_range_statement_v2(Expression*      left,
+                                                            RangeExpression* range_expr,
+                                                            Block*           block);
 Statement*                    create_statement_from_dofor(DoForStatement* dofor_statement);
 DoForStatement*               create_dofor_statement(Expression* init_expression, Block* block, Expression* condition_expression, Expression* post_expression);
 Statement*                    create_statement_from_break(BreakStatement* break_statement);
@@ -3055,6 +3140,9 @@ SubDimensionExpression*       sub_dimension_expression_list_add_item(SubDimensio
 
 SliceExpression*              create_slice_expression(Expression* operand, SubSliceExpression* sub_slice_expression);
 SubSliceExpression*           create_sub_slice_expression(Expression* start_expr, Expression* end_expr);
+
+RangeExpression*              create_range_expression_from_linear_range(LinearRangeExpression* linear_range);
+LinearRangeExpression*        create_linear_range_expression(Expression* collection_expr);
 
 TypeSpecifier*                create_type_specifier(Ring_BasicType basic_type);
 TypeSpecifier*                create_type_specifier_array(TypeSpecifier* sub_type, DimensionExpression* dimension);
@@ -3220,6 +3308,10 @@ void             fix_slice_expression(Expression*      expression,
                                       SliceExpression* slice_expression,
                                       Block*           block,
                                       FunctionTuple*   func);
+void             fix_range_expression(Expression*      expression,
+                                      RangeExpression* range_expression,
+                                      Block*           block,
+                                      FunctionTuple*   func);
 void             fix_new_array_expression(Expression* expression, NewArrayExpression* new_array_expression, Block* block, FunctionTuple* func);
 void             fix_dimension_expression(DimensionExpression* dimension_expression, Block* block, FunctionTuple* func);
 void             fix_array_literal_expression(Expression* expression, ArrayLiteralExpression* array_literal_expression, Block* block, FunctionTuple* func);
@@ -3331,7 +3423,12 @@ void              generate_vmcode_from_statement_list(Package_Executer* executer
 void              generate_vmcode_from_if_statement(Package_Executer* executer, IfStatement* if_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_for_statement(Package_Executer* executer, ForStatement* for_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_for_ternary_statement(Package_Executer* executer, ForStatement* for_statement, RVM_OpcodeBuffer* opcode_buffer);
-void              generate_vmcode_from_for_range_statement(Package_Executer* executer, ForStatement* for_statement, RVM_OpcodeBuffer* opcode_buffer);
+void              generate_vmcode_from_for_range_statement(Package_Executer* executer,
+                                                           ForStatement*     for_statement,
+                                                           RVM_OpcodeBuffer* opcode_buffer);
+void              generate_vmcode_from_for_range_statement_v2(Package_Executer* executer,
+                                                              ForStatement*     for_statement,
+                                                              RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_dofor_statement(Package_Executer* executer, DoForStatement* dofor_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_break_statement(Package_Executer* executer, Block* block, BreakStatement* break_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_continue_statement(Package_Executer* executer, Block* block, ContinueStatement* continue_statement, RVM_OpcodeBuffer* opcode_buffer);

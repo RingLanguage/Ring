@@ -827,6 +827,12 @@ void generate_vmcode_from_for_range_statement(Package_Executer* executer,
 
     ForRangeStatement* range_statement = for_statement->u.range_statement;
 
+    // 是否路由到新逻辑
+    if (range_statement->range_expr != nullptr) {
+        generate_vmcode_from_for_range_statement_v2(executer, for_statement, opcode_buffer);
+        return;
+    }
+
     // step-1. range_call
     //       push array-object & array-iter to runtime_stack
 
@@ -899,6 +905,82 @@ void generate_vmcode_from_for_range_statement(Package_Executer* executer,
     generate_vmcode(executer, opcode_buffer,
                     RVM_CODE_FOR_RANGE_FINISH, 0,
                     range_statement->operand->u.identifier_expression->line_number);
+}
+
+
+void generate_vmcode_from_for_range_statement_v2(Package_Executer* executer,
+                                                 ForStatement*     for_statement,
+                                                 RVM_OpcodeBuffer* opcode_buffer) {
+
+    debug_generate_info_with_darkgreen("\t");
+    assert(for_statement != nullptr);
+    assert(for_statement->type == FOR_STATEMENT_TYPE_RANGE);
+    assert(for_statement->u.range_statement != nullptr);
+
+
+    unsigned int     end_label        = 0;
+    unsigned int     loop_label       = 0;
+    unsigned int     continue_label   = 0;
+
+    RangeExpression* range_expression = for_statement->u.range_statement->range_expr;
+
+    assert(range_expression->type == RANGE_EXPRESSION_TYPE_LINEAR);
+    LinearRangeExpression* linear_range_expr = range_expression->u.linear_range_expr;
+
+    // push array
+    generate_vmcode_from_expression(executer,
+                                    linear_range_expr->collection_expr,
+                                    opcode_buffer);
+
+    // range_init_linear
+    generate_vmcode(executer, opcode_buffer,
+                    RVM_CODE_FOR_RANGE_INIT_LINEAR, 0,
+                    linear_range_expr->line_number);
+
+
+    loop_label = opcode_buffer_get_label(opcode_buffer);
+    opcode_buffer_set_label(opcode_buffer, loop_label, opcode_buffer->code_size);
+
+    end_label = opcode_buffer_get_label(opcode_buffer);
+
+    // range_has_next
+    // if not next, jump to finish
+    generate_vmcode(executer, opcode_buffer,
+                    RVM_CODE_FOR_RANGE_HAS_NEXT, end_label,
+                    linear_range_expr->line_number);
+
+    // range_get_next 取出next值，放在stack中
+    // pop left value list
+    generate_vmcode(executer, opcode_buffer,
+                    RVM_CODE_FOR_RANGE_GET_NEXT, 0,
+                    linear_range_expr->line_number);
+
+
+    // block vm code
+    if (for_statement->block) {
+        for_statement->block->block_labels.break_label = end_label;
+        for_statement->block->block_labels.continue_label =
+            continue_label = opcode_buffer_get_label(opcode_buffer);
+
+        generate_vmcode_from_block(executer, for_statement->block, opcode_buffer);
+    }
+
+    opcode_buffer_set_label(opcode_buffer, continue_label, opcode_buffer->code_size);
+
+
+    // jump to range_has_next
+    generate_vmcode(executer, opcode_buffer,
+                    RVM_CODE_JUMP, loop_label,
+                    range_expression->line_number);
+
+
+    // range_finish_2
+    opcode_buffer_set_label(opcode_buffer, end_label, opcode_buffer->code_size);
+
+    generate_vmcode(executer, opcode_buffer,
+                    RVM_CODE_FOR_RANGE_FINISH_2, 0,
+                    range_expression->line_number);
+    // 销毁
 }
 
 
@@ -2692,6 +2774,7 @@ void opcode_buffer_fix_label(RVM_OpcodeBuffer* opcode_buffer) {
         case RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB:
         case RVM_CODE_FOR_RANGE_ARRAY_CLOSURE:
         case RVM_CODE_FOR_RANGE_ARRAY_A:
+        case RVM_CODE_FOR_RANGE_HAS_NEXT:
             label                           = (opcode_buffer->code_list[i + 1] << 8) + (opcode_buffer->code_list[i + 2]);
             label_address                   = opcode_buffer->lable_list[label].label_address;
 

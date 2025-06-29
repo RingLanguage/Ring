@@ -32,6 +32,8 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     (VM_CUR_CO_STACK_DATA[(index)].u.array_value)
 #define STACK_GET_CLOSURE_INDEX(index) \
     (VM_CUR_CO_STACK_DATA[(index)].u.closure_value)
+#define STACK_GET_RANGE_ITER_INDEX(index) \
+    (VM_CUR_CO_STACK_DATA[(index)].u.range_iterator_value)
 // TODO: 感觉这个实现的不好
 #define STACK_GET_INTORINT64_INDEX(index)                         \
     ((VM_CUR_CO_STACK_DATA[(index)].type == RVM_VALUE_TYPE_INT) ? \
@@ -57,6 +59,8 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     STACK_GET_ARRAY_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
 #define STACK_GET_CLOSURE_OFFSET(offset) \
     STACK_GET_CLOSURE_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
+#define STACK_GET_RANGE_ITER_OFFSET(offset) \
+    STACK_GET_RANGE_ITER_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
 #define STACK_GET_INTORINT64_OFFSET(offset) \
     STACK_GET_INTORINT64_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
 
@@ -85,6 +89,9 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
 #define STACK_SET_CLOSURE_INDEX(index, value)                               \
     VM_CUR_CO_STACK_DATA[(index)].type            = RVM_VALUE_TYPE_CLOSURE; \
     VM_CUR_CO_STACK_DATA[(index)].u.closure_value = (value);
+#define STACK_SET_RANGE_ITER_INDEX(index, value)                                     \
+    VM_CUR_CO_STACK_DATA[(index)].type                   = RVM_VALUE_RANGE_ITERATOR; \
+    VM_CUR_CO_STACK_DATA[(index)].u.range_iterator_value = (value);
 
 // 通过栈顶偏移 offset 设置 VM_CUR_CO_STACK_DATA
 #define STACK_SET_BOOL_OFFSET(offset, value) \
@@ -103,6 +110,8 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     STACK_SET_ARRAY_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset), (value))
 #define STACK_SET_CLOSURE_OFFSET(offset, value) \
     STACK_SET_CLOSURE_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset), (value))
+#define STACK_SET_RANGE_ITER_OFFSET(offset, value) \
+    STACK_SET_RANGE_ITER_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset), (value))
 
 #define GET_FREE_VALUE(index)                                                                    \
     ((VM_CUR_CO_CALLINFO->curr_closure->fvb->list[(index)].state == RVM_FREEVALUE_STATE_RECUR) ? \
@@ -1499,6 +1508,42 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_PC += 3;
             break;
 
+        case RVM_CODE_FOR_RANGE_INIT_STEP:
+            break;
+        case RVM_CODE_FOR_RANGE_INIT_LINEAR: {
+            array_value = STACK_GET_ARRAY_OFFSET(-1);
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+
+            RVM_RangeIterator* iterator = nullptr;
+            iterator                    = new RVM_LinearRangeIterator(array_value); // TODO:
+            STACK_SET_RANGE_ITER_OFFSET(0, iterator);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_FOR_RANGE_HAS_NEXT: {
+            // if not has_next, jump to pc
+            RVM_RangeIterator* iterator = nullptr;
+            iterator                    = STACK_GET_RANGE_ITER_OFFSET(-1);
+            if (!iterator->has_next()) {
+                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+                break;
+            }
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_FOR_RANGE_GET_NEXT: {
+            RVM_RangeIterator* iterator = nullptr;
+            iterator                    = STACK_GET_RANGE_ITER_OFFSET(-1);
+            auto range_value_list       = iterator->get_next();
+            // TODO: 放置到runtime_stack 中
+
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_FOR_RANGE_FINISH_2:
+            // TODO: 后续删除掉 RVM_CODE_FOR_RANGE_FINISH
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+
 
         // slice array/string
         case RVM_CODE_SLICE_ARRAY: {
@@ -2035,9 +2080,11 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
         // jump
         case RVM_CODE_JUMP:
+            // TODO: 两个字节不一定够用的
             VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             break;
         case RVM_CODE_JUMP_IF_FALSE:
+            // TODO: 两个字节不一定够用的
             if (!STACK_GET_INT_OFFSET(-1)) {
                 VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             } else {
@@ -2046,6 +2093,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_STACK_TOP_INDEX -= 1;
             break;
         case RVM_CODE_JUMP_IF_TRUE:
+            // TODO: 两个字节不一定够用的
             if (STACK_GET_INT_OFFSET(-1)) {
                 VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             } else {

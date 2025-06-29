@@ -10,7 +10,7 @@
       "args": [
         "-O0",
         "run",
-        "${workspaceFolder}/test/008-class/class-000.ring"
+        "${workspaceFolder}/test/033-for-range/new-range.ring"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
@@ -44,7 +44,7 @@
       "args": [
         "-O0",
         "dump",
-        "${workspaceFolder}/test/008-class/class-000.ring"
+        "${workspaceFolder}/test/033-for-range/new-range.ring"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
