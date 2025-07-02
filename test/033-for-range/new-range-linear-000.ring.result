@@ -1,0 +1,72 @@
+test_0-----------
+0 true
+1 false
+2 true
+3 false
+0 1
+1 2
+2 3
+3 4
+0 100
+1 200
+2 300
+3 400
+0 1.100000
+1 2.200000
+2 3.300000
+3 4.400000
+0 a
+1 b
+2 c
+3 d
+0 {Bool:true Int:1 Int64:100 Double:1.100000 String:a}
+1 {Bool:false Int:2 Int64:200 Double:2.200000 String:b}
+2 {Bool:true Int:3 Int64:300 Double:3.300000 String:c}
+3 {Bool:false Int:4 Int64:400 Double:4.400000 String:d}
+Executing function at index local_func_array_0[0]
+Function 1 executed
+Executing function at index local_func_array_0[1]
+Function 2 executed
+Executing function at index local_func_array_0[2]
+Function 3 executed
+Executing function at index local_func_array_0[3]
+Function 4 executed
+0 [1 2 3]
+1 [4 5 6]
+2 [7 8 9]
+test_1-----------
+0 true
+1 false
+2 true
+3 false
+0 1
+1 2
+2 3
+3 4
+0 100
+1 200
+2 300
+3 400
+0 1.100000
+1 2.200000
+2 3.300000
+3 4.400000
+0 a
+1 b
+2 c
+3 d
+0 {Bool:true Int:1 Int64:100 Double:1.100000 String:a}
+1 {Bool:false Int:2 Int64:200 Double:2.200000 String:b}
+2 {Bool:true Int:3 Int64:300 Double:3.300000 String:c}
+3 {Bool:false Int:4 Int64:400 Double:4.400000 String:d}
+Executing function at index local_func_array_0[0]
+Function 1 executed
+Executing function at index local_func_array_0[1]
+Function 2 executed
+Executing function at index local_func_array_0[2]
+Function 3 executed
+Executing function at index local_func_array_0[3]
+Function 4 executed
+0 [1 2 3]
+1 [4 5 6]
+2 [7 8 9]
