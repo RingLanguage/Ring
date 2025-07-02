@@ -307,7 +307,9 @@ void fix_statement(Statement* statement, Block* block, FunctionTuple* func) {
     }
 }
 
-void fix_expression(Expression* expression, Block* block, FunctionTuple* func) {
+// fix_expression 会根据 next 指针递归向下遍历
+void fix_expression(Expression* expression,
+                    Block* block, FunctionTuple* func) {
 
 BEGIN:
     if (expression == nullptr) {
@@ -615,105 +617,13 @@ void fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple*
     }
 
     if (for_statement->type == FOR_STATEMENT_TYPE_TERNARY) {
-        fix_expression(for_statement->u.ternary_statement->init_expression, block, func);
-        fix_expression(for_statement->u.ternary_statement->condition_expression, block, func);
-        fix_expression(for_statement->u.ternary_statement->post_expression, block, func);
+        ForTernaryStatement* ternary_statement = for_statement->u.ternary_statement;
+
+        fix_expression(ternary_statement->init_expression, block, func);
+        fix_expression(ternary_statement->condition_expression, block, func);
+        fix_expression(ternary_statement->post_expression, block, func);
     } else if (for_statement->type == FOR_STATEMENT_TYPE_RANGE) {
-        Expression* left    = for_statement->u.range_statement->left;
-        Expression* operand = for_statement->u.range_statement->operand;
-        fix_expression(left, block, func);
-        fix_expression(operand, block, func);
-
-        // Ring-Compiler-Error-Report ERROR_FOR_RANGE_INVALID_LEFT_VALUE
-        if (left->convert_type_size != 1
-            || left->convert_type == nullptr) {
-            std::string left_type_str = format_type_specifier(left->convert_type_size, left->convert_type);
-
-            DEFINE_ERROR_REPORT_STR;
-
-            compile_err_buf = sprintf_string(
-                "for range statement: invalid item type(%s); E:%d.",
-                left_type_str.c_str(),
-                ERROR_FOR_RANGE_MISMATCH_LEFT_OPERAND);
-
-            ErrorReportContext context = {
-                .package                 = nullptr,
-                .package_unit            = get_package_unit(),
-                .source_file_name        = get_package_unit()->current_file_name,
-                .line_content            = package_unit_get_line_content(left->line_number),
-                .line_number             = left->line_number,
-                .column_number           = package_unit_get_column_number(),
-                .error_message           = std::string(compile_err_buf),
-                .advice                  = std::string(compile_adv_buf),
-                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
-                .ring_compiler_file      = (char*)__FILE__,
-                .ring_compiler_file_line = __LINE__,
-            };
-            ring_compile_error_report(&context);
-        }
-
-        // Ring-Compiler-Error-Report ERROR_FOR_RANGE_INVALID_OPERAND_VALUE
-        if (operand->convert_type_size != 1
-            || operand->convert_type == nullptr) {
-            std::string operand_type_str = format_type_specifier(operand->convert_type_size, operand->convert_type);
-
-            DEFINE_ERROR_REPORT_STR;
-
-            compile_err_buf = sprintf_string(
-                "for range statement: invalid array type(%s); E:%d.",
-                operand_type_str.c_str(),
-                ERROR_FOR_RANGE_MISMATCH_LEFT_OPERAND);
-
-            ErrorReportContext context = {
-                .package                 = nullptr,
-                .package_unit            = get_package_unit(),
-                .source_file_name        = get_package_unit()->current_file_name,
-                .line_content            = package_unit_get_line_content(left->line_number),
-                .line_number             = left->line_number,
-                .column_number           = package_unit_get_column_number(),
-                .error_message           = std::string(compile_err_buf),
-                .advice                  = std::string(compile_adv_buf),
-                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
-                .ring_compiler_file      = (char*)__FILE__,
-                .ring_compiler_file_line = __LINE__,
-            };
-            ring_compile_error_report(&context);
-        }
-
-        TypeSpecifier* left_type    = left->convert_type[0];
-        TypeSpecifier* operand_type = operand->convert_type[0];
-        // 像赋值的逻辑一样，进行匹配
-        // left 是否 比 operand 小一个纬度
-        // Ring-Compiler-Error-Report ERROR_FOR_RANGE_MISMATCH_LEFT_OPERAND
-        if (!comp_type_specifier_dimension(operand_type, left_type, 1)) {
-            std::string operand_type_str = format_type_specifier(operand_type);
-            std::string left_type_str    = format_type_specifier(left_type);
-
-            DEFINE_ERROR_REPORT_STR;
-
-            compile_err_buf = sprintf_string(
-                "for range statement: array type(%s) not match item type(%s); E:%d.",
-                operand_type_str.c_str(),
-                left_type_str.c_str(),
-                ERROR_FOR_RANGE_MISMATCH_LEFT_OPERAND);
-
-            ErrorReportContext context = {
-                .package                 = nullptr,
-                .package_unit            = get_package_unit(),
-                .source_file_name        = get_package_unit()->current_file_name,
-                .line_content            = package_unit_get_line_content(left->line_number),
-                .line_number             = left->line_number,
-                .column_number           = package_unit_get_column_number(),
-                .error_message           = std::string(compile_err_buf),
-                .advice                  = std::string(compile_adv_buf),
-                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
-                .ring_compiler_file      = (char*)__FILE__,
-                .ring_compiler_file_line = __LINE__,
-            };
-            ring_compile_error_report(&context);
-        }
-    } else {
-        ring_error_report("for statement type is invalid error\n");
+        fix_for_range_statement(for_statement->u.range_statement, block, func);
     }
 
     if (global_ring_command_arg.optimize_level > 0) {
@@ -722,6 +632,191 @@ void fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple*
 
 
     fix_block(for_statement->block, func);
+}
+
+void fix_for_range_statement(ForRangeStatement* for_range_statement,
+                             Block*             block,
+                             FunctionTuple*     func) {
+
+    Expression*      left       = for_range_statement->left;
+    RangeExpression* range_expr = for_range_statement->range_expr;
+
+    fix_expression(left, block, func);
+    fix_range_expression(range_expr, block, func);
+
+    std::vector<TypeSpecifier*> left_types  = get_type_specifier_from_expression_list(left);
+    std::vector<TypeSpecifier*> right_types = get_type_specifier_from_range_expression(range_expr);
+
+    // 赋值操作 left/operand 数量不匹配
+    // Ring-Compiler-Error-Report ERROR_ASSIGNMENT_MISMATCH_NUM
+    if (for_range_statement->range_expr->type == RANGE_EXPRESSION_TYPE_LINEAR
+        && left_types.size() == 1 && right_types.size() == 2) {
+        // TODO: 兼容逻辑，后续处理掉
+        // 对于历史的语法做一下
+        // for value = range array{}
+        // 不然会报错
+    } else if (left_types.size() != right_types.size()) {
+        DEFINE_ERROR_REPORT_STR;
+
+        compile_err_buf = sprintf_string(
+            "assignment mismatch: %lu variables not match %lu operands; E:%d.",
+            left_types.size(),
+            right_types.size(),
+            ERROR_ASSIGNMENT_MISMATCH_NUM);
+
+        ErrorReportContext context = {
+            .package                 = nullptr,
+            .package_unit            = get_package_unit(),
+            .source_file_name        = get_package_unit()->current_file_name,
+            .line_content            = package_unit_get_line_content(left->line_number),
+            .line_number             = left->line_number,
+            .column_number           = package_unit_get_column_number(),
+            .error_message           = std::string(compile_err_buf),
+            .advice                  = std::string(compile_adv_buf),
+            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+            .ring_compiler_file      = (char*)__FILE__,
+            .ring_compiler_file_line = __LINE__,
+        };
+        ring_compile_error_report(&context);
+    }
+
+    if (left_types.size() == right_types.size()) {
+        // TODO: 兼容逻辑，后续处理掉
+
+        for (unsigned int i = 0; i < left_types.size(); i++) {
+            // 深度比较两个类型是否匹配
+            // Ring-Compiler-Error-Report ERROR_RANGE_ASSIGN_MISSMATCH_TYPE
+            if (!comp_type_specifier(left_types[i], right_types[i])) {
+                DEFINE_ERROR_REPORT_STR;
+
+                compile_err_buf = sprintf_string(
+                    "range mismatch: range return (%s) but assign to (%s); E:%d.",
+                    format_type_specifier(right_types).c_str(),
+                    format_type_specifier(left_types).c_str(),
+                    ERROR_RANGE_ASSIGN_MISSMATCH_TYPE);
+
+                ErrorReportContext context = {
+                    .package                 = nullptr,
+                    .package_unit            = get_package_unit(),
+                    .source_file_name        = get_package_unit()->current_file_name,
+                    .line_content            = package_unit_get_line_content(left->line_number),
+                    .line_number             = left->line_number,
+                    .column_number           = package_unit_get_column_number(),
+                    .error_message           = std::string(compile_err_buf),
+                    .advice                  = std::string(compile_adv_buf),
+                    .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+                    .ring_compiler_file      = (char*)__FILE__,
+                    .ring_compiler_file_line = __LINE__,
+                };
+                ring_compile_error_report(&context);
+            }
+        }
+    }
+}
+
+
+void fix_range_expression(RangeExpression* range_expression,
+                          Block*           block,
+                          FunctionTuple*   func) {
+
+    assert(range_expression != nullptr);
+
+
+    // TODO: 需要继续拆分
+    if (range_expression->type == RANGE_EXPRESSION_TYPE_STEP) {
+        fix_expression(range_expression->u.sub_step_range_expr->start_expr, block, func);
+        fix_expression(range_expression->u.sub_step_range_expr->end_expr, block, func);
+        if (range_expression->u.sub_step_range_expr->step_expr != nullptr) {
+            fix_expression(range_expression->u.sub_step_range_expr->step_expr, block, func);
+        }
+
+        // 判断类型
+        // TODO: 类型必须是 int/int64/double
+        // TODO: check convert_type size
+        if (range_expression->u.sub_step_range_expr->start_expr->convert_type_size != 1) {
+            // error report
+        }
+        if (range_expression->u.sub_step_range_expr->end_expr->convert_type_size != 1) {
+            // error report
+        }
+
+        TypeSpecifier* start_expr_type = range_expression->u.sub_step_range_expr->start_expr->convert_type[0];
+        TypeSpecifier* end_expr_type   = range_expression->u.sub_step_range_expr->end_expr->convert_type[0];
+
+        // 适配不同的step int64 or double
+        // TODO: 这里是否要考虑 step_expr 的类型
+        EXPRESSION_CLEAR_CONVERT_TYPE(range_expression);
+        if (TYPE_IS_DOUBLE(start_expr_type) || TYPE_IS_DOUBLE(end_expr_type)) {
+            range_expression->u.sub_step_range_expr->value_type = RING_BASIC_TYPE_DOUBLE;
+            EXPRESSION_ADD_CONVERT_TYPE(range_expression, &double_type_specifier);
+        } else if (TYPE_IS_INT64(start_expr_type) || TYPE_IS_INT64(end_expr_type)) {
+            range_expression->u.sub_step_range_expr->value_type = RING_BASIC_TYPE_INT64;
+            EXPRESSION_ADD_CONVERT_TYPE(range_expression, &int64_type_specifier);
+        } else {
+            range_expression->u.sub_step_range_expr->value_type = RING_BASIC_TYPE_INT64;
+            EXPRESSION_ADD_CONVERT_TYPE(range_expression, &int_type_specifier);
+        }
+
+
+        // TODO:
+    } else if (range_expression->type == RANGE_EXPRESSION_TYPE_LINEAR) {
+        fix_expression(range_expression->u.sub_linear_range_expr->collection_expr, block, func);
+
+        // TODO: 还需要判断 size
+        // range_expression->u.sub_linear_range_expr->collection_expr->convert_type_size
+
+        TypeSpecifier* type_specifier = range_expression->u.sub_linear_range_expr->collection_expr->convert_type[0];
+        // Ring-Compiler-Error-Report ERROR_RANGE_OPERAND_IS_NOT_ARRAY
+        if (!TYPE_IS_ARRAY(type_specifier)) {
+            DEFINE_ERROR_REPORT_STR;
+            compile_err_buf = sprintf_string(
+                "range operand is not an array; E:%d.",
+                ERROR_RANGE_OPERAND_IS_NOT_ARRAY);
+
+            ErrorReportContext context = {
+                .package                 = nullptr,
+                .package_unit            = get_package_unit(),
+                .source_file_name        = get_package_unit()->current_file_name,
+                .line_content            = package_unit_get_line_content(range_expression->line_number),
+                .line_number             = range_expression->line_number,
+                .column_number           = package_unit_get_column_number(),
+                .error_message           = std::string(compile_err_buf),
+                .advice                  = std::string(compile_adv_buf),
+                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+                .ring_compiler_file      = (char*)__FILE__,
+                .ring_compiler_file_line = __LINE__,
+            };
+            ring_compile_error_report(&context);
+        }
+
+        TypeSpecifier* item_type = (TypeSpecifier*)mem_alloc(get_front_mem_pool(), sizeof(TypeSpecifier));
+        item_type->line_number   = range_expression->line_number;
+
+        // TODO: fix_array_index_expression 与 fix_range_expression 抽象出公共的方法
+        if (type_specifier->u.array_t->dimension > 1) {
+            item_type->kind                 = type_specifier->kind;
+            item_type->u.array_t            = (Ring_DeriveType_Array*)mem_alloc(get_front_mem_pool(), sizeof(Ring_DeriveType_Array));
+            item_type->u.array_t->dimension = type_specifier->u.array_t->dimension - 1;
+            item_type->u.array_t->sub       = type_specifier->u.array_t->sub;
+        } else {
+            // item_type 是基础类型
+            item_type->kind = type_specifier->u.array_t->sub->kind;
+        }
+
+        // shallow copy
+        if (item_type->kind == RING_BASIC_TYPE_CLASS) {
+            item_type->u.class_t = type_specifier->u.array_t->sub->u.class_t;
+        } else if (item_type->kind == RING_BASIC_TYPE_FUNC) {
+            item_type->u.func_t = type_specifier->u.array_t->sub->u.func_t;
+        } else {
+            // 上面已经处理过了
+        }
+        fix_type_specfier(item_type);
+
+        EXPRESSION_CLEAR_CONVERT_TYPE(range_expression);
+        EXPRESSION_ADD_CONVERT_TYPE(range_expression, &int64_type_specifier);
+        EXPRESSION_ADD_CONVERT_TYPE(range_expression, item_type);
+    }
 }
 
 void fix_dofor_statement(DoForStatement* dofor_statement, Block* block, FunctionTuple* func) {
@@ -1057,10 +1152,14 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
     unsigned int                left_expr_num = 0;
     std::vector<TypeSpecifier*> left_convert_type;
     // 对于 left, left_expr_num 和 left_convert_type.size() 是相同的
+    // 因为没有 一个表达式代表两个返回值的情况（没有函数调用）
+    // TODO: 后续修改为 get_type_specifier_from_expression_list
     for (Expression* pos = expression->left; pos; pos = pos->next, left_expr_num++) {
+        // FIXME: 如果 pos->next != nullptr, 会重复修正，耗时增加
         fix_expression(pos, block, func);
         left_convert_type.push_back(pos->convert_type[0]);
     }
+    assert(left_expr_num == left_convert_type.size());
 
     bool                        has_call        = false;
     Expression*                 call_expression = nullptr;
@@ -1068,6 +1167,7 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
     unsigned int                right_expr_num  = 0;
     std::vector<TypeSpecifier*> right_convert_type;
     // 对于 left, 如果某个表达式是个 function-call, 并且有多个返回值, right_expr_num 和 right_convert_type.size() 是不相同的
+    // TODO: 后续修改为 get_type_specifier_from_expression_list
     for (Expression* pos = expression->operand; pos; pos = pos->next, right_expr_num++) {
 
         if (pos->type == EXPRESSION_TYPE_FUNCTION_CALL
@@ -1076,6 +1176,7 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
             has_call        = true;
         }
 
+        // FIXME: 如果 pos->next != nullptr, 会重复修正，耗时增加
         fix_expression(pos, block, func);
 
         for (unsigned int i = 0; i < pos->convert_type_size; i++) {
@@ -1144,6 +1245,7 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
     std::string left_type_s;
     {
         // formate left to string
+        // TODO: 转化成这个函数 std::string format_type_specifier(std::vector<TypeSpecifier*> convert_type)
         std::vector<std::string> tmp;
         for (TypeSpecifier* type : left_convert_type) {
             tmp.push_back(format_type_specifier(type));
@@ -1155,6 +1257,7 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
     std::string right_type_s;
     {
         // formate right to string
+        // TODO: 转化成这个函数 std::string format_type_specifier(std::vector<TypeSpecifier*> convert_type)
         std::vector<std::string> tmp;
         for (TypeSpecifier* type : right_convert_type) {
             tmp.push_back(format_type_specifier(type));
@@ -2282,7 +2385,7 @@ void fix_array_index_expression(Expression*           expression,
 
     TypeSpecifier* type_specifier = variable->decl->type_specifier;
     // Ring-Compiler-Error-Report ERROR_VAR_IS_NOT_ARRAY
-    if (type_specifier->kind != RING_BASIC_TYPE_ARRAY) {
+    if (!TYPE_IS_ARRAY(type_specifier)) {
         DEFINE_ERROR_REPORT_STR;
         compile_err_buf = sprintf_string(
             "`%s` is not an array; E:%d.",
@@ -2332,6 +2435,7 @@ void fix_array_index_expression(Expression*           expression,
      * students[0] is a three-dimension array.
      * students[0,0,0] is a int value.
      */
+    // TODO: fix_array_index_expression 与 fix_range_expression 抽象出公共的方法
     if (index_expression->dimension < variable->decl->type_specifier->u.array_t->dimension) {
         type->kind                 = variable->decl->type_specifier->kind;
         type->u.array_t            = (Ring_DeriveType_Array*)mem_alloc(get_front_mem_pool(), sizeof(Ring_DeriveType_Array));
@@ -3464,4 +3568,21 @@ Variable* variable_list_add_item(Variable* head, Variable* variable) {
     }
     pos->next = variable;
     return head;
+}
+
+std::vector<TypeSpecifier*> get_type_specifier_from_expression_list(Expression* expression) {
+    std::vector<TypeSpecifier*> type_specifier_list;
+    for (Expression* pos = expression; pos; pos = pos->next) {
+        for (unsigned int i = 0; i < pos->convert_type_size; i++) {
+            type_specifier_list.push_back(pos->convert_type[i]);
+        }
+    }
+    return type_specifier_list;
+}
+std::vector<TypeSpecifier*> get_type_specifier_from_range_expression(RangeExpression* expression) {
+    std::vector<TypeSpecifier*> type_specifier_list;
+    for (unsigned int i = 0; i < expression->convert_type_size; i++) {
+        type_specifier_list.push_back(expression->convert_type[i]);
+    }
+    return type_specifier_list;
 }

@@ -821,84 +821,172 @@ void generate_vmcode_from_for_range_statement(Package_Executer* executer,
     assert(for_statement->u.range_statement != nullptr);
 
 
-    unsigned int       end_label       = 0;
-    unsigned int       loop_label      = 0;
-    unsigned int       continue_label  = 0;
+    unsigned int       end_label        = 0;
+    unsigned int       loop_label       = 0;
+    unsigned int       continue_label   = 0;
 
-    ForRangeStatement* range_statement = for_statement->u.range_statement;
+    ForRangeStatement* range_statement  = for_statement->u.range_statement;
+    RangeExpression*   range_expression = for_statement->u.range_statement->range_expr;
 
-    // step-1. range_call
-    //       push array-object & array-iter to runtime_stack
+    // TODO: 重构下
+    if (range_expression->type == RANGE_EXPRESSION_TYPE_STEP) {
 
-    // push array-object
-    generate_vmcode_from_expression(executer, range_statement->operand, opcode_buffer);
-    // push array-iterator
-    // TODO: 这里数组的数量受到了限制，最大 65536
-    generate_vmcode(executer, opcode_buffer,
-                    RVM_CODE_PUSH_INT_2BYTE, 0,
-                    range_statement->operand->u.identifier_expression->line_number);
+        SubStepRangeExpression* sub_step_range_expr = range_expression->u.sub_step_range_expr;
 
-
-    loop_label = opcode_buffer_get_label(opcode_buffer);
-    opcode_buffer_set_label(opcode_buffer, loop_label, opcode_buffer->code_size);
-
-    // step-2. range_loop
-    //       [RVM_CODE_FOR_RANGE_INIT]: push index & value to runtime_stack
-    //       [RVM_CODE_FOR_RANGE_INIT]: add array-iter
-    //       pop -> index & value
-    end_label = opcode_buffer_get_label(opcode_buffer);
-
-
-    assert(range_statement->operand->convert_type_size == 1
-           && range_statement->operand->convert_type != nullptr);
-    TypeSpecifier* type_specifier = range_statement->operand->convert_type[0];
-    assert(type_specifier != nullptr);
-
-
-    if (type_specifier->u.array_t->dimension > 1) {
-        generate_vmcode(executer, opcode_buffer, RVM_CODE_FOR_RANGE_ARRAY_A, end_label, range_statement->operand->u.identifier_expression->line_number);
-    } else {
-
-        RVM_Opcode opcode = RVM_CODE_UNKNOW;
-        switch (type_specifier->u.array_t->sub->kind) {
-        case RING_BASIC_TYPE_BOOL: opcode = RVM_CODE_FOR_RANGE_ARRAY_BOOL; break;
-        case RING_BASIC_TYPE_INT: opcode = RVM_CODE_FOR_RANGE_ARRAY_INT; break;
-        case RING_BASIC_TYPE_INT64: opcode = RVM_CODE_FOR_RANGE_ARRAY_INT64; break;
-        case RING_BASIC_TYPE_DOUBLE: opcode = RVM_CODE_FOR_RANGE_ARRAY_DOUBLE; break;
-        case RING_BASIC_TYPE_STRING: opcode = RVM_CODE_FOR_RANGE_ARRAY_STRING; break;
-        case RING_BASIC_TYPE_CLASS: opcode = RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB; break;
-        case RING_BASIC_TYPE_FUNC: opcode = RVM_CODE_FOR_RANGE_ARRAY_CLOSURE; break;
-        default: ring_error_report("error: range expression only support bool[] int[] int64[] double[] string[] class[] fn[]\n");
+        // push start/end/step
+        generate_vmcode_from_expression(executer, sub_step_range_expr->start_expr, opcode_buffer);
+        generate_vmcode_from_expression(executer, sub_step_range_expr->end_expr, opcode_buffer);
+        if (sub_step_range_expr->step_expr != nullptr) {
+            generate_vmcode_from_expression(executer, sub_step_range_expr->step_expr, opcode_buffer);
+        } else {
+            // step 为 1
+            // TODO: 这个字节码设计的不好，需要优化一下
+            if (sub_step_range_expr->value_type == RING_BASIC_TYPE_INT64) {
+                generate_vmcode(executer, opcode_buffer,
+                                RVM_CODE_PUSH_INT_1BYTE, 1,
+                                sub_step_range_expr->line_number);
+            } else if (sub_step_range_expr->value_type == RING_BASIC_TYPE_DOUBLE) {
+                generate_vmcode(executer, opcode_buffer,
+                                RVM_CODE_PUSH_DOUBLE_1, 0,
+                                sub_step_range_expr->line_number);
+            }
         }
-        generate_vmcode(executer, opcode_buffer, opcode, end_label, range_statement->operand->u.identifier_expression->line_number);
+
+        // 是否为闭区间
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_PUSH_BOOL, (RVM_Bool)(sub_step_range_expr->is_inclusive),
+                        sub_step_range_expr->line_number);
+
+        // 需要区分不同的类型
+        // range_step_init_int64 or range_step_init_double
+        if (sub_step_range_expr->value_type == RING_BASIC_TYPE_INT64) {
+            generate_vmcode(executer, opcode_buffer,
+                            RVM_CODE_RANGE_STEP_INIT_INT64, 0,
+                            sub_step_range_expr->line_number);
+        } else if (sub_step_range_expr->value_type == RING_BASIC_TYPE_DOUBLE) {
+            generate_vmcode(executer, opcode_buffer,
+                            RVM_CODE_RANGE_STEP_INIT_DOUBLE, 0,
+                            sub_step_range_expr->line_number);
+        }
+
+
+        loop_label = opcode_buffer_get_label(opcode_buffer);
+        opcode_buffer_set_label(opcode_buffer, loop_label, opcode_buffer->code_size);
+
+        end_label = opcode_buffer_get_label(opcode_buffer);
+
+        // range_has_next
+        // if not next, jump to finish
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_RANGE_HAS_NEXT, end_label,
+                        sub_step_range_expr->line_number);
+
+        // range_get_next 取出next值，放在stack中
+        // pop left value list
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_RANGE_GET_NEXT_1, 0,
+                        sub_step_range_expr->line_number);
+
+        // assign
+        generate_pop_to_leftvalue_reverse(executer, range_statement->left, opcode_buffer);
+
+        // block vm code
+        if (for_statement->block) {
+            for_statement->block->block_labels.break_label = end_label;
+            for_statement->block->block_labels.continue_label =
+                continue_label = opcode_buffer_get_label(opcode_buffer);
+
+            generate_vmcode_from_block(executer, for_statement->block, opcode_buffer);
+        }
+
+        opcode_buffer_set_label(opcode_buffer, continue_label, opcode_buffer->code_size);
+
+        // jump to range_has_next
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_JUMP, loop_label,
+                        range_expression->line_number);
+
+        // range_finish_2
+        opcode_buffer_set_label(opcode_buffer, end_label, opcode_buffer->code_size);
+
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_RANGE_FINISH, 0,
+                        range_expression->line_number);
+
+    } else if (range_expression->type == RANGE_EXPRESSION_TYPE_LINEAR) {
+        SubLinearRangeExpression* sub_linear_range_expr = range_expression->u.sub_linear_range_expr;
+
+        // push array
+        generate_vmcode_from_expression(executer,
+                                        sub_linear_range_expr->collection_expr,
+                                        opcode_buffer);
+
+        // range_init_linear
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_RANGE_LINEAR_INIT, 0,
+                        sub_linear_range_expr->line_number);
+
+
+        loop_label = opcode_buffer_get_label(opcode_buffer);
+        opcode_buffer_set_label(opcode_buffer, loop_label, opcode_buffer->code_size);
+
+        end_label = opcode_buffer_get_label(opcode_buffer);
+
+        // range_has_next
+        // if not next, jump to finish
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_RANGE_HAS_NEXT, end_label,
+                        sub_linear_range_expr->line_number);
+
+        // range_get_next 取出next值，放在stack中
+        // pop left value list
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_RANGE_GET_NEXT_2, 0,
+                        sub_linear_range_expr->line_number);
+
+
+        // assign
+        generate_pop_to_leftvalue_reverse(executer, range_statement->left, opcode_buffer);
+
+        // TODO:
+        // 这里兼容一下历史的测试用例 range
+        // 后续删除
+        unsigned int i = 0;
+        for (Expression* tmp = range_statement->left; tmp != nullptr; tmp = tmp->next, i++) {
+        }
+        if (i == 1) {
+            // 把 array_index 丢弃掉，只保留 array_value
+            generate_vmcode(executer, opcode_buffer,
+                            RVM_CODE_POP, 1,
+                            sub_linear_range_expr->line_number);
+        }
+
+
+        // block vm code
+        if (for_statement->block) {
+            for_statement->block->block_labels.break_label = end_label;
+            for_statement->block->block_labels.continue_label =
+                continue_label = opcode_buffer_get_label(opcode_buffer);
+
+            generate_vmcode_from_block(executer, for_statement->block, opcode_buffer);
+        }
+
+        opcode_buffer_set_label(opcode_buffer, continue_label, opcode_buffer->code_size);
+
+
+        // jump to range_has_next
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_JUMP, loop_label,
+                        range_expression->line_number);
+
+
+        // range_finish_2
+        opcode_buffer_set_label(opcode_buffer, end_label, opcode_buffer->code_size);
+
+        generate_vmcode(executer, opcode_buffer,
+                        RVM_CODE_RANGE_FINISH, 0,
+                        range_expression->line_number);
     }
-
-
-    generate_pop_to_leftvalue_reverse(executer, range_statement->left, opcode_buffer);
-
-    // Step-3:
-    if (for_statement->block) {
-        for_statement->block->block_labels.break_label = end_label;
-        for_statement->block->block_labels.continue_label =
-            continue_label = opcode_buffer_get_label(opcode_buffer);
-
-        generate_vmcode_from_block(executer, for_statement->block, opcode_buffer);
-    }
-
-    opcode_buffer_set_label(opcode_buffer, continue_label, opcode_buffer->code_size);
-
-
-    // step-4. jump to range_loop
-    generate_vmcode(executer, opcode_buffer,
-                    RVM_CODE_JUMP, loop_label,
-                    range_statement->operand->u.identifier_expression->line_number);
-
-    // step-5. range_finish
-    opcode_buffer_set_label(opcode_buffer, end_label, opcode_buffer->code_size);
-
-    generate_vmcode(executer, opcode_buffer,
-                    RVM_CODE_FOR_RANGE_FINISH, 0,
-                    range_statement->operand->u.identifier_expression->line_number);
 }
 
 
@@ -2684,14 +2772,7 @@ void opcode_buffer_fix_label(RVM_OpcodeBuffer* opcode_buffer) {
         case RVM_CODE_JUMP:
         case RVM_CODE_JUMP_IF_FALSE:
         case RVM_CODE_JUMP_IF_TRUE:
-        case RVM_CODE_FOR_RANGE_ARRAY_BOOL:
-        case RVM_CODE_FOR_RANGE_ARRAY_INT:
-        case RVM_CODE_FOR_RANGE_ARRAY_INT64:
-        case RVM_CODE_FOR_RANGE_ARRAY_DOUBLE:
-        case RVM_CODE_FOR_RANGE_ARRAY_STRING:
-        case RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB:
-        case RVM_CODE_FOR_RANGE_ARRAY_CLOSURE:
-        case RVM_CODE_FOR_RANGE_ARRAY_A:
+        case RVM_CODE_RANGE_HAS_NEXT:
             label                           = (opcode_buffer->code_list[i + 1] << 8) + (opcode_buffer->code_list[i + 2]);
             label_address                   = opcode_buffer->lable_list[label].label_address;
 

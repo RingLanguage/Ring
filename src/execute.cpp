@@ -32,11 +32,14 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     (VM_CUR_CO_STACK_DATA[(index)].u.array_value)
 #define STACK_GET_CLOSURE_INDEX(index) \
     (VM_CUR_CO_STACK_DATA[(index)].u.closure_value)
+#define STACK_GET_RANGE_ITER_INDEX(index) \
+    (VM_CUR_CO_STACK_DATA[(index)].u.range_iterator_value)
 // TODO: 感觉这个实现的不好
-#define STACK_GET_INTORINT64_INDEX(index)                         \
+#define STACK_GET_INT_OR_INT64_INDEX(index)                       \
     ((VM_CUR_CO_STACK_DATA[(index)].type == RVM_VALUE_TYPE_INT) ? \
          (VM_CUR_CO_STACK_DATA[(index)].u.int_value) :            \
          (VM_CUR_CO_STACK_DATA[(index)].u.int64_value))
+
 
 // 通过栈顶偏移 offset 获取 VM_CUR_CO_STACK_DATA
 #define STACK_GET_TYPE_OFFSET(offset) \
@@ -57,8 +60,10 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     STACK_GET_ARRAY_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
 #define STACK_GET_CLOSURE_OFFSET(offset) \
     STACK_GET_CLOSURE_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
-#define STACK_GET_INTORINT64_OFFSET(offset) \
-    STACK_GET_INTORINT64_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
+#define STACK_GET_RANGE_ITER_OFFSET(offset) \
+    STACK_GET_RANGE_ITER_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
+#define STACK_GET_INT_OR_INT64_OFFSET(offset) \
+    STACK_GET_INT_OR_INT64_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset))
 
 // 通过绝对索引 设置 VM_CUR_CO_STACK_DATA
 #define STACK_SET_BOOL_INDEX(index, value)                            \
@@ -85,6 +90,9 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
 #define STACK_SET_CLOSURE_INDEX(index, value)                               \
     VM_CUR_CO_STACK_DATA[(index)].type            = RVM_VALUE_TYPE_CLOSURE; \
     VM_CUR_CO_STACK_DATA[(index)].u.closure_value = (value);
+#define STACK_SET_RANGE_ITER_INDEX(index, value)                                     \
+    VM_CUR_CO_STACK_DATA[(index)].type                   = RVM_VALUE_RANGE_ITERATOR; \
+    VM_CUR_CO_STACK_DATA[(index)].u.range_iterator_value = (value);
 
 // 通过栈顶偏移 offset 设置 VM_CUR_CO_STACK_DATA
 #define STACK_SET_BOOL_OFFSET(offset, value) \
@@ -103,6 +111,8 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
     STACK_SET_ARRAY_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset), (value))
 #define STACK_SET_CLOSURE_OFFSET(offset, value) \
     STACK_SET_CLOSURE_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset), (value))
+#define STACK_SET_RANGE_ITER_OFFSET(offset, value) \
+    STACK_SET_RANGE_ITER_INDEX(VM_CUR_CO_STACK_TOP_INDEX + (offset), (value))
 
 #define GET_FREE_VALUE(index)                                                                    \
     ((VM_CUR_CO_CALLINFO->curr_closure->fvb->list[(index)].state == RVM_FREEVALUE_STATE_RECUR) ? \
@@ -408,6 +418,8 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
     RVM_DeferItem*       defer_item             = nullptr;
 
+    RVM_RangeIterator*   range_iterator         = nullptr;
+
 
     for (; VM_CUR_CO_PC < VM_CUR_CO_CODE_SIZE; prev_opcde = opcode) {
         opcode = VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC];
@@ -520,6 +532,11 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             break;
         case RVM_CODE_PUSH_INT__1:
             STACK_SET_INT_OFFSET(0, -1);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_PUSH_DOUBLE_1:
+            STACK_SET_DOUBLE_OFFSET(0, 1.0);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
             VM_CUR_CO_PC += 1;
             break;
@@ -1357,153 +1374,106 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             break;
 
 
-        // range array/string
-        case RVM_CODE_FOR_RANGE_ARRAY_A:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
+        case RVM_CODE_RANGE_STEP_INIT_INT64: {
+            long long start_       = STACK_GET_INT_OR_INT64_OFFSET(-4);
+            long long end_         = STACK_GET_INT_OR_INT64_OFFSET(-3);
+            long long step_        = STACK_GET_INT_OR_INT64_OFFSET(-2);
+            bool      is_inclusive = (bool)STACK_GET_BOOL_OFFSET(-1);
+            VM_CUR_CO_STACK_TOP_INDEX -= 4;
+
+            range_iterator = new RVM_StepRangeIterator<long long>(start_, end_, step_, is_inclusive); // TODO:
+            STACK_SET_RANGE_ITER_OFFSET(0, range_iterator);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_RANGE_STEP_INIT_DOUBLE: {
+            double start        = STACK_GET_DOUBLE_OFFSET(-4);
+            double end          = STACK_GET_DOUBLE_OFFSET(-3);
+            double step         = STACK_GET_DOUBLE_OFFSET(-2);
+            bool   is_inclusive = (bool)STACK_GET_BOOL_OFFSET(-1);
+            VM_CUR_CO_STACK_TOP_INDEX -= 4;
+
+            range_iterator = new RVM_StepRangeIterator<double>(start, end, step, is_inclusive);
+            STACK_SET_RANGE_ITER_OFFSET(0, range_iterator);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_RANGE_LINEAR_INIT:
+            array_value = STACK_GET_ARRAY_OFFSET(-1);
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+
+            range_iterator = new RVM_LinearRangeIterator(array_value);
+            STACK_SET_RANGE_ITER_OFFSET(0, range_iterator);
+            VM_CUR_CO_STACK_TOP_INDEX += 1;
+
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_RANGE_HAS_NEXT:
+            // if not has_next, jump to pc
+            range_iterator = STACK_GET_RANGE_ITER_OFFSET(-1);
+            if (!range_iterator->has_next()) {
                 VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
                 break;
             }
-            rvm_array_get_array(rvm, array_value, array_index, &array_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_A 的不同点 区别
-            STACK_SET_ARRAY_OFFSET(0, array_value);
-            VM_CUR_CO_STACK_TOP_INDEX += 1;
             VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
             break;
-        case RVM_CODE_FOR_RANGE_ARRAY_BOOL:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
-                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-                break;
+        case RVM_CODE_RANGE_GET_NEXT_1: {
+            range_iterator        = STACK_GET_RANGE_ITER_OFFSET(-1);
+            auto range_value_list = range_iterator->get_next();
+            if (int* tmp_int_value = std::get_if<int>(&range_value_list)) {
+                STACK_SET_INT_OFFSET(0, (*tmp_int_value));
+            } else if (long long* tmp_int64_value = std::get_if<long long>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, (*tmp_int64_value));
+            } else if (double* tmp_double_value = std::get_if<double>(&range_value_list)) {
+                STACK_SET_DOUBLE_OFFSET(0, (*tmp_double_value));
             }
-            rvm_array_get_bool(rvm, array_value, array_index, &bool_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_BOOL 的不同点 区别
-            STACK_SET_BOOL_OFFSET(0, (RVM_Bool)((int)bool_value));
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
-            break;
-        case RVM_CODE_FOR_RANGE_ARRAY_INT:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
-                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-                break;
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_RANGE_GET_NEXT_2: {
+            range_iterator        = STACK_GET_RANGE_ITER_OFFSET(-1);
+            auto range_value_list = range_iterator->get_next();
+            if (std::tuple<usize, bool>* tmp = std::get_if<std::tuple<usize, bool>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_BOOL_OFFSET(1, (RVM_Bool)(std::get<1>(*tmp)));
+            } else if (std::tuple<usize, int>* tmp = std::get_if<std::tuple<usize, int>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_INT_OFFSET(1, std::get<1>(*tmp));
+            } else if (std::tuple<usize, long long>* tmp = std::get_if<std::tuple<usize, long long>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_INT64_OFFSET(1, std::get<1>(*tmp));
+            } else if (std::tuple<usize, double>* tmp = std::get_if<std::tuple<usize, double>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_DOUBLE_OFFSET(1, std::get<1>(*tmp));
+            } else if (std::tuple<usize, RVM_String*>* tmp = std::get_if<std::tuple<usize, RVM_String*>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_STRING_OFFSET(1, std::get<1>(*tmp));
+            } else if (std::tuple<usize, RVM_ClassObject*>* tmp = std::get_if<std::tuple<usize, RVM_ClassObject*>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_CLASS_OB_OFFSET(1, std::get<1>(*tmp));
+            } else if (std::tuple<usize, RVM_Array*>* tmp = std::get_if<std::tuple<usize, RVM_Array*>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_ARRAY_OFFSET(1, std::get<1>(*tmp));
+            } else if (std::tuple<usize, RVM_Closure*>* tmp = std::get_if<std::tuple<usize, RVM_Closure*>>(&range_value_list)) {
+                STACK_SET_INT64_OFFSET(0, std::get<0>(*tmp));
+                STACK_SET_CLOSURE_OFFSET(1, std::get<1>(*tmp));
             }
-            rvm_array_get_int(rvm, array_value, array_index, &int_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_INT 的不同点 区别
-            STACK_SET_INT_OFFSET(0, int_value);
-            VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
-            break;
-        case RVM_CODE_FOR_RANGE_ARRAY_INT64:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
-                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-                break;
-            }
-            rvm_array_get_int64(rvm, array_value, array_index, &int64_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_INT 的不同点 区别
-            STACK_SET_INT64_OFFSET(0, int64_value);
-            VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
-            break;
-        case RVM_CODE_FOR_RANGE_ARRAY_DOUBLE:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
-                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-                break;
-            }
-            rvm_array_get_double(rvm, array_value, array_index, &double_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_DOUBLE 的不同点 区别
-            STACK_SET_DOUBLE_OFFSET(0, double_value);
-            VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
-            break;
-        case RVM_CODE_FOR_RANGE_ARRAY_STRING:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
-                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-                break;
-            }
-            rvm_array_get_string(rvm, array_value, array_index, &string_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_STRING 的不同点 区别
-            STACK_SET_STRING_OFFSET(0, string_value);
-            VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
-            break;
-        case RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
-                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-                break;
-            }
-            rvm_array_get_class_object(rvm, array_value, array_index, &class_ob_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_OBJECT 的不同点 区别
-            STACK_SET_CLASS_OB_OFFSET(0, class_ob_value);
-            VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
-            break;
-        case RVM_CODE_FOR_RANGE_ARRAY_CLOSURE:
-            array_value = STACK_GET_ARRAY_OFFSET(-2);
-            array_index = STACK_GET_INT_OFFSET(-1);
-            assert_throw_nil_array(array_value == nullptr);
-            if (array_index >= array_value->length) {
-                VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-                break;
-            }
-            rvm_array_get_closure(rvm, array_value, array_index, &closure_value);
-            // VM_CUR_CO_STACK_TOP_INDEX -= 2; // 与 RVM_CODE_PUSH_ARRAY_CLOSURE 的不同点 区别
-            STACK_SET_CLOSURE_OFFSET(0, closure_value);
-            VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
-
-            // increase iter of range
-            STACK_GET_INT_OFFSET(-2) += 1;
-            break;
-        case RVM_CODE_FOR_RANGE_FINISH:
-            VM_CUR_CO_STACK_TOP_INDEX -= 2;
-            VM_CUR_CO_PC += 3;
+            VM_CUR_CO_STACK_TOP_INDEX += 2;
+            VM_CUR_CO_PC += 1;
+        } break;
+        case RVM_CODE_RANGE_FINISH:
+            // TODO: 需要销毁 iterator
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
             break;
 
 
         // slice array/string
         case RVM_CODE_SLICE_ARRAY: {
-            long long end   = STACK_GET_INTORINT64_OFFSET(-1);
-            long long start = STACK_GET_INTORINT64_OFFSET(-2);
+            long long end   = STACK_GET_INT_OR_INT64_OFFSET(-1);
+            long long start = STACK_GET_INT_OR_INT64_OFFSET(-2);
             array_value     = STACK_GET_ARRAY_OFFSET(-3);
             VM_CUR_CO_STACK_TOP_INDEX -= 3;
 
@@ -1515,8 +1485,8 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_PC += 1;
         } break;
         case RVM_CODE_SLICE_STRING: {
-            long long end   = STACK_GET_INTORINT64_OFFSET(-1);
-            long long start = STACK_GET_INTORINT64_OFFSET(-2);
+            long long end   = STACK_GET_INT_OR_INT64_OFFSET(-1);
+            long long start = STACK_GET_INT_OR_INT64_OFFSET(-2);
             string_value    = STACK_GET_STRING_OFFSET(-3);
             VM_CUR_CO_STACK_TOP_INDEX -= 3;
 
@@ -2035,9 +2005,11 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
         // jump
         case RVM_CODE_JUMP:
+            // TODO: 两个字节不一定够用的
             VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             break;
         case RVM_CODE_JUMP_IF_FALSE:
+            // TODO: 两个字节不一定够用的
             if (!STACK_GET_INT_OFFSET(-1)) {
                 VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             } else {
@@ -2046,6 +2018,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_STACK_TOP_INDEX -= 1;
             break;
         case RVM_CODE_JUMP_IF_TRUE:
+            // TODO: 两个字节不一定够用的
             if (STACK_GET_INT_OFFSET(-1)) {
                 VM_CUR_CO_PC = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             } else {

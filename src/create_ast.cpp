@@ -923,19 +923,19 @@ ForStatement* create_for_ternary_statement(Expression* init_expression,
     return for_statement;
 }
 
-ForStatement* create_for_range_statement(Expression* left,
-                                         Expression* operand,
-                                         Block*      block) {
+ForStatement* create_for_range_statement(Expression*      left,
+                                         RangeExpression* range_expr,
+                                         Block*           block) {
 
     debug_ast_info_with_yellow("\t");
 
-    ForStatement* for_statement               = (ForStatement*)mem_alloc(get_front_mem_pool(), sizeof(ForStatement));
-    for_statement->line_number                = package_unit_get_line_number();
-    for_statement->type                       = FOR_STATEMENT_TYPE_RANGE;
-    for_statement->u.range_statement          = (ForRangeStatement*)mem_alloc(get_front_mem_pool(), sizeof(ForRangeStatement));
-    for_statement->u.range_statement->left    = left;
-    for_statement->u.range_statement->operand = operand;
-    for_statement->block                      = block;
+    ForStatement* for_statement                  = (ForStatement*)mem_alloc(get_front_mem_pool(), sizeof(ForStatement));
+    for_statement->line_number                   = package_unit_get_line_number();
+    for_statement->type                          = FOR_STATEMENT_TYPE_RANGE;
+    for_statement->u.range_statement             = (ForRangeStatement*)mem_alloc(get_front_mem_pool(), sizeof(ForRangeStatement));
+    for_statement->u.range_statement->left       = left;
+    for_statement->u.range_statement->range_expr = range_expr;
+    for_statement->block                         = block;
 
     if (block) {
         block->type = BLOCK_TYPE_FOR;
@@ -1183,6 +1183,42 @@ SubSliceExpression* create_sub_slice_expression(Expression* start_expr, Expressi
     sub_slice->end_expr           = end_expr;
     return sub_slice;
 }
+
+RangeExpression* create_range_expression_from_step_range(SubStepRangeExpression* sub_step_range) {
+    RangeExpression* range_expr       = (RangeExpression*)mem_alloc(get_front_mem_pool(), sizeof(RangeExpression));
+    range_expr->line_number           = package_unit_get_line_number();
+    range_expr->type                  = RANGE_EXPRESSION_TYPE_STEP;
+    range_expr->u.sub_step_range_expr = sub_step_range;
+    return range_expr;
+}
+RangeExpression* create_range_expression_from_linear_range(SubLinearRangeExpression* sub_linear_range) {
+    RangeExpression* range_expr         = (RangeExpression*)mem_alloc(get_front_mem_pool(), sizeof(RangeExpression));
+    range_expr->line_number             = package_unit_get_line_number();
+    range_expr->type                    = RANGE_EXPRESSION_TYPE_LINEAR;
+    range_expr->u.sub_linear_range_expr = sub_linear_range;
+    return range_expr;
+}
+
+
+SubStepRangeExpression* create_step_range_expression(Expression* start_expr,
+                                                     Expression* end_expr,
+                                                     Expression* step_expr,
+                                                     bool        is_inclusive) {
+    SubStepRangeExpression* range_expr = (SubStepRangeExpression*)mem_alloc(get_front_mem_pool(), sizeof(SubStepRangeExpression));
+    range_expr->line_number            = package_unit_get_line_number();
+    range_expr->start_expr             = start_expr;
+    range_expr->end_expr               = end_expr;
+    range_expr->step_expr              = step_expr;
+    range_expr->is_inclusive           = is_inclusive;
+    return range_expr;
+}
+SubLinearRangeExpression* create_linear_range_expression(Expression* collection_expr) {
+    SubLinearRangeExpression* range_expr = (SubLinearRangeExpression*)mem_alloc(get_front_mem_pool(), sizeof(SubLinearRangeExpression));
+    range_expr->line_number              = package_unit_get_line_number();
+    range_expr->collection_expr          = collection_expr;
+    return range_expr;
+}
+
 
 TypeSpecifier* create_type_specifier(Ring_BasicType basic_type) {
     debug_ast_info_with_yellow("basic_type:%d", basic_type);

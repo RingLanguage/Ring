@@ -66,6 +66,9 @@ typedef struct DimensionExpression          DimensionExpression;
 typedef struct SubDimensionExpression       SubDimensionExpression;
 typedef struct SliceExpression              SliceExpression;
 typedef struct SubSliceExpression           SubSliceExpression;
+typedef struct RangeExpression              RangeExpression;
+typedef struct SubStepRangeExpression       SubStepRangeExpression;
+typedef struct SubLinearRangeExpression     SubLinearRangeExpression;
 typedef struct BinaryExpression             BinaryExpression;
 typedef struct TernaryExpression            TernaryExpression;
 typedef struct FunctionCallExpression       FunctionCallExpression;
@@ -156,6 +159,8 @@ typedef struct MemBlock                     MemBlock;
 
 typedef struct Ring_Grammar_Info            Ring_Grammar_Info;
 
+typedef class RVM_RangeIterator             RVM_RangeIterator;
+
 
 typedef enum {
     GRAMMAR_UNKNOW = 0,
@@ -181,6 +186,7 @@ typedef enum : unsigned char {
     RVM_VALUE_TYPE_CLASS_OB,
     RVM_VALUE_TYPE_ARRAY,
     RVM_VALUE_TYPE_CLOSURE,
+    RVM_VALUE_RANGE_ITERATOR,
 
 } RVM_Value_Type;
 
@@ -201,14 +207,16 @@ typedef enum : int {
 typedef struct {
     RVM_Value_Type type;
     union {
-        RVM_Bool         bool_value;
-        int              int_value;
-        long long        int64_value;
-        double           double_value;
-        RVM_String*      string_value;
-        RVM_ClassObject* class_ob_value;
-        RVM_Array*       array_value;
-        RVM_Closure*     closure_value;
+        RVM_Bool           bool_value;
+        int                int_value;
+        long long          int64_value;
+        double             double_value;
+        RVM_String*        string_value;
+        RVM_ClassObject*   class_ob_value;
+        RVM_Array*         array_value;
+        RVM_Closure*       closure_value;
+        RVM_RangeIterator* range_iterator_value;
+        // range_iterator_value 只用在栈上，用于临时存放
     } u;
 
 } RVM_Value;
@@ -582,6 +590,8 @@ struct TypeSpecifier {
     (((type)->kind == RING_BASIC_TYPE_DOUBLE))
 #define TYPE_IS_STRING(type) \
     (((type)->kind == RING_BASIC_TYPE_STRING))
+#define TYPE_IS_ARRAY(type) \
+    (((type)->kind == RING_BASIC_TYPE_ARRAY))
 
 // 比较运算符 > >= < <= == !=
 #define TYPE_IS_COMPARE_EQ(type)                 \
@@ -994,6 +1004,7 @@ typedef enum {
     RVM_CODE_PUSH_INT_1BYTE, // operand 0-255
     RVM_CODE_PUSH_INT_2BYTE, // operand 256-65535
     RVM_CODE_PUSH_INT__1,
+    RVM_CODE_PUSH_DOUBLE_1,
 
     RVM_CODE_PUSH_INT,   // bigger 65535
     RVM_CODE_PUSH_INT64, // bigger 65535
@@ -1109,15 +1120,13 @@ typedef enum {
 
 
     // range array/string
-    RVM_CODE_FOR_RANGE_ARRAY_A,
-    RVM_CODE_FOR_RANGE_ARRAY_BOOL,
-    RVM_CODE_FOR_RANGE_ARRAY_INT,
-    RVM_CODE_FOR_RANGE_ARRAY_INT64,
-    RVM_CODE_FOR_RANGE_ARRAY_DOUBLE,
-    RVM_CODE_FOR_RANGE_ARRAY_STRING,
-    RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB,
-    RVM_CODE_FOR_RANGE_ARRAY_CLOSURE,
-    RVM_CODE_FOR_RANGE_FINISH,
+    RVM_CODE_RANGE_STEP_INIT_INT64,
+    RVM_CODE_RANGE_STEP_INIT_DOUBLE,
+    RVM_CODE_RANGE_LINEAR_INIT,
+    RVM_CODE_RANGE_HAS_NEXT,
+    RVM_CODE_RANGE_GET_NEXT_1,
+    RVM_CODE_RANGE_GET_NEXT_2,
+    RVM_CODE_RANGE_FINISH,
 
     // slice array/string
     RVM_CODE_SLICE_ARRAY,
@@ -1851,6 +1860,157 @@ struct SubSliceExpression {
 };
 
 typedef enum {
+    RANGE_EXPRESSION_TYPE_UNKNOW = 0,
+    RANGE_EXPRESSION_TYPE_STEP,
+    RANGE_EXPRESSION_TYPE_LINEAR,
+} SubRangeExpressionType;
+struct RangeExpression {
+    unsigned int line_number;
+
+    // 与 Expression 中概念相同
+    unsigned int           convert_type_size; // UPDATED_BY_FIX_AST
+    TypeSpecifier**        convert_type;      // UPDATED_BY_FIX_AST
+
+    SubRangeExpressionType type;
+    union {
+        SubStepRangeExpression*   sub_step_range_expr;
+        SubLinearRangeExpression* sub_linear_range_expr;
+    } u;
+};
+// 算术步长范围
+struct SubStepRangeExpression {
+    unsigned int line_number;
+
+    Expression*  start_expr;
+    Expression*  end_expr;
+    Expression*  step_expr;
+
+    // true  end_expr为闭区间
+    // false end_expr开区间
+    bool is_inclusive;
+
+    // 需要生成什么类型的step
+    // int64 or double
+    // 需要 通过 start_expr/end_expr/step_expr 综合判断
+    Ring_BasicType value_type; // UPDATED_BY_FIX_AST
+};
+// 线性范围：集合相关
+struct SubLinearRangeExpression {
+    unsigned int line_number;
+
+    // 目前只支持数组
+    // 后续可以支持map
+    Expression* collection_expr; // 数组，字符串，map
+};
+
+// TODO:
+// 专门用来给 array string 的 index使用
+// 后续需要固定为 64位、32位，参考rust实现
+// 后续改成 unsigned long long
+using usize = unsigned long long;
+
+//
+using RVM_RangeIterator_RangeValue = std::variant<
+    int,
+    long long,
+    double,
+    std::tuple<usize, bool>,
+    std::tuple<usize, int>,
+    std::tuple<usize, long long>,
+    std::tuple<usize, double>,
+    std::tuple<usize, RVM_String*>,
+    std::tuple<usize, RVM_ClassObject*>,
+    std::tuple<usize, RVM_Array*>,
+    std::tuple<usize, RVM_Closure*>>;
+
+class RVM_RangeIterator {
+public:
+    virtual bool                         has_next() = 0;
+    virtual RVM_RangeIterator_RangeValue get_next() = 0;
+};
+
+
+template <typename T>
+concept AllowedTypes = std::is_same_v<T, int> || std::is_same_v<T, long long> || std::is_same_v<T, double>;
+template <AllowedTypes T>
+class RVM_StepRangeIterator : public RVM_RangeIterator {
+    T    current;
+    T    end;
+    T    step;
+    bool is_inclusive; // end 是否为闭区间
+
+public:
+    RVM_StepRangeIterator(T start, T end, T step, bool is_inclusive) :
+        current(start),
+        end(end),
+        step(step),
+        is_inclusive(is_inclusive) {
+    }
+    virtual bool has_next() {
+        if (step > 0)
+            return is_inclusive ? (current <= end) : (current < end);
+        else
+            return is_inclusive ? (current >= end) : (current > end);
+    }
+    virtual RVM_RangeIterator_RangeValue get_next() {
+        auto val = current;
+        current += step;
+        return val;
+    }
+};
+
+class RVM_LinearRangeIterator : public RVM_RangeIterator {
+private:
+    RVM_Array* array_value;
+    long long  index; // 数组的索引
+
+public:
+    RVM_LinearRangeIterator(RVM_Array* array_value) :
+        array_value(array_value),
+        index(0) {
+        };
+    virtual bool has_next() {
+        return index < array_value->length;
+    };
+    virtual RVM_RangeIterator_RangeValue get_next() {
+        RVM_RangeIterator_RangeValue result;
+
+        switch (array_value->type) {
+        case RVM_ARRAY_BOOL:
+            result.emplace<std::tuple<usize, bool>>(index, array_value->u.bool_array[index]);
+            break;
+        case RVM_ARRAY_INT:
+            result.emplace<std::tuple<usize, int>>(index, array_value->u.int_array[index]);
+            break;
+        case RVM_ARRAY_INT64:
+            result.emplace<std::tuple<usize, long long>>(index, array_value->u.int64_array[index]);
+            break;
+        case RVM_ARRAY_DOUBLE:
+            result.emplace<std::tuple<usize, double>>(index, array_value->u.double_array[index]);
+            break;
+        case RVM_ARRAY_STRING:
+            result.emplace<std::tuple<usize, RVM_String*>>(index, array_value->u.string_array[index]);
+            break;
+        case RVM_ARRAY_CLASS_OBJECT:
+            result.emplace<std::tuple<usize, RVM_ClassObject*>>(index, array_value->u.class_ob_array[index]);
+            break;
+        case RVM_ARRAY_A:
+            result.emplace<std::tuple<usize, RVM_Array*>>(index, array_value->u.a_array[index]);
+            break;
+        case RVM_ARRAY_CLOSURE:
+            result.emplace<std::tuple<usize, RVM_Closure*>>(index, array_value->u.closure_array[index]);
+            break;
+        default: break;
+        }
+
+        index++;
+
+        return result;
+    };
+};
+
+
+typedef enum {
     FUNCTION_CALL_TYPE_UNKNOW,
     FUNCTION_CALL_TYPE_FUNC,
     FUNCTION_CALL_TYPE_CLOSURE,
@@ -2204,8 +2364,8 @@ struct ForTernaryStatement {
 };
 
 struct ForRangeStatement {
-    Expression* left;
-    Expression* operand;
+    Expression*      left;
+    RangeExpression* range_expr;
 };
 
 struct DoForStatement {
@@ -2611,10 +2771,8 @@ typedef enum {
     ERROR_FUNCTION_MAIN_INVALID                 = 300006, // main函数定义不合法
 
     ERROR_CANOT_USE_VAR_LIKE_FUNC               = 300007, // 不能使用变量名作为函数名
-
-    ERROR_FOR_RANGE_INVALID_LEFT_VALUE          = 300008, // for range 中，不合法的被赋值表达式
-    ERROR_FOR_RANGE_INVALID_OPERAND_VALUE       = 300009, // for range 中，不合法的array 表达式
-    ERROR_FOR_RANGE_MISMATCH_LEFT_OPERAND       = 300010, // for range 中，赋值不匹配
+    ERROR_RANGE_OPERAND_IS_NOT_ARRAY            = 300008, // range 操作数不是数组
+    ERROR_RANGE_ASSIGN_MISSMATCH_TYPE           = 300009, // range 赋值时, 左值和右值的类型不匹配
 
     ERROR_VAR_IS_NOT_ARRAY                      = 300011, // 变量不是数组
     ERROR_INVALID_BREAK_STATEMENT               = 300012, // break 语句不合法
@@ -3028,7 +3186,9 @@ ElseIfStatement*              create_elseif_statement(Expression* expression, Bl
 ElseIfStatement*              elseif_statement_add_item(ElseIfStatement* list, ElseIfStatement* elseif_statement);
 Statement*                    create_statement_from_for(ForStatement* for_statement);
 ForStatement*                 create_for_ternary_statement(Expression* init_expression, Expression* condition_expression, Expression* post_expression, Block* block);
-ForStatement*                 create_for_range_statement(Expression* left, Expression* operand, Block* block);
+ForStatement*                 create_for_range_statement(Expression*      left,
+                                                         RangeExpression* range_expr,
+                                                         Block*           block);
 Statement*                    create_statement_from_dofor(DoForStatement* dofor_statement);
 DoForStatement*               create_dofor_statement(Expression* init_expression, Block* block, Expression* condition_expression, Expression* post_expression);
 Statement*                    create_statement_from_break(BreakStatement* break_statement);
@@ -3055,6 +3215,16 @@ SubDimensionExpression*       sub_dimension_expression_list_add_item(SubDimensio
 
 SliceExpression*              create_slice_expression(Expression* operand, SubSliceExpression* sub_slice_expression);
 SubSliceExpression*           create_sub_slice_expression(Expression* start_expr, Expression* end_expr);
+
+RangeExpression*              create_range_expression_from_step_range(SubStepRangeExpression* sub_step_range);
+RangeExpression*              create_range_expression_from_linear_range(SubLinearRangeExpression* sub_linear_range);
+
+SubStepRangeExpression*       create_step_range_expression(Expression* start_expr,
+                                                           Expression* end_expr,
+                                                           Expression* step_expr,
+                                                           bool        is_inclusive);
+SubLinearRangeExpression*     create_linear_range_expression(Expression* collection_expr);
+
 
 TypeSpecifier*                create_type_specifier(Ring_BasicType basic_type);
 TypeSpecifier*                create_type_specifier_array(TypeSpecifier* sub_type, DimensionExpression* dimension);
@@ -3151,119 +3321,129 @@ void ring_compiler_check_exit(Package* package);
  * function definition
  *
  */
-void             ring_compiler_fix_ast(Package* package);
-Function*        create_global_init_func(Package* package);
-void             fix_function_definition(Function* func);
-void             fix_function_block(Function* func);
-void             fix_statement_list(Statement* statement_list, Block* block, FunctionTuple* func);
-void             fix_statement(Statement* statement, Block* block, FunctionTuple* func);
-void             fix_expression(Expression* expression, Block* block, FunctionTuple* func);
-void             add_local_declaration(VarDecl* declaration, Block* block, FunctionTuple* func);
-void             fix_type_specfier(TypeSpecifier* type_specifier);
-void             fix_block(Block* block, FunctionTuple* func);
-void             fix_if_statement(IfStatement* if_statement, Block* block, FunctionTuple* func);
-void             fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple* func);
-void             fix_dofor_statement(DoForStatement* dofor_statement, Block* block, FunctionTuple* func);
-void             fix_break_statement(BreakStatement* break_statement, Block* block, FunctionTuple* func);
-void             fix_continue_statement(ContinueStatement* continue_statement, Block* block, FunctionTuple* func);
-void             fix_return_statement(ReturnStatement* return_statement, Block* block, FunctionTuple* func);
-void             fix_defer_statement(DeferStatement* defer_statement, Block* block, FunctionTuple* func);
-void             fix_identifier_expression(Expression*           expression,
-                                           IdentifierExpression* identifier_expression,
-                                           Block*                block);
-void             fix_assign_expression(AssignExpression* expression, Block* block, FunctionTuple* func);
-void             fix_binary_concat_expression(Expression*       expression,
-                                              BinaryExpression* binary_expression,
-                                              Block* block, FunctionTuple* func);
-void             fix_binary_math_expression(Expression*       expression,
-                                            ExpressionType    expression_type,
-                                            BinaryExpression* binary_expression,
-                                            Block* block, FunctionTuple* func);
-void             fix_binary_logical_expression(Expression*       expression,
-                                               ExpressionType    expression_type,
-                                               BinaryExpression* binary_expression,
-                                               Block* block, FunctionTuple* func);
-void             fix_binary_relational_expression(Expression*       expression,
-                                                  ExpressionType    expression_type,
-                                                  BinaryExpression* binary_expression,
-                                                  Block* block, FunctionTuple* func);
+void                        ring_compiler_fix_ast(Package* package);
+Function*                   create_global_init_func(Package* package);
+void                        fix_function_definition(Function* func);
+void                        fix_function_block(Function* func);
+void                        fix_statement_list(Statement* statement_list, Block* block, FunctionTuple* func);
+void                        fix_statement(Statement* statement, Block* block, FunctionTuple* func);
+void                        fix_expression(Expression* expression, Block* block, FunctionTuple* func);
+void                        add_local_declaration(VarDecl* declaration, Block* block, FunctionTuple* func);
+void                        fix_type_specfier(TypeSpecifier* type_specifier);
+void                        fix_block(Block* block, FunctionTuple* func);
+void                        fix_if_statement(IfStatement* if_statement, Block* block, FunctionTuple* func);
+void                        fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple* func);
+void                        fix_for_range_statement(ForRangeStatement* for_range_statement,
+                                                    Block*             block,
+                                                    FunctionTuple*     func);
 
-
-void             fix_unitary_minus_expression(Expression* expression,
-                                              Expression* unitary_expression,
-                                              Block* block, FunctionTuple* func);
-void             fix_unitary_not_expression(Expression* expression,
-                                            Expression* unitary_expression,
-                                            Block* block, FunctionTuple* func);
-void             fix_unitary_increase_decrease_expression(Expression* expression,
-                                                          Expression* unitary_expression,
+void                        fix_range_expression(RangeExpression* range_expression,
+                                                 Block*           block,
+                                                 FunctionTuple*   func);
+void                        fix_dofor_statement(DoForStatement* dofor_statement, Block* block, FunctionTuple* func);
+void                        fix_break_statement(BreakStatement* break_statement, Block* block, FunctionTuple* func);
+void                        fix_continue_statement(ContinueStatement* continue_statement, Block* block, FunctionTuple* func);
+void                        fix_return_statement(ReturnStatement* return_statement, Block* block, FunctionTuple* func);
+void                        fix_defer_statement(DeferStatement* defer_statement, Block* block, FunctionTuple* func);
+void                        fix_identifier_expression(Expression*           expression,
+                                                      IdentifierExpression* identifier_expression,
+                                                      Block*                block);
+void                        fix_assign_expression(AssignExpression* expression, Block* block, FunctionTuple* func);
+void                        fix_binary_concat_expression(Expression*       expression,
+                                                         BinaryExpression* binary_expression,
+                                                         Block* block, FunctionTuple* func);
+void                        fix_binary_math_expression(Expression*       expression,
+                                                       ExpressionType    expression_type,
+                                                       BinaryExpression* binary_expression,
+                                                       Block* block, FunctionTuple* func);
+void                        fix_binary_logical_expression(Expression*       expression,
+                                                          ExpressionType    expression_type,
+                                                          BinaryExpression* binary_expression,
                                                           Block* block, FunctionTuple* func);
-
-void             fix_function_call_expression(Expression*             expression,
-                                              FunctionCallExpression* function_call_expression,
-                                              Block*                  block,
-                                              FunctionTuple*          func);
-void             fix_member_call_expression(Expression*           expression,
-                                            MemberCallExpression* member_call_expression,
-                                            Block*                block,
-                                            FunctionTuple*        func);
-void             fix_class_definition(ClassDefinition* class_definition);
-void             fix_class_field(ClassDefinition* class_definition, FieldMember* field);
-void             fix_class_method(ClassDefinition* class_definition, MethodMember* method);
+void                        fix_binary_relational_expression(Expression*       expression,
+                                                             ExpressionType    expression_type,
+                                                             BinaryExpression* binary_expression,
+                                                             Block* block, FunctionTuple* func);
 
 
-void             fix_array_index_expression(Expression*           expression,
-                                            ArrayIndexExpression* array_index_expression,
-                                            Block*                block,
-                                            FunctionTuple*        func);
-void             fix_slice_expression(Expression*      expression,
-                                      SliceExpression* slice_expression,
-                                      Block*           block,
-                                      FunctionTuple*   func);
-void             fix_new_array_expression(Expression* expression, NewArrayExpression* new_array_expression, Block* block, FunctionTuple* func);
-void             fix_dimension_expression(DimensionExpression* dimension_expression, Block* block, FunctionTuple* func);
-void             fix_array_literal_expression(Expression* expression, ArrayLiteralExpression* array_literal_expression, Block* block, FunctionTuple* func);
+void                        fix_unitary_minus_expression(Expression* expression,
+                                                         Expression* unitary_expression,
+                                                         Block* block, FunctionTuple* func);
+void                        fix_unitary_not_expression(Expression* expression,
+                                                       Expression* unitary_expression,
+                                                       Block* block, FunctionTuple* func);
+void                        fix_unitary_increase_decrease_expression(Expression* expression,
+                                                                     Expression* unitary_expression,
+                                                                     Block* block, FunctionTuple* func);
 
-void             fix_class_object_literal_expression(Expression* expression, ClassObjectLiteralExpression* literal_expression, Block* block, FunctionTuple* func);
-void             fix_field_member_expression(Expression* expression, MemberExpression* member_expression, Block* block, FunctionTuple* func);
-void             fix_class_member_expression(MemberExpression* member_expression, Expression* object_expression, char* member_identifier);
-ClassDefinition* search_class_definition(char* class_identifier);
-TypeAlias*       search_type_alias(char* identifier);
-FieldMember*     search_class_field(ClassDefinition* class_definition, char* identifier);
-MethodMember*    search_class_method(ClassDefinition* class_definition, char* identifier);
-
-void             fix_ternary_condition_expression(Expression*        expression,
-                                                  TernaryExpression* ternary_expression,
-                                                  Block*             block,
-                                                  FunctionTuple*     func);
-void             fix_launch_expression(Expression*       expression,
-                                       LaunchExpression* launch_expression,
-                                       Block*            block,
-                                       FunctionTuple*    func);
-
-void             fix_anonymous_func_expression(Expression*              expression,
-                                               AnonymousFuncExpression* closure_expression,
-                                               Block*                   block,
-                                               FunctionTuple*           func);
-void             fix_iife_expression(Expression*                   expression,
-                                     ImmediateInvokFuncExpression* iife,
-                                     Block*                        block,
-                                     FunctionTuple*                func);
-
-void             add_parameter_to_declaration(Parameter* parameter, Block* block);
+void                        fix_function_call_expression(Expression*             expression,
+                                                         FunctionCallExpression* function_call_expression,
+                                                         Block*                  block,
+                                                         FunctionTuple*          func);
+void                        fix_member_call_expression(Expression*           expression,
+                                                       MemberCallExpression* member_call_expression,
+                                                       Block*                block,
+                                                       FunctionTuple*        func);
+void                        fix_class_definition(ClassDefinition* class_definition);
+void                        fix_class_field(ClassDefinition* class_definition, FieldMember* field);
+void                        fix_class_method(ClassDefinition* class_definition, MethodMember* method);
 
 
-Package*         resolve_package(char*        package_posit,
-                                 unsigned int line_number,
-                                 Block*       block);
-Variable*        resolve_variable(Package* package, char* identifier, Block* block);
-Variable*        resolve_variable_global(Package* package, char* identifier, Block* block);
-Variable*        resolve_variable_recur(Package* package, char* identifier, Block* block);
+void                        fix_array_index_expression(Expression*           expression,
+                                                       ArrayIndexExpression* array_index_expression,
+                                                       Block*                block,
+                                                       FunctionTuple*        func);
+void                        fix_slice_expression(Expression*      expression,
+                                                 SliceExpression* slice_expression,
+                                                 Block*           block,
+                                                 FunctionTuple*   func);
+void                        fix_new_array_expression(Expression* expression, NewArrayExpression* new_array_expression, Block* block, FunctionTuple* func);
+void                        fix_dimension_expression(DimensionExpression* dimension_expression, Block* block, FunctionTuple* func);
+void                        fix_array_literal_expression(Expression* expression, ArrayLiteralExpression* array_literal_expression, Block* block, FunctionTuple* func);
 
-Function*        search_function(Package* package, char* identifier);
+void                        fix_class_object_literal_expression(Expression* expression, ClassObjectLiteralExpression* literal_expression, Block* block, FunctionTuple* func);
+void                        fix_field_member_expression(Expression* expression, MemberExpression* member_expression, Block* block, FunctionTuple* func);
+void                        fix_class_member_expression(MemberExpression* member_expression, Expression* object_expression, char* member_identifier);
+ClassDefinition*            search_class_definition(char* class_identifier);
+TypeAlias*                  search_type_alias(char* identifier);
+FieldMember*                search_class_field(ClassDefinition* class_definition, char* identifier);
+MethodMember*               search_class_method(ClassDefinition* class_definition, char* identifier);
 
-FreeValueDesc*   free_value_list_add_item(FreeValueDesc* head, FreeValueDesc* free_value);
-Variable*        variable_list_add_item(Variable* head, Variable* variable);
+void                        fix_ternary_condition_expression(Expression*        expression,
+                                                             TernaryExpression* ternary_expression,
+                                                             Block*             block,
+                                                             FunctionTuple*     func);
+void                        fix_launch_expression(Expression*       expression,
+                                                  LaunchExpression* launch_expression,
+                                                  Block*            block,
+                                                  FunctionTuple*    func);
+
+void                        fix_anonymous_func_expression(Expression*              expression,
+                                                          AnonymousFuncExpression* closure_expression,
+                                                          Block*                   block,
+                                                          FunctionTuple*           func);
+void                        fix_iife_expression(Expression*                   expression,
+                                                ImmediateInvokFuncExpression* iife,
+                                                Block*                        block,
+                                                FunctionTuple*                func);
+
+void                        add_parameter_to_declaration(Parameter* parameter, Block* block);
+
+
+Package*                    resolve_package(char*        package_posit,
+                                            unsigned int line_number,
+                                            Block*       block);
+Variable*                   resolve_variable(Package* package, char* identifier, Block* block);
+Variable*                   resolve_variable_global(Package* package, char* identifier, Block* block);
+Variable*                   resolve_variable_recur(Package* package, char* identifier, Block* block);
+
+Function*                   search_function(Package* package, char* identifier);
+
+FreeValueDesc*              free_value_list_add_item(FreeValueDesc* head, FreeValueDesc* free_value);
+Variable*                   variable_list_add_item(Variable* head, Variable* variable);
+
+std::vector<TypeSpecifier*> get_type_specifier_from_expression_list(Expression* expression);
+std::vector<TypeSpecifier*> get_type_specifier_from_range_expression(RangeExpression* expression);
 
 // --------------------
 
@@ -3331,7 +3511,9 @@ void              generate_vmcode_from_statement_list(Package_Executer* executer
 void              generate_vmcode_from_if_statement(Package_Executer* executer, IfStatement* if_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_for_statement(Package_Executer* executer, ForStatement* for_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_for_ternary_statement(Package_Executer* executer, ForStatement* for_statement, RVM_OpcodeBuffer* opcode_buffer);
-void              generate_vmcode_from_for_range_statement(Package_Executer* executer, ForStatement* for_statement, RVM_OpcodeBuffer* opcode_buffer);
+void              generate_vmcode_from_for_range_statement(Package_Executer* executer,
+                                                           ForStatement*     for_statement,
+                                                           RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_dofor_statement(Package_Executer* executer, DoForStatement* dofor_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_break_statement(Package_Executer* executer, Block* block, BreakStatement* break_statement, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_continue_statement(Package_Executer* executer, Block* block, ContinueStatement* continue_statement, RVM_OpcodeBuffer* opcode_buffer);

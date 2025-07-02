@@ -35,6 +35,7 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_PUSH_INT_1BYTE, "push_int_1byte", OPCODE_OPERAND_TYPE_1BYTE_A, "+1", 1, "push 1byte int constant value to stack", "[]-->[int]", "So(0).int = A.int"},
     {RVM_CODE_PUSH_INT_2BYTE, "push_int_2byte", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push 2byte int constant value to stack", "[]-->[int]", "So(0).int = As.int"},
     {RVM_CODE_PUSH_INT__1, "push_int__1", OPCODE_OPERAND_TYPE_0BYTE, "+1", 1, "push -1 to stack", "[]-->[int]", "So(0).int = -1"},
+    {RVM_CODE_PUSH_DOUBLE_1, "push_double_1", OPCODE_OPERAND_TYPE_0BYTE, "+1", 1, "push 1.0 to stack", "[]-->[double]", "So(0).double = 1.0"},
 
     {RVM_CODE_PUSH_INT, "push_int", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant int value to stack", "[]-->[int]", "So(0).int = C(As).int"},
     {RVM_CODE_PUSH_INT64, "push_int64", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant int64 value to stack", "[]-->[int]", "So(0).int64 = C(As).int64"},
@@ -156,17 +157,14 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_NEW_ARRAY_LITERAL_A, "new_array_literal_a", OPCODE_OPERAND_TYPE_4BYTE_ABCs, "-Cs+1", INT_MIN, "", "", ""},
 
 
-    // TODO: 这一批的栈空间计算不正确，重点关注
     // range array/string
-    {RVM_CODE_FOR_RANGE_ARRAY_A, "range_array_a", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range array value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_ARRAY_BOOL, "range_array_bool", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range bool value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_ARRAY_INT, "range_array_int", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range int value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_ARRAY_INT64, "range_array_int64", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range int64 value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_ARRAY_DOUBLE, "range_array_double", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range double value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_ARRAY_STRING, "range_array_string", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range string value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_ARRAY_CLASS_OB, "range_array_class_ob", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range object value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_ARRAY_CLOSURE, "range_array_closure", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "range closure value for array", "", ""},
-    {RVM_CODE_FOR_RANGE_FINISH, "for_range_finish", OPCODE_OPERAND_TYPE_2BYTE_As, "-2", -2, "", "", ""},
+    {RVM_CODE_RANGE_STEP_INIT_INT64, "range_step_init_int64", OPCODE_OPERAND_TYPE_0BYTE, "-3", -3, "", "", ""},
+    {RVM_CODE_RANGE_STEP_INIT_DOUBLE, "range_step_init_double", OPCODE_OPERAND_TYPE_0BYTE, "-3", -3, "", "", ""},
+    {RVM_CODE_RANGE_LINEAR_INIT, "range_linear_init", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
+    {RVM_CODE_RANGE_HAS_NEXT, "range_has_next", OPCODE_OPERAND_TYPE_2BYTE_As, "0", 0, "", "", ""},
+    {RVM_CODE_RANGE_GET_NEXT_1, "range_get_next_1", OPCODE_OPERAND_TYPE_0BYTE, "+1", 1, "", "", ""},
+    {RVM_CODE_RANGE_GET_NEXT_2, "range_get_next_2", OPCODE_OPERAND_TYPE_0BYTE, "+2", 2, "", "", ""},
+    {RVM_CODE_RANGE_FINISH, "range_finish", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "", ""},
 
 
     // slice array/string
