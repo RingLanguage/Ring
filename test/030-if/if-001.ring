@@ -12,7 +12,7 @@ fn main() {
 	var bool bool_value;
 
 	debug::assert(true == true);
-	if(true) {
+	if true {
 		fmt::println_string("check pass");
 	} else {
 		fmt::println_string("check pass [failed]");
@@ -21,7 +21,7 @@ fn main() {
 	fmt::println_string("");
 
 	debug::assert(false == false);
-	if(false) {
+	if false {
 		fmt::println_string("check pass [failed]\n");
 	} else {
 		fmt::println_string("check pass\n");
@@ -33,7 +33,7 @@ fn main() {
 
 
 	debug::assert(not false == true);
-	if(not false) {
+	if not false {
 		fmt::println_string("check pass");
 	} else {
 		fmt::println_string("check pass [failed]");
@@ -42,7 +42,7 @@ fn main() {
 	fmt::println_string("");
 
 	debug::assert(not true == false);
-	if(not true) {
+	if not true {
 		fmt::println_string("check pass [failed]\n");
 	} else {
 		fmt::println_string("check pass\n");

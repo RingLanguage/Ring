@@ -38,7 +38,7 @@ fn main() {
     fmt::println_string(string_value_2);
 
 
-    if(string_value_1 == string_value_2) {
+    if string_value_1 == string_value_2 {
         fmt::println_string("string_value_1 == string_value_2");
         debug::assert(true);   
     } else {
@@ -48,7 +48,7 @@ fn main() {
 
 
 
-    if("a" == "b") {
+    if "a" == "b" {
         fmt::println_string("a == b");
         debug::assert(false);   
     } else {
@@ -56,7 +56,7 @@ fn main() {
         debug::assert(true);   
     }
 
-    if("ab" == "ab") {
+    if "ab" == "ab" {
         fmt::println_string("ab == ab");
         debug::assert(true);   
     } else {

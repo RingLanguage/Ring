@@ -24,7 +24,7 @@ fn main() {
 
     fmt::println_string("test cast 1 ------------------------");
     var int index = 0;
-    for(index = 0; index < 5; index = index + 1) {
+    for index = 0; index < 5; index = index + 1 {
         fmt::println_bool(global_job_array_0[index].Running);
         fmt::println_int(global_job_array_0[index].JobID);
         fmt::println_double(global_job_array_0[index].Score);

@@ -30,8 +30,8 @@ fn main() {
     var int j = 0;
     var int sum = 0;
 
-    for(i = 0; i < 2; i = i+1) {
-        for(j = 0; j < 4; j = j+1) {
+    for i = 0; i < 2; i = i+1 {
+        for j = 0; j < 4; j = j+1 {
             fmt::println_double(global_double_array_0[i, j]);
             sum = sum + 1;
         }

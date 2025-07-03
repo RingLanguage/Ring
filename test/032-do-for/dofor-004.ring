@@ -19,12 +19,12 @@ fn main() {
 
     count = 0;
 
-    for(int_value_1 = 0; int_value_1<10; int_value_1++){
-        do(int_value_2 = 0) {
+    for int_value_1 = 0; int_value_1<10; int_value_1++ {
+        do int_value_2 = 0 {
 
 
-            for(int_value_3 = 0; int_value_3<10; int_value_3++){
-                do(int_value_4 = 0) {
+            for int_value_3 = 0; int_value_3<10; int_value_3++ {
+                do int_value_4 = 0 {
                 
                     count++;
 

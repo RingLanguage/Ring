@@ -21,7 +21,7 @@ fn producer(var int64 consumer_co_id, var int produce_count) {
 
 	fmt::printf("producer start work\n");
 
-	for(i = 0; i < produce_count; i++) {
+	for i = 0; i < produce_count; i++ {
 		fmt::printf("producer   {}\n", i);
 		resume(consumer_co_id);
 	}
@@ -34,7 +34,7 @@ fn consumer_1() {
 	var string send_msg;
 	var int64 next_consumer_co_id;
 
-    for(;;) {
+    for ;; {
 		yield();
 		fmt::printf("consumer_1 {}\n", consumer_1_count);
 

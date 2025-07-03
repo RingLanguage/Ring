@@ -16,7 +16,7 @@ fn main() {
 	fmt::println_int(int_value);
 	fmt::println_string("");
 	
-	for(; int_value < 10; int_value = int_value + 1) {
+	for ; int_value < 10; int_value = int_value + 1 {
 		fmt::println_int(int_value);
 	}
 	

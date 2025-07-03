@@ -47,9 +47,9 @@ fn main() {
     var double double_value = 0.0;
 
     // 偶数为 true, 奇数为 false
-    for(i=0; i<len(global_double_array_0); i=i+1) {
-        for(j=0; j<len(global_double_array_0[i]); j=j+1) {
-            if(global_double_array_0[i,j] != double_value){
+    for i=0; i<len(global_double_array_0); i=i+1 {
+        for j=0; j<len(global_double_array_0[i]); j=j+1 {
+            if global_double_array_0[i,j] != double_value {
                 fmt::println_string("test failed");
             } 
 

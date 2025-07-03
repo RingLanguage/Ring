@@ -44,8 +44,8 @@ fn main() {
     var int j;
     var int num;
 
-    for(i=0; i<len(global_string_array_0); i=i+1) {
-        for(j=0; j<len(global_string_array_0[i]); j=j+1) {
+    for i=0; i<len(global_string_array_0); i=i+1 {
+        for j=0; j<len(global_string_array_0[i]); j=j+1 {
             num++;
         }
     }

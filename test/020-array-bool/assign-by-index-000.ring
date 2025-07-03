@@ -14,7 +14,7 @@ fn main() {
 
     fmt::println_string("test cast 1 ------------------------");
     var int index = 0;
-    for(index = 0; index < 20; index = index + 1) {
+    for index = 0; index < 20; index = index + 1 {
 	      fmt::println_bool(global_bool_array_0[index]);
 	      debug::assert(global_bool_array_0[index] == false);
     }
@@ -41,7 +41,7 @@ fn main() {
     global_bool_array_0[17] = true;
     global_bool_array_0[18] = true;
     global_bool_array_0[19] = true;
-    for(index = 0; index < 20; index = index + 1) {
+    for index = 0; index < 20; index = index + 1 {
         fmt::println_bool(global_bool_array_0[index]);
         debug::assert(global_bool_array_0[index] == true);
     }

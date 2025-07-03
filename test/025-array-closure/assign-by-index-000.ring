@@ -19,7 +19,7 @@ fn main() {
 
     fmt::println_string("test cast 1 ------------------------");
     var int index = 0;
-    for(index = 0; index < 5; index = index + 1) {
+    for index = 0; index < 5; index = index + 1 {
         fmt::println(global_func_array_0[index]); // nil
     }
 

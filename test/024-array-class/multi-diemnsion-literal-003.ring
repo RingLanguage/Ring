@@ -86,16 +86,16 @@ fn main() {
     var int num;
 	var bool bool_value = true;
 
-	for(i=0; i<len(global_job1_array_0); i=i+1) {
-        for(j=0; j<len(global_job1_array_0[i]); j=j+1) {
-			for(k=0; k<len(global_job1_array_0[i,j]); k=k+1) {
-				if(global_job1_array_0[i,j,k].Bool != bool_value){
+	for i=0; i<len(global_job1_array_0); i=i+1 {
+        for j=0; j<len(global_job1_array_0[i]); j=j+1 {
+			for k=0; k<len(global_job1_array_0[i,j]); k=k+1 {
+				if global_job1_array_0[i,j,k].Bool != bool_value {
 					fmt::println_string("test failed");
 				}
-				if(global_job1_array_0[i,j,k].Int != num){
+				if global_job1_array_0[i,j,k].Int != num {
 					fmt::println_string("test failed");
 				} 
-				if(global_job1_array_0[i,j,k].Int != i*9+j*3+k){
+				if global_job1_array_0[i,j,k].Int != i*9+j*3+k {
 					fmt::println_string("test failed");
 				} 
 				

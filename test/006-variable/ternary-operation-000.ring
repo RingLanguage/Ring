@@ -36,7 +36,7 @@ fn main() {
 	b = 9;
 
 
-	if(a > b) {
+	if a > b {
 		int_value_2 = a;
 	} else {
 		int_value_2 = b;

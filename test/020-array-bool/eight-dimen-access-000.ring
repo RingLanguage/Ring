@@ -35,14 +35,14 @@ fn main() {
 
     fmt::println_string("\ntest cast 2 ------------------------");
 
-    for(a = 0; a < len(global_bool_array_0); a = a + 1) {
-        for(b = 0; b < len(global_bool_array_0[a]); b = b + 1) {
-            for(c = 0; c < len(global_bool_array_0[a,b]); c = c + 1) {
-                for(d = 0; d < len(global_bool_array_0[a,b,c]); d = d + 1) {
-                    for(e = 0; e < len(global_bool_array_0[a,b,c,d]); e = e + 1) {
-                        for(f = 0; f < len(global_bool_array_0[a,b,c,d,e]); f = f + 1) {
-                            for(g = 0; g < len(global_bool_array_0[a,b,c,d,e,f]); g = g + 1) {
-                                for(h = 0; h < len(global_bool_array_0[a,b,c,d,e,f,g]); h = h + 1) {
+    for a = 0; a < len(global_bool_array_0); a = a + 1 {
+        for b = 0; b < len(global_bool_array_0[a]); b = b + 1 {
+            for c = 0; c < len(global_bool_array_0[a,b]); c = c + 1 {
+                for d = 0; d < len(global_bool_array_0[a,b,c]); d = d + 1 {
+                    for e = 0; e < len(global_bool_array_0[a,b,c,d]); e = e + 1 {
+                        for f = 0; f < len(global_bool_array_0[a,b,c,d,e]); f = f + 1 {
+                            for g = 0; g < len(global_bool_array_0[a,b,c,d,e,f]); g = g + 1 {
+                                for h = 0; h < len(global_bool_array_0[a,b,c,d,e,f,g]); h = h + 1 {
                                     global_bool_array_0[a,b,c,d,e,f,g,h] = true;
                                     num = num + 1;
                                 }
@@ -69,15 +69,15 @@ fn main() {
     fmt::println_string("\ntest cast 3 ------------------------");
 
     num = 0;
-    for(a = 0; a < len(global_bool_array_0); a = a + 1) {
-        for(b = 0; b < len(global_bool_array_0[a]); b = b + 1) {
-            for(c = 0; c < len(global_bool_array_0[a,b]); c = c + 1) {
-                for(d = 0; d < len(global_bool_array_0[a,b,c]); d = d + 1) {
-                    for(e = 0; e < len(global_bool_array_0[a,b,c,d]); e = e + 1) {
-                        for(f = 0; f < len(global_bool_array_0[a,b,c,d,e]); f = f + 1) {
-                            for(g = 0; g < len(global_bool_array_0[a,b,c,d,e,f]); g = g + 1) {
-                                for(h = 0; h < len(global_bool_array_0[a,b,c,d,e,f,g]); h = h + 1) {
-                                    if(global_bool_array_0[a,b,c,d,e,f,g,h] != true) {
+    for a = 0; a < len(global_bool_array_0); a = a + 1 {
+        for b = 0; b < len(global_bool_array_0[a]); b = b + 1 {
+            for c = 0; c < len(global_bool_array_0[a,b]); c = c + 1 {
+                for d = 0; d < len(global_bool_array_0[a,b,c]); d = d + 1 {
+                    for e = 0; e < len(global_bool_array_0[a,b,c,d]); e = e + 1 {
+                        for f = 0; f < len(global_bool_array_0[a,b,c,d,e]); f = f + 1 {
+                            for g = 0; g < len(global_bool_array_0[a,b,c,d,e,f]); g = g + 1 {
+                                for h = 0; h < len(global_bool_array_0[a,b,c,d,e,f,g]); h = h + 1 {
+                                    if global_bool_array_0[a,b,c,d,e,f,g,h] != true {
                                         fmt::println_string("test failed");
                                     }
                                     num = num + 1;

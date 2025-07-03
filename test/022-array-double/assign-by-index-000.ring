@@ -14,7 +14,7 @@ fn main() {
 
   fmt::println_string("test cast 1 ------------------------");
   var int index = 0;
-  for(index = 0; index < 20; index = index + 1) {
+  for index = 0; index < 20; index = index + 1 {
 	  fmt::println_double(global_double_array_0[index]);
 	  debug::assert(global_double_array_0[index] == 0.0);
   }
@@ -41,7 +41,7 @@ fn main() {
   global_double_array_0[17] = 3.1415;
   global_double_array_0[18] = 3.1415;
   global_double_array_0[19] = 3.1415;
-  for(index = 0; index < 20; index = index + 1) {
+  for index = 0; index < 20; index = index + 1 {
 	  fmt::println_double(global_double_array_0[index]);
 	  debug::assert(global_double_array_0[index] == 3.1415);
   }

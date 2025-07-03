@@ -11,16 +11,16 @@ $test(int...)    <./test/004-derive-function/function-021.ring:12,17>
 +FreeValue:        0
 +Instructions: 27
  ├──*Num    *PC     *Instruction                  *Operand            *SourceLineNum    
- ├──0       0       push_stack_array              0                   14                
+ ├──0       0       push_stack_array              0                   15                
  ├──1       3       range_linear_init                                                   
  ├──2       4       range_has_next                24                                    
  ├──3       7       range_get_next_2                                                    
- ├──4       8       pop_stack_int                 1                                     
- ├──5       11      pop                           1                                     
- ├──6       13      push_stack_int                1                   15                
+ ├──4       8       pop_stack_int                 1                   14                
+ ├──5       11      pop                           1                   15                
+ ├──6       13      push_stack_int                1                                     
  ├──7       16      push_func                     2, 6                                  
  ├──8       19      invoke_func_native            1                                     
- ├──9       21      jump                          4                   14                
+ ├──9       21      jump                          4                                     
  ├──10      24      range_finish                                                        
  ├──11      25      pop_defer                                         17                
  ├──12      26      function_finish                                                     

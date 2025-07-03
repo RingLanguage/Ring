@@ -26,8 +26,8 @@ fn test_for_break() {
 	var int index;
 	var int value;
 
-	for(index = 0; index < 10; index ++) {
-		if (index == 5) {
+	for index = 0; index < 10; index ++ {
+		if index == 5 {
 			break;
 		}
 
@@ -43,8 +43,8 @@ fn test_for_continue() {
 	var int index;
 	var int value;
 
-	for(index = 0; index < 10; index ++) {
-		if (index == 5) {
+	for index = 0; index < 10; index ++ {
+		if index == 5 {
 			continue;
 		}
 
@@ -62,8 +62,8 @@ fn test_for_range_break() {
 	var int index;
 	var int value;
 
-	for(value = range local_int_array_0) {
-		if(value == 5) {
+	for value = range local_int_array_0 {
+		if value == 5 {
 			break;
 		}
 		fmt::printf("value = {}\n", value);
@@ -78,8 +78,8 @@ fn test_for_range_continue() {
 	var int index;
 	var int value;
 
-	for(value = range local_int_array_0) {
-		if(value == 5) {
+	for value = range local_int_array_0 {
+		if value == 5 {
 			continue;
 		}
 		fmt::printf("value = {}\n", value);
@@ -95,13 +95,13 @@ fn test_dofor_break() {
 	var int index;
 	var int value;
 
-	do(index = 0) {
-		if (index == 5) {
+	do index = 0 {
+		if index == 5 {
 			break;
 		}
 
 		fmt::printf("index = {}, value = {}\n", index, local_int_array_0[index]);
-	}for(index < 10; index++);
+	} for (index < 10; index++);
 
 	debug::assert(index == 5);
 }
@@ -112,13 +112,13 @@ fn test_dofor_continue() {
 	var int index;
 	var int value;
 
-	do(index = 0) {
-		if (index == 5) {
+	do index = 0 {
+		if index == 5 {
 			continue;
 		}
 
 		fmt::printf("index = {}, value = {}\n", index, local_int_array_0[index]);
-	}for(index < 9; index++);
+	} for (index < 9; index++);
 
 
 	debug::assert(index == 9);

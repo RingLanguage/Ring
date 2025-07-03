@@ -11,8 +11,8 @@ fn main() {
 	var int i;
 	var int j;
 	
-	for(i=1; i<=9; i++) {
-		for(j=1; j<=i; j++) {
+	for i=1; i<=9; i++ {
+		for j=1; j<=i; j++ {
 			fmt::println_int(i*j);
 		}
 		fmt::println_string("");

@@ -25,18 +25,18 @@ fn main() {
 	var double value;
 	
 	fmt::println_string("test case for-range --------------------");
-	for(value = range local_double_array_0) {
+	for value = range local_double_array_0 {
 		fmt::println_double(value);
 	}
 
 	fmt::println_string("\ntest case for --------------------");
-	for(index = 0; index<30; index++) {
+	for index = 0; index<30; index++ {
 		fmt::println_double(local_double_array_0[index]);
 	}
 
 	fmt::println_string("\ntest case for-range&for --------------------");
 	index = 0;
-	for(value = range local_double_array_0) {
+	for value = range local_double_array_0 {
 		debug::assert(value == local_double_array_0[index]);
 		index++;
 	}

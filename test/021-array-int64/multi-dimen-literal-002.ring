@@ -44,9 +44,9 @@ fn main() {
     var int j;
     var int num;
 
-    for(i=0; i<len(global_int64_array_0); i=i+1) {
-        for(j=0; j<len(global_int64_array_0[i]); j=j+1) {
-            if(global_int64_array_0[i,j] != to_int64(num)){
+    for i=0; i<len(global_int64_array_0); i=i+1 {
+        for j=0; j<len(global_int64_array_0[i]); j=j+1 {
+            if global_int64_array_0[i,j] != to_int64(num) {
                 fmt::println_string("test failed");
             } 
             num++;

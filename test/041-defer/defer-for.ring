@@ -23,7 +23,7 @@ fn main() {
 fn test() {
 	var int int_value = 0;
 
-	for(int_value = 0; int_value < 10; int_value++) {
+	for int_value = 0; int_value < 10; int_value++ {
 		defer fn() {
 			fmt::printf("defer closure\n");
 		}();

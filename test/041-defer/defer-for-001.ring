@@ -25,7 +25,7 @@ fn main() {
 fn test1() {
 	var int int_value = 0;
 
-	for(int_value = 0; int_value < 10; int_value++) {
+	for int_value = 0; int_value < 10; int_value++ {
 		defer fn() {
 			fmt::printf("test1 defer int_value={}\n", int_value);
 		}();
@@ -39,7 +39,7 @@ fn test1() {
 fn test2() {
 	var int int_value = 0;
 
-	for(int_value = 0; int_value < 10; int_value++) {
+	for int_value = 0; int_value < 10; int_value++ {
 		defer fn(var int int_value) {
 			fmt::printf("test1 defer int_value={}\n", int_value);
 		}(int_value);

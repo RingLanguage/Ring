@@ -9,7 +9,7 @@ import {
 
 
 fn get_level_by_score(var int score) -> (int) {
-	if(0<=score and score<=100) {
+	if 0<=score and score<=100 {
 		return score/10;
 	} else {
 		return 0;
@@ -24,7 +24,7 @@ fn main() {
 	var int level;
 	
 	sum = 0;
-	for(score = -9; score<=110; score+=1) {
+	for score = -9; score<=110; score+=1 {
 		level = get_level_by_score(score);
 		sum += level;
 	}
@@ -33,7 +33,7 @@ fn main() {
 	
 	
 	sum = 0;
-	for(score = -9; score<=110; score+=1) {
+	for score = -9; score<=110; score+=1 {
 		sum += get_level_by_score(score); 
 	}
 	fmt::println_int(sum);

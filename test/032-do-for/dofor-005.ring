@@ -15,7 +15,7 @@ fn main() {
 
     fmt::println_string("[test case 1]");
 
-    do(int_value = 2){
+    do int_value = 2 {
         fmt::println_int(int_value);
     }for(int_value < 10; int_value++);
 
@@ -35,8 +35,8 @@ fn main() {
 
     count = 0;
 
-    do(int_value = 0) {
-        if(int_value > 5) {
+    do int_value = 0 {
+        if int_value > 5 {
             continue;
         }
         count++;
@@ -63,8 +63,8 @@ fn main() {
 
     count = 0;
 
-    do(int_value = 0) {
-        if(int_value % 2 == 0) {
+    do int_value = 0 {
+        if int_value % 2 == 0 {
             fmt::println_int(int_value);
         } else {
             continue;
@@ -92,8 +92,8 @@ fn main() {
 
     count = 0;
 
-    do(int_value = 0) {
-        if(int_value % 5 == 0) {
+    do int_value = 0 {
+        if int_value % 5 == 0 {
         } else {
             continue;
         }
@@ -120,8 +120,8 @@ fn main() {
 
     count = 0;
 
-    do(int_value = 0) {
-        if(int_value % 5 == 0) {
+    do int_value = 0 {
+        if int_value % 5 == 0 {
             count++;
         } else {
             continue;

@@ -16,38 +16,38 @@ import {
 fn main() {
 
 
-    if("a" == "a") {
+    if "a" == "a" {
         fmt::println_string("test pass");
     } else {
         fmt::println_string("test failed");
 
     }
 
-    if("a" != "a") {
+    if "a" != "a" {
         fmt::println_string("test failed");
     } else {
         fmt::println_string("test pass");
     }
 
-    if("a" > "a") {
+    if "a" > "a" {
         fmt::println_string("test failed");
     } else {
         fmt::println_string("test pass");
     }
 
-    if("a" >= "a") {
+    if "a" >= "a" {
         fmt::println_string("test pass");
     } else {
         fmt::println_string("test failed");
     }
 
-    if("a" < "a") {
+    if "a" < "a" {
         fmt::println_string("test failed");
     } else {
         fmt::println_string("test pass");
     }
 
-    if("a" <= "a") {
+    if "a" <= "a" {
         fmt::println_string("test pass");
     } else {
         fmt::println_string("test failed");
@@ -57,37 +57,37 @@ fn main() {
 
     fmt::println_string("----------------");
 
-    if("a" == "b") {
+    if "a" == "b" {
         fmt::println_string("test failed");
     } else {
         fmt::println_string("test pass");
     }
 
-    if("a" != "b") {
+    if "a" != "b" {
         fmt::println_string("test pass");
     } else {
         fmt::println_string("test failed");
     }
 
-    if("a" > "b") {
+    if "a" > "b" {
         fmt::println_string("test failed");
     } else {
         fmt::println_string("test pass");
     }
 
-    if("a" >= "b") {
+    if "a" >= "b" {
         fmt::println_string("test failed");
     } else {
         fmt::println_string("test pass");
     }
 
-    if("a" < "b") {
+    if "a" < "b" {
         fmt::println_string("test pass");
     } else {
         fmt::println_string("test failed");
     }
 
-    if("a" <= "b") {
+    if "a" <= "b" {
         fmt::println_string("test pass");
     } else {
         fmt::println_string("test failed");

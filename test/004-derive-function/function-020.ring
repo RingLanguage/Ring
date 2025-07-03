@@ -9,7 +9,7 @@ import {
 
 
 fn fibonacci_1(var int num) -> (int) {
-    if(num == 1 or num == 2) {
+    if num == 1 or num == 2 {
         return 1;
     } else {
         return fibonacci_1(num-1) + fibonacci_1(num-2);
@@ -17,7 +17,7 @@ fn fibonacci_1(var int num) -> (int) {
 }
 
 fn fibonacci_2(var int num) -> (int) {
-    if(num < 3) {
+    if num < 3 {
         return 1;
     }
 
@@ -25,7 +25,7 @@ fn fibonacci_2(var int num) -> (int) {
     var int a, b = 1, 1;
     var int i;
     var int tmp;
-    for(i = 3; i <= num; i++){
+    for i = 3; i <= num; i++ {
         tmp = a + b;
         a = b;
         b = tmp;

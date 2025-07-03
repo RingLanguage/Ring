@@ -9,14 +9,14 @@ import {
 
 
 fn max(var int parameter_1, var int parameter_2) -> (int) {
-	if(parameter_1>=parameter_2) {
+	if parameter_1>=parameter_2 {
 		return parameter_1;
 	}
 	return parameter_2;
 }
 
 fn min(var int parameter_1, var int parameter_2) -> (int) {
-	if(parameter_1<=parameter_2) {
+	if parameter_1<=parameter_2 {
 		return parameter_1;
 	}
 	return parameter_2;

@@ -59,12 +59,12 @@ fn main() {
     var int num;
 	var bool bool_value = true;
 
-	for(i=0; i<len(global_job1_array_0); i=i+1) {
-        for(j=0; j<len(global_job1_array_0[i]); j=j+1) {
-            if(global_job1_array_0[i,j].Int != num){
+	for i=0; i<len(global_job1_array_0); i=i+1 {
+        for j=0; j<len(global_job1_array_0[i]); j=j+1 {
+            if global_job1_array_0[i,j].Int != num {
                 fmt::println_string("test failed");
             } 
-			if(global_job1_array_0[i,j].Bool != bool_value){
+			if global_job1_array_0[i,j].Bool != bool_value {
 				fmt::println_string("test failed");
 			}
 

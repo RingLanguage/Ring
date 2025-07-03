@@ -16,7 +16,7 @@ import {
 fn main() {
 	
 	var int i;
-	for(i=0; false; i++) {
+	for i=0; false; i++ {
 		fmt::println("statement");
 	}
 

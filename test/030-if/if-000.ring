@@ -14,7 +14,7 @@ fn main() {
 	bool_value = true;
 	fmt::println_bool(bool_value);
 	debug::assert(bool_value == true);
-	if(bool_value) {
+	if bool_value {
 		fmt::println_string("bool_value is true");
 	} else {
 		fmt::println_string("bool_value is false [FAILED]");
@@ -28,7 +28,7 @@ fn main() {
 	bool_value = true;
 	fmt::println_bool(not bool_value);
 	debug::assert(not bool_value == false);
-	if(not bool_value) {
+	if not bool_value {
 		fmt::println_string("not bool_value is true [FAILED]");
 	} else {
 		fmt::println_string("not bool_value is false");
@@ -45,7 +45,7 @@ fn main() {
 	bool_value = false;
 	fmt::println_bool(bool_value);
 	debug::assert(bool_value == false);
-	if(bool_value) {
+	if bool_value {
 		fmt::println_string("bool_value is true [FAILED]");
 	} else {
 		fmt::println_string("bool_value is false");
@@ -60,7 +60,7 @@ fn main() {
 	bool_value = false;
 	fmt::println_bool(not bool_value);
 	debug::assert(not bool_value == true);
-	if(not bool_value) {
+	if not bool_value {
 		fmt::println_string("bool_value is true");
 	} else {
 		fmt::println_string("bool_value is false [FAILED]");

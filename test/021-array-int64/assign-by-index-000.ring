@@ -14,7 +14,7 @@ fn main() {
 
   fmt::println_string("test cast 1 ------------------------");
   var int index = 0;
-  for(index = 0; index < 20; index = index + 1) {
+  for index = 0; index < 20; index = index + 1 {
 	  fmt::println_int64(global_int64_array_0[index]);
 	  debug::assert(global_int64_array_0[index] == 0L);
   }
@@ -41,7 +41,7 @@ fn main() {
   global_int64_array_0[17] = 17L;
   global_int64_array_0[18] = 18L;
   global_int64_array_0[19] = 19L;
-  for(index = 0; index < 20; index = index + 1) {
+  for index = 0; index < 20; index = index + 1 {
 	    fmt::println_int64(global_int64_array_0[index]);
 	    debug::assert(global_int64_array_0[index] == to_int64(index));
   }

@@ -18,17 +18,17 @@ fn main() {
 
 
     fmt::println_string("test cast 1 ------------------------");
-    for(i = 0; i < len(global_int64_array_0); i++) {
+    for i = 0; i < len(global_int64_array_0); i++ {
         fmt::println_int64(global_int64_array_0[i]);
     }
 
     fmt::println_string("\ntest cast 2 ------------------------");
-    for(i=0; i+1 < len(global_int64_array_0); i+=2) {
+    for i=0; i+1 < len(global_int64_array_0); i+=2 {
         global_int64_array_0[i] = to_int64(i);
         global_int64_array_0[i+1] = to_int64(i);
     }
 
-    for(i = 0; i < len(global_int64_array_0); i++) {
+    for i = 0; i < len(global_int64_array_0); i++ {
         fmt::println_int64(global_int64_array_0[i]);
     }
 }

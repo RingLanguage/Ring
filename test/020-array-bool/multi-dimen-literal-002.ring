@@ -46,9 +46,9 @@ fn main() {
     var bool bool_value = true;
 
     // 偶数为 true, 奇数为 false
-    for(i=0; i<len(global_bool_array_0); i=i+1) {
-        for(j=0; j<len(global_bool_array_0[i]); j=j+1) {
-            if(global_bool_array_0[i,j] != bool_value){
+    for i=0; i<len(global_bool_array_0); i=i+1 {
+        for j=0; j<len(global_bool_array_0[i]); j=j+1 {
+            if global_bool_array_0[i,j] != bool_value {
                 fmt::println_string("test failed");
             } 
 

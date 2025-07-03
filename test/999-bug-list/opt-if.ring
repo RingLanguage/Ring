@@ -14,13 +14,13 @@ import {
 
 // minus 符号
 fn main() {
-	if(false) {
+	if false {
 		fmt::println("1");
 	} else {
 		fmt::println("2");
 	}
 
-	if(false and false) {
+	if false and false {
 		fmt::println("1");
 	} else {
 		fmt::println("2");

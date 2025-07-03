@@ -13,8 +13,8 @@ fn main() {
     
     // -----------
     fmt::println_string("[Test Case 1]");
-    do(int_value = 0) {
-        if(int_value == 5) {
+    do int_value = 0 {
+        if int_value == 5 {
             break;
         }
     }for(int_value<10; int_value++);

@@ -29,12 +29,12 @@ fn test_func(var Job1[,] local_job1_array_0) {
     var int num;
 	var bool bool_value = true;
 
-	for(i=0; i<len(local_job1_array_0); i=i+1) {
-        for(j=0; j<len(local_job1_array_0[i]); j=j+1) {
-            if(local_job1_array_0[i,j].Int != num){
+	for i=0; i<len(local_job1_array_0); i=i+1 {
+        for j=0; j<len(local_job1_array_0[i]); j=j+1 {
+            if local_job1_array_0[i,j].Int != num {
                 fmt::println_string("test failed");
             } 
-			if(local_job1_array_0[i,j].Bool != bool_value){
+			if local_job1_array_0[i,j].Bool != bool_value {
 				fmt::println_string("test failed");
 			}
 

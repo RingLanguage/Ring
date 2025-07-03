@@ -12,7 +12,7 @@ fn main() {
     var int int_value;
 
 
-    for(int_value = 0;int_value < 20; int_value++) {
+    for int_value = 0;int_value < 20; int_value++ {
         fmt::println_int(int_value);
     }
 
@@ -28,7 +28,7 @@ fn main() {
     fmt::println_string("");
 
 
-    for(int_value = 0;int_value < 20; int_value++) {
+    for int_value = 0;int_value < 20; int_value++ {
         break;
         fmt::println_int(int_value);
     }
@@ -47,7 +47,7 @@ fn main() {
     fmt::println_string("");
 
 
-    for(int_value = 21;int_value < 20; int_value++) {
+    for int_value = 21;int_value < 20; int_value++ {
         break;
         fmt::println_int(int_value);
     }

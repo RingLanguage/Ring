@@ -17,9 +17,9 @@ fn main() {
 
     count = 0;
 
-    for(int_value_1 = 0; int_value_1<10; int_value_1++){
+    for int_value_1 = 0; int_value_1<10; int_value_1++ {
 
-        do(int_value_2 = 0) {
+        do int_value_2 = 0 {
             count++;
         }for(int_value_2<5; int_value_2++);
 

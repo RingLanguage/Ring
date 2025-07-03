@@ -75,13 +75,13 @@ fn main() {
 
     fmt::println_string("\ntest cast 2 ------------------------");
 
-    for(i=0; i<len(global_int_array_0); i=i+1) {
-        for(j=0; j<len(global_int_array_0[i]); j=j+1) {
-            for(k=0; k<len(global_int_array_0[i,j]); k=k+1) {
-                if(global_int_array_0[i,j,k] != i*100+j*10+k) {
+    for i=0; i<len(global_int_array_0); i=i+1 {
+        for j=0; j<len(global_int_array_0[i]); j=j+1 {
+            for k=0; k<len(global_int_array_0[i,j]); k=k+1 {
+                if global_int_array_0[i,j,k] != i*100+j*10+k {
                     fmt::println_string("test failed");
                 }
-                if(global_int_array_0[i,j,k] != num) {
+                if global_int_array_0[i,j,k] != num {
                     fmt::println_string("test failed");
                 }
                 num++;

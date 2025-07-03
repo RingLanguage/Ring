@@ -20,7 +20,7 @@ fn main() {
 
 
 	co_id = launch fn() {
-		for(;true;) {
+		for ;true; {
 			time::sleep(1000000000L);
 			fmt::printf("time={}          job\n", time::time()/1000000000L);
 			yield();
@@ -28,7 +28,7 @@ fn main() {
 	}();
 
 
-	for(;true;) {
+	for ;true; {
 		time::sleep(1000000000L);
 		fmt::printf("time={}  main\n", time::time()/1000000000L);
 		resume(co_id);

@@ -30,8 +30,8 @@ fn main() {
     var int j = 0;
     var int64 sum = 0L;
 
-    for(i = 0; i < 2; i = i+1) {
-        for(j = 0; j < 4; j = j+1) {
+    for i = 0; i < 2; i = i+1 {
+        for j = 0; j < 4; j = j+1 {
             fmt::println_int64(global_int64_array_0[i, j]);
 
             sum = sum + to_int64(1);

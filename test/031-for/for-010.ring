@@ -27,16 +27,16 @@ fn main() {
 	count = 0;
 	sum = 0;
 
-	for(int_value_1 = 1; int_value_1 <= 4; int_value_1++) {
-		for(int_value_2 = 1; int_value_2 <= 4; int_value_2++) {
-			for(int_value_3 = 1; int_value_3 <= 4; int_value_3++) {
-				for(int_value_4 = 1; int_value_4 <= 4; int_value_4++) {
-					for(int_value_5 = 1; int_value_5 <= 4; int_value_5++) {
-						for(int_value_6 = 1; int_value_6 <= 4; int_value_6++) {
-							for(int_value_7 = 1; int_value_7 <= 4; int_value_7++) {
-								for(int_value_8 = 1; int_value_8 <= 4; int_value_8++) {
-									for(int_value_9 = 1; int_value_9 <= 4; int_value_9++) {
-										for(int_value_10 = 1; int_value_10 <= 4; int_value_10++) {
+	for int_value_1 = 1; int_value_1 <= 4; int_value_1++ {
+		for int_value_2 = 1; int_value_2 <= 4; int_value_2++ {
+			for int_value_3 = 1; int_value_3 <= 4; int_value_3++ {
+				for int_value_4 = 1; int_value_4 <= 4; int_value_4++ {
+					for int_value_5 = 1; int_value_5 <= 4; int_value_5++ {
+						for int_value_6 = 1; int_value_6 <= 4; int_value_6++ {
+							for int_value_7 = 1; int_value_7 <= 4; int_value_7++ {
+								for int_value_8 = 1; int_value_8 <= 4; int_value_8++ {
+									for int_value_9 = 1; int_value_9 <= 4; int_value_9++ {
+										for int_value_10 = 1; int_value_10 <= 4; int_value_10++ {
 											count++;
 											sum += int_value_1 + int_value_2 + int_value_3 + int_value_4 + int_value_5 + int_value_6 + int_value_7 + int_value_8 + int_value_9 + int_value_10;
 										}
@@ -70,18 +70,18 @@ fn main() {
 	count = 0;
 	sum = 0;
 
-	for(int_value_1 = 1; int_value_1 <= 4; int_value_1++) {
-		for(int_value_2 = 1; int_value_2 <= 4; int_value_2++) {
-			for(int_value_3 = 1; int_value_3 <= 4; int_value_3++) {
-				for(int_value_4 = 1; int_value_4 <= 4; int_value_4++) {
-					for(int_value_5 = 1; int_value_5 <= 4; int_value_5++) {
-						for(int_value_6 = 1; int_value_6 <= 4; int_value_6++) {
-							for(int_value_7 = 1; int_value_7 <= 4; int_value_7++) {
-								for(int_value_8 = 1; int_value_8 <= 4; int_value_8++) {
-									for(int_value_9 = 1; int_value_9 <= 4; int_value_9++) {
-										for(int_value_10 = 1; int_value_10 <= 4; int_value_10++) {
+	for int_value_1 = 1; int_value_1 <= 4; int_value_1++ {
+		for int_value_2 = 1; int_value_2 <= 4; int_value_2++ {
+			for int_value_3 = 1; int_value_3 <= 4; int_value_3++ {
+				for int_value_4 = 1; int_value_4 <= 4; int_value_4++ {
+					for int_value_5 = 1; int_value_5 <= 4; int_value_5++ {
+						for int_value_6 = 1; int_value_6 <= 4; int_value_6++ {
+							for int_value_7 = 1; int_value_7 <= 4; int_value_7++ {
+								for int_value_8 = 1; int_value_8 <= 4; int_value_8++ {
+									for int_value_9 = 1; int_value_9 <= 4; int_value_9++ {
+										for int_value_10 = 1; int_value_10 <= 4; int_value_10++ {
 											sum++;
-											if(int_value_1 == 4) {
+											if int_value_1 == 4 {
 												break 10;
 											}
 											count++;
@@ -120,17 +120,17 @@ fn main() {
 	count = 0;
 	sum = 0;
 
-	for(int_value_1 = 1; int_value_1 <= 4; int_value_1++) {
-		for(int_value_2 = 1; int_value_2 <= 4; int_value_2++) {
-			for(int_value_3 = 1; int_value_3 <= 4; int_value_3++) {
-				for(int_value_4 = 1; int_value_4 <= 4; int_value_4++) {
-					for(int_value_5 = 1; int_value_5 <= 4; int_value_5++) {
-						for(int_value_6 = 1; int_value_6 <= 4; int_value_6++) {
-							for(int_value_7 = 1; int_value_7 <= 4; int_value_7++) {
-								for(int_value_8 = 1; int_value_8 <= 4; int_value_8++) {
-									for(int_value_9 = 1; int_value_9 <= 4; int_value_9++) {
-										for(int_value_10 = 1; int_value_10 <= 4; int_value_10++) {
-											if(int_value_10 == 1) {
+	for int_value_1 = 1; int_value_1 <= 4; int_value_1++ {
+		for int_value_2 = 1; int_value_2 <= 4; int_value_2++ {
+			for int_value_3 = 1; int_value_3 <= 4; int_value_3++ {
+				for int_value_4 = 1; int_value_4 <= 4; int_value_4++ {
+					for int_value_5 = 1; int_value_5 <= 4; int_value_5++ {
+						for int_value_6 = 1; int_value_6 <= 4; int_value_6++ {
+							for int_value_7 = 1; int_value_7 <= 4; int_value_7++ {
+								for int_value_8 = 1; int_value_8 <= 4; int_value_8++ {
+									for int_value_9 = 1; int_value_9 <= 4; int_value_9++ {
+										for int_value_10 = 1; int_value_10 <= 4; int_value_10++ {
+											if int_value_10 == 1 {
 												break 1;
 											}
 											count++;
@@ -163,17 +163,17 @@ fn main() {
 	count = 0;
 	sum = 0;
 
-	for(int_value_1 = 1; int_value_1 <= 4; int_value_1++) {
-		for(int_value_2 = 1; int_value_2 <= 4; int_value_2++) {
-			for(int_value_3 = 1; int_value_3 <= 4; int_value_3++) {
-				for(int_value_4 = 1; int_value_4 <= 4; int_value_4++) {
-					for(int_value_5 = 1; int_value_5 <= 4; int_value_5++) {
-						for(int_value_6 = 1; int_value_6 <= 4; int_value_6++) {
-							for(int_value_7 = 1; int_value_7 <= 4; int_value_7++) {
-								for(int_value_8 = 1; int_value_8 <= 4; int_value_8++) {
-									for(int_value_9 = 1; int_value_9 <= 4; int_value_9++) {
-										for(int_value_10 = 1; int_value_10 <= 4; int_value_10++) {
-											if(int_value_10 == 1) {
+	for int_value_1 = 1; int_value_1 <= 4; int_value_1++ {
+		for int_value_2 = 1; int_value_2 <= 4; int_value_2++ {
+			for int_value_3 = 1; int_value_3 <= 4; int_value_3++ {
+				for int_value_4 = 1; int_value_4 <= 4; int_value_4++ {
+					for int_value_5 = 1; int_value_5 <= 4; int_value_5++ {
+						for int_value_6 = 1; int_value_6 <= 4; int_value_6++ {
+							for int_value_7 = 1; int_value_7 <= 4; int_value_7++ {
+								for int_value_8 = 1; int_value_8 <= 4; int_value_8++ {
+									for int_value_9 = 1; int_value_9 <= 4; int_value_9++ {
+										for int_value_10 = 1; int_value_10 <= 4; int_value_10++ {
+											if int_value_10 == 1 {
 												break 10;
 											}
 											count++;

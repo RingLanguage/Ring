@@ -95,7 +95,7 @@ fn main() {
 
     fmt::println_string("test case 1-------");
     
-    for(i = 0; i < 10; i++) {
+    for i = 0; i < 10; i++ {
         global_job_array_0[i].printInfo();
     }
 

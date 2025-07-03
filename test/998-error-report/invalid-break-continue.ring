@@ -16,8 +16,8 @@ fn main() {
 
 fn test_invalid_break_num() {
 	var int index = 0;
-	for(index = 0; index < 10; index++) {
-		if(index == 5) {
+	for index = 0; index < 10; index++ {
+		if index == 5 {
 			break 2; // 编译报错，没有2个循环
 		}
 	}
@@ -33,8 +33,8 @@ fn test_contine_break() {
 
 fn test_invalid_break_num() {
 	var int index = 0;
-	for(index = 0; index < 10; index++) {
-		if(index == 5) {
+	for index = 0; index < 10; index++ {
+		if index == 5 {
 			continue;
 		}
 	}

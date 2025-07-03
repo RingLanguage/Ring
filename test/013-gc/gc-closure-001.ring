@@ -35,7 +35,7 @@ fn test_gc_array() {
 	var int[] local_int_array_0;
 
 	var int loop;
-	for(loop = 0; loop < 100000; loop++) {
+	for loop = 0; loop < 100000; loop++ {
 		local_int_array_0 = new int[100];
 	}
 

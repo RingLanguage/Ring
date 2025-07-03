@@ -24,7 +24,7 @@ fn producer() {
 
 	fmt::printf("producer start work\n");
 
-	for(i = 0; i < producer_count; i++) {
+	for i = 0; i < producer_count; i++ {
 		fmt::printf("producer {}\n", i);
 		resume(consumerid);
 	}
@@ -33,7 +33,7 @@ fn producer() {
 
 fn consumer() {
 	fmt::printf("consumer start work\n");
-    for(;;) {
+    for ;; {
 		yield();
 		fmt::printf("consumer {}\n", consumer_count);
 		consumer_count++;

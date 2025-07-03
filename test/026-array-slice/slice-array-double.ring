@@ -20,19 +20,19 @@ fn test_double_slices(var double[] arr) {
 	var int end = 0;
 
     // 测试 start 和 end 都存在的情况
-    for (start = 0; start < len; start++) {
-        for (end = start; end < len+1; end++) {
+    for start = 0; start < len; start++ {
+        for end = start; end < len+1; end++ {
             fmt::printf("arr[{}:{}] = {}\n", start, end, arr[start:end]);
         }
     }
 
     // 测试 start 不存在的情况
-    for (end = 0; end < len+1; end++) {
+    for end = 0; end < len+1; end++ {
         fmt::printf("arr[:{}] = {}\n", end, arr[:end]);
     }
 
     // 测试 end 不存在的情况
-    for (start = 0; start < len+1; start++) {
+    for start = 0; start < len+1; start++ {
         fmt::printf("arr[{}:] = {}\n", start, arr[start:]);
     }
 }

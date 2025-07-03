@@ -19,7 +19,7 @@ fn main() {
     fmt::println_int(int_value_2);
     debug::assert(int_value_2 == 0);
 
-    for(int_value_1=0; int_value_1<100; int_value_1++){
+    for int_value_1=0; int_value_1<100; int_value_1++ {
         int_value_2 += 4;
     }
 
@@ -42,7 +42,7 @@ fn main() {
     fmt::println_int(int_value_2);
     debug::assert(int_value_2 == 52);
 
-    for(; int_value_1<100; int_value_1++){
+    for ; int_value_1<100; int_value_1++ {
         int_value_2 += 4;
     }
 
@@ -66,7 +66,7 @@ fn main() {
     fmt::println_int(int_value_2);
     debug::assert(int_value_2 == 0);
 
-    for(int_value_1=0; int_value_1<100; int_value_1++){
+    for int_value_1=0; int_value_1<100; int_value_1++ {
         int_value_2 += int_value_1;
     }
 

@@ -24,7 +24,7 @@ fn main() {
 	double_value_1, double_value_2 = 0.0, 0.0;
 
 
-	for(int_value_1=0; int_value_1<100; int_value_1++){
+	for int_value_1=0; int_value_1<100; int_value_1++ {
 	    double_value_1 += 4.0;
 	    double_value_2 = double_value_2 + 4.0;
 	}

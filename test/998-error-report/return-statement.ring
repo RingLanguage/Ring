@@ -41,7 +41,7 @@ fn test4() -> (bool) {
 	var bool c;
 	var int local_int_value_0;
 
-	if(a) {
+	if a {
 		return true;
 	} else {
 		// return 5L; // 编译报错
@@ -49,16 +49,16 @@ fn test4() -> (bool) {
 	}
 
 
-	if(a) {
-		if(b) {
-			if(c) {
+	if a {
+		if b {
+			if c {
 				// return 1; // 编译报错
 			}
 		}
 	}
 
 
-	for(local_int_value_0 = 0; local_int_value_0 < 10; local_int_value_0++) {
+	for local_int_value_0 = 0; local_int_value_0 < 10; local_int_value_0++ {
 		// return 1; // 编译报错
 	}
 

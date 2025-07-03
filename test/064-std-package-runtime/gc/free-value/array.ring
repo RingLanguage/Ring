@@ -58,8 +58,8 @@ fn test0_return_closure() -> (FuncType) {
 
 	return fn() {
 		var int index;
-		for(index = 0; index < len(local_int_array_0); index++){
-			if(local_int_array_0[index] == 0) {
+		for index = 0; index < len(local_int_array_0); index++ {
+			if local_int_array_0[index] == 0 {
 				local_int_array_0[index] = index+1;
 				break;
 			}

@@ -35,9 +35,9 @@ fn main() {
     var int k = 0;
     var int sum = 0;
 
-    for(i = 0; i < 2; i = i+1) {
-        for(j = 0; j < 2; j = j+1) {
-            for(k = 0; k < 2; k = k+1) {
+    for i = 0; i < 2; i = i+1 {
+        for j = 0; j < 2; j = j+1 {
+            for k = 0; k < 2; k = k+1 {
                 fmt::println_bool(global_bool_array_0[i, j, k]);
                 sum = sum + 1;
             }

@@ -44,9 +44,9 @@ fn main() {
     var int j;
     var int num;
 
-    for(i=0; i<len(global_int_array_0); i=i+1) {
-        for(j=0; j<len(global_int_array_0[i]); j=j+1) {
-            if(global_int_array_0[i,j] != num){
+    for i=0; i<len(global_int_array_0); i=i+1 {
+        for j=0; j<len(global_int_array_0[i]); j=j+1 {
+            if global_int_array_0[i,j] != num {
                 fmt::println_string("test failed");
             } 
             num++;

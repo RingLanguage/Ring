@@ -28,7 +28,7 @@ global {
 // TestDetail: Code:
 // TestDetail: ```
 // TestDetail: global_job_array_0[i], global_job_array_0[9-i] = global_job_array_0[9-i], global_job_array_0[i];
-// TestDetail: for(i = 0; i<5; i++) {
+// TestDetail: for i = 0; i<5; i++ {
 // TestDetail:     global_job_array_0[i], global_job_array_0[9-i] = global_job_array_0[9-i], global_job_array_0[i];
 // TestDetail: }
 // TestDetail: ```
@@ -101,17 +101,17 @@ fn main() {
 
 
     fmt::println_string("test case 1-------");
-    for(local_job_value = range global_job_array_0) {
+    for local_job_value = range global_job_array_0 {
         local_job_value.printInfo();
     }
 
 
     fmt::println_string("\ntest case 2-------");
     var int i;
-    for(i = 0; i<5; i++) {
+    for i = 0; i<5; i++ {
         global_job_array_0[i], global_job_array_0[9-i] = global_job_array_0[9-i], global_job_array_0[i];
     }
-    for(local_job_value = range global_job_array_0) {
+    for local_job_value = range global_job_array_0 {
         local_job_value.printInfo();
     }
 
@@ -120,7 +120,7 @@ fn main() {
 
 
     fmt::println_string("\ntest case 3-------");
-    for(i = 0; i<10; i++) {
+    for i = 0; i<10; i++ {
         global_job_array_0[i].printInfo();
     }
 
