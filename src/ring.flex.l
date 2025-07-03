@@ -48,7 +48,6 @@ extern "C" int yywrap(){
 
 <INITIAL>"global"       { package_unit_update_line_content(yytext); return TOKEN_GLOBAL;         }
 <INITIAL>"if"           { package_unit_update_line_content(yytext); return TOKEN_IF;             }
-<INITIAL>"elseif"       { package_unit_update_line_content(yytext); return TOKEN_ELSEIF;         }
 <INITIAL>"else"         { package_unit_update_line_content(yytext); return TOKEN_ELSE;           }
 <INITIAL>"for"          { package_unit_update_line_content(yytext); return TOKEN_FOR;            }
 <INITIAL>"do"           { package_unit_update_line_content(yytext); return TOKEN_DO;             }

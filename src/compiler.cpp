@@ -694,7 +694,6 @@ std::string trans_flex_token_to_human_char(std::string str) {
         {"`constructor`", "TOKEN_CONSTRUCTOR"},
         {"`global`", "TOKEN_GLOBAL"},
         {"`if`", "TOKEN_IF"},
-        {"`elseif`", "TOKEN_ELSEIF"},
         {"`else`", "TOKEN_ELSE"},
         {"`for`", "TOKEN_FOR"},
         {"`do`", "TOKEN_DO"},

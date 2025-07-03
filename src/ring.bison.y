@@ -14,7 +14,7 @@ int yylex();
 %locations                       // 开启locations
 %glr-parser                      // 使用 GLR 解析
 %expect    3                     // legitimate 0 shift/reduce conflicts
-%expect-rr 3                     // legitimate 0 reduce/reduce conflicts
+%expect-rr 4                     // legitimate 0 reduce/reduce conflicts
 
 // 在 array_literal_expression 的 class_type_specifier dimension_expression TOKEN_LC expression_list TOKEN_RC
 // 存在 reduce/reduce conflicts, 需要使用 %code_completion 进行处理
@@ -117,7 +117,6 @@ int yylex();
 
 %token TOKEN_GLOBAL
 %token TOKEN_IF
-%token TOKEN_ELSEIF
 %token TOKEN_ELSE
 %token TOKEN_FOR
 %token TOKEN_DO
@@ -606,72 +605,54 @@ statement
 
 
 if_statement
-    : TOKEN_IF TOKEN_LP right_value_expression TOKEN_RP block // if () {}
+    : TOKEN_IF  right_value_expression  block // if condition_expression {}
     {
-        debug_bison_info_with_green("[RULE::if_statement]\t ");
-        $$ = create_if_statement($3, $5, nullptr, nullptr);
+        $$ = create_if_statement($2, $3, nullptr, nullptr);
     }
-    | TOKEN_IF TOKEN_LP right_value_expression TOKEN_RP block TOKEN_ELSE block // if () {} else {}
+    | TOKEN_IF  right_value_expression  block TOKEN_ELSE block // if condition_expression {} else {}
     {
-        debug_bison_info_with_green("[RULE::if_statement]\t ");
-        $$ = create_if_statement($3, $5, nullptr, $7);
+        $$ = create_if_statement($2, $3, nullptr, $5);
     }
-    | TOKEN_IF TOKEN_LP right_value_expression TOKEN_RP block elseif_statement_list // if () {} elseif() {} elseif {}
+    | TOKEN_IF  right_value_expression  block elseif_statement_list // if condition_expression {} else if condition_expression {} elseif {}
     {
-        debug_bison_info_with_green("[RULE::if_statement]\t ");
-        $$ = create_if_statement($3, $5, $6, nullptr);
+        $$ = create_if_statement($2, $3, $4, nullptr);
     }
-    | TOKEN_IF TOKEN_LP right_value_expression TOKEN_RP block elseif_statement_list TOKEN_ELSE block // if () {} elseif() {} elseif {} else {}
+    | TOKEN_IF  right_value_expression  block elseif_statement_list TOKEN_ELSE block // if condition_expression {} else if condition_expression {} else if {} else {}
     {
-        debug_bison_info_with_green("[RULE::if_statement]\t ");
-        $$ = create_if_statement($3, $5, $6, $8);
+        $$ = create_if_statement($2, $3, $4, $6);
     }
     ;
 
 elseif_statement_list
-    : elseif_statement
-    {
-        debug_bison_info_with_green("[RULE::elseif_list_statement]\t ");
-    }
+    : elseif_statement {}
     | elseif_statement_list elseif_statement
     {
-        debug_bison_info_with_green("[RULE::elseif_list_statement]\t ");
         $$ = elseif_statement_add_item($1, $2);
     }
     ;
 
 elseif_statement
-    : TOKEN_ELSEIF TOKEN_LP expression TOKEN_RP block // elseif () {}
+    : TOKEN_ELSE TOKEN_IF  expression  block
     {
-        debug_bison_info_with_green("[RULE::if_statement]\t ");
-        $$ = create_elseif_statement($3, $5);
+        $$ = create_elseif_statement($3, $4);
     }
     ;
 
 for_statement
-    : TOKEN_FOR TOKEN_LP maybe_empty_expression TOKEN_SEMICOLON maybe_empty_expression TOKEN_SEMICOLON maybe_empty_expression TOKEN_RP block
+    : TOKEN_FOR      maybe_empty_expression TOKEN_SEMICOLON maybe_empty_expression TOKEN_SEMICOLON maybe_empty_expression    block
     {
-        debug_bison_info_with_green("[RULE::for_statement]\t ");
-        $$ = create_for_ternary_statement($3, $5, $7, $9);
-    }
-    | TOKEN_FOR TOKEN_LP      left_value_expression_list TOKEN_ASSIGN TOKEN_RANGE range_expression     TOKEN_RP block
-    {
-        // TODO: 后续删除没有括号的版本
-        debug_bison_info_with_green("[RULE::for_statement:rangev2]\t ");
-        $$ = create_for_range_statement($3, $6, $8);
+        $$ = create_for_ternary_statement($2, $4, $6, $7);
     }
     | TOKEN_FOR      left_value_expression_list TOKEN_ASSIGN TOKEN_RANGE range_expression      block
     {
-        debug_bison_info_with_green("[RULE::for_statement:rangev2]\t ");
         $$ = create_for_range_statement($2, $5, $6);
     }
     ;
 
 dofor_statement
-    : TOKEN_DO TOKEN_LP maybe_empty_expression TOKEN_RP block TOKEN_FOR TOKEN_LP maybe_empty_expression TOKEN_SEMICOLON maybe_empty_expression TOKEN_RP
+    : TOKEN_DO  maybe_empty_expression  block TOKEN_FOR  TOKEN_LP maybe_empty_expression TOKEN_SEMICOLON maybe_empty_expression TOKEN_RP
     {
-        debug_bison_info_with_green("[RULE::for_statement]\t ");
-        $$ = create_dofor_statement($3, $5, $8, $10);
+        $$ = create_dofor_statement($2, $3, $6, $8);
     }
     ;
 
