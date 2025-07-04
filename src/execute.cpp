@@ -2140,7 +2140,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             // 但是 method 没必要单独存储, 在 class_definition 中就可以, 通过指针寻找 class_definition
             // 需要将 class_object 赋值给 self 变量
             // TODO: 但是这里, gc会释放么, 让 invoke_derive_function变得不合法
-            callee_method   = &(callee_class_ob->class_ref->method_list[method_index]);
+            callee_method   = &(callee_class_ob->class_def->method_list[method_index]);
             callee_function = callee_method->rvm_function;
 
             // TODO: 需要在外部显式修改PC
@@ -2269,7 +2269,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             // 但是 method 没必要单独存储, 在 class_definition 中就可以, 通过指针寻找 class_definition
             // 需要将 class_object 赋值给 self 变量
             // TODO: 但是这里, gc会释放么, 让 invoke_derive_function变得不合法
-            callee_method   = &(callee_class_ob->class_ref->method_list[method_index]);
+            callee_method   = &(callee_class_ob->class_def->method_list[method_index]);
             callee_function = callee_method->rvm_function;
             assert(callee_function->type == RVM_FUNCTION_TYPE_DERIVE);
 

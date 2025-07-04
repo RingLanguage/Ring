@@ -63,7 +63,7 @@ std::string fmt_string(RVM_String* string_value) {
 }
 
 std::string fmt_class(RVM_ClassObject* class_object) {
-    RVM_ClassDefinition* class_def = class_object->class_ref;
+    RVM_ClassDefinition* class_def = class_object->class_def;
 
     std::string          result;
 
@@ -217,7 +217,7 @@ std::string var_dump_class(Package_Executer* package_executer,
                            RVM_ClassObject*  class_object,
                            unsigned int      indent) {
 
-    RVM_ClassDefinition* class_def = class_object->class_ref;
+    RVM_ClassDefinition* class_def = class_object->class_def;
     std::string          detail;
     std::string          line_prefix = build_indent(indent + 1, "    ");
 

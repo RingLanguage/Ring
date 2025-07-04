@@ -72,6 +72,7 @@ std::vector<StdPackageInfo> Std_Lib_List = {
         std::vector<StdPackageNativeFunction>{
             {(char*)"json_encode", std_lib_encoding_json_encode, 1, 1},
             {(char*)"json_encode_indent", std_lib_encoding_json_encode_indent, 1, 1},
+            {(char*)"json_decode", std_lib_encoding_json_decode, 2, 2},
         },
     },
 
@@ -234,7 +235,12 @@ void destory_native_return_list(RVM_Value* return_list, unsigned int return_size
 #define RETURN_LIST_SET_STRING(list, index, value)          \
     (list)[(index)].type           = RVM_VALUE_TYPE_STRING; \
     (list)[(index)].u.string_value = (value);
-
+#define RETURN_LIST_SET_ARRAY(list, index, value)         \
+    (list)[(index)].type          = RVM_VALUE_TYPE_ARRAY; \
+    (list)[(index)].u.array_value = (value);
+#define RETURN_LIST_SET_CLASS_OB(list, index, value)            \
+    (list)[(index)].type             = RVM_VALUE_TYPE_CLASS_OB; \
+    (list)[(index)].u.class_ob_value = (value);
 
 /*
  * Package: os
@@ -725,7 +731,7 @@ void std_lib_fmt_println_pointer(Ring_VirtualMachine* rvm,
         snprintf(output_buffer, length, "%p\n", args->u.string_value->data);
         break;
     case RVM_VALUE_TYPE_CLASS_OB:
-        snprintf(output_buffer, length, "%p\n", args->u.class_ob_value->field_list);
+        snprintf(output_buffer, length, "%p\n", args->u.class_ob_value);
         break;
     case RVM_VALUE_TYPE_ARRAY:
         snprintf(output_buffer, length, "%p\n", args->u.array_value->u.int_array);
@@ -995,6 +1001,74 @@ void std_lib_encoding_json_encode_indent(Ring_VirtualMachine* rvm,
     *return_size       = 1;
     *return_list       = new_native_return_list(*return_size);
     RETURN_LIST_SET_STRING(*return_list, 0, rvm_gc_new_rvm_string(rvm, result.c_str()));
+}
+
+/*
+ * Package: encoding
+ * Function: std_lib_encoding_json_decode
+ * Type: @native
+ */
+void std_lib_encoding_json_decode(Ring_VirtualMachine* rvm,
+                                  unsigned int arg_size, RVM_Value* args,
+                                  unsigned int* return_size, RVM_Value** return_list) {
+
+    assert(arg_size == 2);
+    assert(args[0].type == RVM_VALUE_TYPE_ARRAY || args[0].type == RVM_VALUE_TYPE_CLASS_OB);
+
+    RVM_String* json_str = args[1].u.string_value;
+    RVM_Value   result;
+    std::string err_msg;
+
+
+    *return_size = 2;
+    *return_list = new_native_return_list(*return_size);
+
+    // TODO: 细化一下捕获的异常
+    try {
+        result = rvm_value_json_decode(rvm,
+                                       json_str->data, json_str->length,
+                                       &args[0]);
+    } catch (const json::type_error& e) {
+        err_msg = std::string("json_decode::type error: ") + e.what();
+    } catch (const json::out_of_range& e) {
+        err_msg = std::string("json_decode::out of range: ") + e.what();
+    } catch (const json::parse_error& e) {
+        err_msg = std::string("json_decode::parse error: ") + e.what();
+    } catch (const json::exception& e) {
+        err_msg = std::string("json_decode::json error: ") + e.what();
+    } catch (const std::logic_error& e) {
+        err_msg = std::string("json_decode::logic_error error: ") + e.what();
+    } catch (...) {
+        err_msg = std::string("json_decode:: unknow error: ");
+    }
+
+    if (err_msg.size()) {
+        RETURN_LIST_SET_STRING(*return_list, 1, rvm_gc_new_rvm_string(rvm, err_msg.c_str()));
+        return;
+    }
+
+
+    // first return value
+    if (args[0].type == RVM_VALUE_TYPE_CLASS_OB) {
+        if (result.type == RVM_VALUE_TYPE_CLASS_OB) {
+            RETURN_LIST_SET_CLASS_OB(*return_list, 0, result.u.class_ob_value);
+        } else {
+            // error-report
+            err_msg = "json_decode failed";
+            RETURN_LIST_SET_CLASS_OB(*return_list, 0, args[0].u.class_ob_value);
+        }
+    } else if (args[0].type == RVM_VALUE_TYPE_ARRAY) {
+        if (result.type == RVM_VALUE_TYPE_ARRAY) {
+            RETURN_LIST_SET_ARRAY(*return_list, 0, result.u.array_value);
+        } else {
+            // error-report
+            err_msg = "json_decode failed";
+            RETURN_LIST_SET_ARRAY(*return_list, 0, args[0].u.array_value);
+        }
+    }
+
+    // second return value
+    RETURN_LIST_SET_STRING(*return_list, 1, rvm_gc_new_rvm_string(rvm, err_msg.c_str()));
 }
 
 

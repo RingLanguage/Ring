@@ -18,6 +18,7 @@ OBJS   = \
 	utils.o\
 	man_help.o\
 	std_lib.o\
+	std_lib_json.o\
 	mem_pool.o\
 	gc.o\
 	rdb-cli.o\
@@ -209,6 +210,7 @@ error_msg.o: error_msg.cpp ring.hpp
 utils.o: utils.cpp ring.hpp
 man_help.o: man_help.cpp ring.hpp
 std_lib.o: std_lib.cpp ring.hpp
+std_lib_json.o: std_lib_json.cpp ring.hpp
 mem_pool.o: mem_pool.cpp ring.hpp
 gc.o: gc.cpp ring.hpp
 rdb-cli.o: rdb-cli.cpp ring.hpp

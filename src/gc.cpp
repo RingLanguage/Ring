@@ -506,7 +506,7 @@ RVM_Array* rvm_gc_new_array_meta(Ring_VirtualMachine* rvm,
     array->length         = 0;
     array->capacity       = 0;
     array->item_type_kind = item_type_kind;
-    array->class_ref      = class_definition;
+    array->class_def      = class_definition;
     array->u.bool_array   = nullptr;
 
     rvm_heap_list_add_object(rvm, (RVM_GC_Object*)array);
@@ -640,7 +640,7 @@ RVM_Array* rvm_deep_copy_array(Ring_VirtualMachine* rvm, RVM_Array* src) {
     array                   = rvm_gc_new_array_meta(rvm,
                                                     src->type,
                                                     src->item_type_kind,
-                                                    src->class_ref,
+                                                    src->class_def,
                                                     src->dimension);
     array->length           = src->length;
     array->capacity         = src->capacity;
@@ -683,7 +683,7 @@ RVM_Array* rvm_deep_copy_array(Ring_VirtualMachine* rvm, RVM_Array* src) {
         break;
 
     case RVM_ARRAY_CLASS_OBJECT:
-        array->class_ref        = src->class_ref;
+        array->class_def        = src->class_def;
         alloc_size              = sizeof(RVM_ClassObject*) * array->capacity;
         array->u.class_ob_array = (RVM_ClassObject**)mem_alloc(rvm->data_pool, alloc_size);
         alloc_size              = 0; // gc-object 元信息不计入 heap的空间
@@ -742,7 +742,7 @@ RVM_Array* rvm_slice_array(Ring_VirtualMachine* rvm,
     if (actual_start > actual_end) {
         // 返回空数组
         return rvm_gc_new_array_meta(rvm, src->type, src->item_type_kind,
-                                     src->class_ref, src->dimension);
+                                     src->class_def, src->dimension);
     }
 
     // 计算新数组长度
@@ -752,7 +752,7 @@ RVM_Array* rvm_slice_array(Ring_VirtualMachine* rvm,
     RVM_Array* new_array = rvm_gc_new_array_meta(rvm,
                                                  src->type,
                                                  src->item_type_kind,
-                                                 src->class_ref,
+                                                 src->class_def,
                                                  src->dimension);
     new_array->length    = new_length;
     new_array->capacity  = ROUND_UP8(new_length);
@@ -976,7 +976,7 @@ RVM_ClassObject* rvm_gc_new_class_ob_meta(Ring_VirtualMachine* rvm) {
     class_object->gc_mark         = GC_MARK_COLOR_WHITE;
     class_object->gc_prev         = nullptr;
     class_object->gc_next         = nullptr;
-    class_object->class_ref       = nullptr;
+    class_object->class_def       = nullptr;
     class_object->field_count     = 0;
     class_object->field_list      = nullptr;
 
@@ -1079,7 +1079,7 @@ void rvm_fill_class_ob(Ring_VirtualMachine* rvm,
     }
 
 
-    class_ob->class_ref   = class_definition;
+    class_ob->class_def   = class_definition;
     class_ob->field_count = class_definition->field_size;
     class_ob->field_list  = field_list;
 
@@ -1093,7 +1093,7 @@ void rvm_fill_class_ob(Ring_VirtualMachine* rvm,
 RVM_ClassObject* rvm_deep_copy_class_ob(Ring_VirtualMachine* rvm, RVM_ClassObject* src) {
     RVM_ClassObject*     class_object     = rvm_gc_new_class_ob_meta(rvm);
 
-    RVM_ClassDefinition* class_definition = src->class_ref;
+    RVM_ClassDefinition* class_definition = src->class_def;
 
     RVM_Value*           field_list       = nullptr;
     RVM_String*          field_string     = nullptr;
@@ -1160,7 +1160,7 @@ RVM_ClassObject* rvm_deep_copy_class_ob(Ring_VirtualMachine* rvm, RVM_ClassObjec
         }
     }
 
-    class_object->class_ref   = src->class_ref;
+    class_object->class_def   = src->class_def;
     class_object->field_count = src->field_count;
     class_object->field_list  = field_list;
 

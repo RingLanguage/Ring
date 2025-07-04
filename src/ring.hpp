@@ -845,7 +845,7 @@ struct RVM_Array {
 
     // 这里实现的不太好，信息冗余了
     // 只有当 type == RVM_ARRAY_CLASS_OBJECT 才有意义
-    RVM_ClassDefinition* class_ref;
+    RVM_ClassDefinition* class_def;
 
     union {
         bool*             bool_array;
@@ -863,7 +863,7 @@ struct RVM_Array {
 struct RVM_ClassObject {
     RVM_GC_Object_Header;
 
-    RVM_ClassDefinition* class_ref;
+    RVM_ClassDefinition* class_def;
     unsigned int         field_count;
     RVM_Value*           field_list;
 };
@@ -900,6 +900,7 @@ struct RVM_TypeSpecifier_Func {
 // Only used by back-end of compiler.
 struct RVM_TypeSpecifier {
     Ring_BasicType kind;
+    bool           is_pointer; // 只能是 class array
 
     union {
         RVM_TypeSpecifier_Array* array_t;
@@ -3847,6 +3848,9 @@ void       std_lib_encoding_json_encode_indent(Ring_VirtualMachine* rvm,
 void       std_lib_reflect_typeof(Ring_VirtualMachine* rvm,
                                   unsigned int arg_size, RVM_Value* args,
                                   unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_encoding_json_decode(Ring_VirtualMachine* rvm,
+                                        unsigned int arg_size, RVM_Value* args,
+                                        unsigned int* return_size, RVM_Value** return_list);
 
 void       std_lib_runtime_heap_size(Ring_VirtualMachine* rvm,
                                      unsigned int arg_size, RVM_Value* args,
@@ -3879,6 +3883,40 @@ void       std_lib_math_pow(Ring_VirtualMachine* rvm,
                             unsigned int* return_size, RVM_Value** return_list);
 // --------------------
 
+/* --------------------
+ * std_lib_json.cpp
+ * function definition
+ *
+ */
+
+std::string rvm_value_json_encode(RVM_Value* value,
+                                  const int  indent      = -1,
+                                  const char indent_char = ' ');
+
+RVM_Value   rvm_value_json_decode(Ring_VirtualMachine* rvm,
+                                  char*                str,
+                                  unsigned int         length,
+                                  RVM_Value*           expect);
+
+// 将 RVM_Value 转换为 nlohmann::json
+json             rvm_value_2_json(RVM_Value* value);
+json             rvm_class_ob_2_json(RVM_ClassObject* obj);
+json             rvm_array_2_json(RVM_Array* arr);
+
+
+RVM_Value        json_2_rvm_value(Ring_VirtualMachine* rvm,
+                                  const json&          j,
+                                  RVM_Value*           expect);
+RVM_ClassObject* json_2_rvm_class_ob(Ring_VirtualMachine* rvm,
+                                     const json&          j,
+                                     RVM_ClassDefinition* rvm_class_definition);
+RVM_Array*       json_2_rvm_array(Ring_VirtualMachine* rvm,
+                                  const json&          j,
+                                  unsigned int         expect_array_dimension,
+                                  RVM_Array_Type       expect_array_type,
+                                  Ring_BasicType       expect_array_item_type_kind,
+                                  RVM_ClassDefinition* expect_array_class_def);
+// --------------------
 
 /* --------------------
  * utils.cpp
@@ -3961,12 +3999,6 @@ std::string              sprintf_string_va(const char* format, va_list args);
 
 std::string              convert_troff_string_2_c_control(const std::string& input);
 
-std::string              rvm_value_json_encode(RVM_Value* value,
-                                               const int  indent      = -1,
-                                               const char indent_char = ' ');
-json                     rvm_value_to_json(RVM_Value* value);
-json                     rvm_class_ob_to_json(RVM_ClassObject* obj);
-json                     rvm_array_to_json(RVM_Array* arr);
 
 // --------------------
 

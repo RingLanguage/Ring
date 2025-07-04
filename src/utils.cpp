@@ -836,10 +836,10 @@ std::string format_rvm_type(Ring_VirtualMachine* rvm, RVM_Value* value) {
         str = "string";
         break;
     case RVM_VALUE_TYPE_CLASS_OB:
-        if (value->u.class_ob_value->class_ref == nullptr) {
+        if (value->u.class_ob_value->class_def == nullptr) {
             str = "class";
         } else {
-            str = std::string(value->u.class_ob_value->class_ref->identifier);
+            str = std::string(value->u.class_ob_value->class_def->identifier);
         }
         break;
     case RVM_VALUE_TYPE_ARRAY:
@@ -903,7 +903,7 @@ std::string format_rvm_call_stack(Ring_VirtualMachine* rvm) {
 
             if (pos->callee_object != nullptr) {
                 func_name = sprintf_string("%s.%s",
-                                           pos->callee_object->class_ref->identifier,
+                                           pos->callee_object->class_def->identifier,
                                            format_rvm_function(rvm->executer, (RVM_Function*)pos->callee_function).c_str());
             } else {
                 func_name = sprintf_string("%s", format_rvm_function(rvm->executer, (RVM_Function*)pos->callee_function).c_str());
@@ -965,7 +965,7 @@ CallInfo get_rvm_call_stack(Ring_VirtualMachine* rvm, unsigned int skip) {
 
             if (pos->callee_object != nullptr) {
                 func_name = sprintf_string("%s.%s",
-                                           pos->callee_object->class_ref->identifier,
+                                           pos->callee_object->class_def->identifier,
                                            format_rvm_function(rvm->executer, (RVM_Function*)pos->callee_function).c_str());
             } else {
                 func_name = sprintf_string("%s", format_rvm_function(rvm->executer, (RVM_Function*)pos->callee_function).c_str());
@@ -1006,7 +1006,7 @@ std::string format_rvm_current_func(Ring_VirtualMachine* rvm, unsigned int sourc
     if (pos->callee_object == nullptr) {
         result += format_rvm_function(rvm->executer, (RVM_Function*)pos->callee_function);
     } else {
-        result += std::string(pos->callee_object->class_ref->identifier) + "." + format_rvm_function(rvm->executer, (RVM_Function*)pos->callee_function);
+        result += std::string(pos->callee_object->class_def->identifier) + "." + format_rvm_function(rvm->executer, (RVM_Function*)pos->callee_function);
     }
 
 
@@ -1521,8 +1521,8 @@ int string_compare(const char* str1, unsigned int str1_len, const char* str2, un
 
 std::string formate_class_type(RVM_ClassObject* class_object) {
     std::string str;
-    if (class_object->class_ref) {
-        str = sprintf_string("%s", class_object->class_ref->identifier);
+    if (class_object->class_def) {
+        str = sprintf_string("%s", class_object->class_def->identifier);
     } else {
         str = "unknow";
     }
@@ -1549,10 +1549,10 @@ std::string formate_array_item_type(RVM_Array* array_value) {
     case RING_BASIC_TYPE_DOUBLE: str = "double"; break;
     case RING_BASIC_TYPE_STRING: str = "string"; break;
     case RING_BASIC_TYPE_CLASS:
-        if (array_value->class_ref == nullptr) {
+        if (array_value->class_def == nullptr) {
             str = "unknow";
         } else {
-            str = array_value->class_ref->identifier;
+            str = array_value->class_def->identifier;
         }
         break;
     case RING_BASIC_TYPE_FUNC:
@@ -1574,10 +1574,10 @@ std::string formate_array_item_type(RVM_Array* array_value) {
     case RVM_ARRAY_DOUBLE: str = "double"; break;
     case RVM_ARRAY_STRING: str = "string"; break;
     case RVM_ARRAY_CLASS_OBJECT:
-        if (array_value->class_ref == nullptr) {
+        if (array_value->class_def == nullptr) {
             str = "unknow";
         } else {
-            str = array_value->class_ref->identifier;
+            str = array_value->class_def->identifier;
         }
         break;
     case RVM_ARRAY_A:
@@ -1831,101 +1831,4 @@ std::string convert_troff_string_2_c_control(const std::string& input) {
     }
 
     return output;
-}
-
-std::string rvm_value_json_encode(RVM_Value* value,
-                                  const int  indent,
-                                  const char indent_char) {
-    try {
-        json j = rvm_value_to_json(value);
-        return j.dump(indent, indent_char).c_str();
-    } catch (const std::exception& e) {
-        return std::string("rvm_value_json_encode failed:") + e.what();
-    }
-}
-
-// 将 RVM_Value 转换为 nlohmann::json
-json rvm_value_to_json(RVM_Value* value) {
-    switch (value->type) {
-    case RVM_VALUE_TYPE_BOOL:
-        return json(bool(value->u.bool_value));
-    case RVM_VALUE_TYPE_INT:
-        return json(value->u.int_value);
-    case RVM_VALUE_TYPE_INT64:
-        return json(value->u.int64_value);
-    case RVM_VALUE_TYPE_DOUBLE:
-        return json(value->u.double_value);
-    case RVM_VALUE_TYPE_STRING: {
-        std::string tmp(value->u.string_value->data, value->u.string_value->length);
-        return json(tmp);
-    }
-    case RVM_VALUE_TYPE_CLASS_OB:
-        return rvm_class_ob_to_json(value->u.class_ob_value);
-    case RVM_VALUE_TYPE_ARRAY:
-        return rvm_array_to_json(value->u.array_value);
-    default:
-        return json(nullptr); // 无法识别的类型返回 null
-    }
-}
-
-json rvm_class_ob_to_json(RVM_ClassObject* obj) {
-    json j = json::object();
-    if (!obj)
-        return j;
-
-    for (unsigned int i = 0; i < obj->field_count; i++) {
-        const char* field_name = CLASS_GET_FIELD_IDENT(obj->class_ref, i);
-        j[field_name]          = rvm_value_to_json(&obj->field_list[i]);
-    }
-    return j;
-}
-
-
-json rvm_array_to_json(RVM_Array* arr) {
-    json j = json::array();
-    if (!arr) {
-        return j;
-    }
-
-    switch (arr->type) {
-    case RVM_ARRAY_BOOL:
-        for (size_t i = 0; i < arr->length; ++i) {
-            j.push_back(arr->u.bool_array[i]);
-        }
-        break;
-    case RVM_ARRAY_INT:
-        for (size_t i = 0; i < arr->length; ++i) {
-            j.push_back(arr->u.int_array[i]);
-        }
-        break;
-    case RVM_ARRAY_INT64:
-        for (size_t i = 0; i < arr->length; ++i) {
-            j.push_back(arr->u.int64_array[i]);
-        }
-        break;
-    case RVM_ARRAY_DOUBLE:
-        for (size_t i = 0; i < arr->length; ++i) {
-            j.push_back(arr->u.double_array[i]);
-        }
-        break;
-    case RVM_ARRAY_STRING:
-        for (size_t i = 0; i < arr->length; ++i) {
-            std::string tmp(arr->u.string_array[i]->data, arr->u.string_array[i]->length);
-            j.push_back(tmp);
-        }
-        break;
-    case RVM_ARRAY_CLASS_OBJECT:
-        for (size_t i = 0; i < arr->length; ++i) {
-            j.push_back(rvm_class_ob_to_json(arr->u.class_ob_array[i]));
-        }
-        break;
-    case RVM_ARRAY_A:
-        for (size_t i = 0; i < arr->length; ++i) {
-            j.push_back(rvm_array_to_json(arr->u.a_array[i]));
-        }
-        break;
-    default:
-        break;
-    }
-    return j;
 }
