@@ -132,6 +132,7 @@ typedef struct RVM_FreeValue                RVM_FreeValue;
 typedef struct RVM_FreeValueBlock           RVM_FreeValueBlock;
 typedef struct RVM_ClassObject              RVM_ClassObject;
 typedef struct RVM_GC_Object                RVM_GC_Object;
+typedef struct RVM_TypeSpecifier_Class      RVM_TypeSpecifier_Class;
 typedef struct RVM_TypeSpecifier_Array      RVM_TypeSpecifier_Array;
 typedef struct RVM_TypeSpecifier_Func       RVM_TypeSpecifier_Func;
 typedef struct RVM_TypeSpecifier            RVM_TypeSpecifier;
@@ -487,10 +488,11 @@ struct PackageUnit {
     std::vector<Function*>          function_list;
     std::vector<EnumDeclaration*>   enum_declaration_list;
     std::vector<TypeAlias*>         type_alias_list;
+    // TODO: 删除 class_definition_list ，统一通过 type_alias_list 来代替
 
-    Block*                          current_block;
+    Block*       current_block;
 
-    unsigned int                    compile_error_num;
+    unsigned int compile_error_num;
 };
 
 
@@ -533,6 +535,7 @@ struct Ring_DeriveType_Array {
 };
 
 struct Ring_DeriveType_Class {
+    Package*         package; // 定义class 所在的package
     char*            class_identifier;
     ClassDefinition* class_definition; // UPDATED_BY_FIX_AST
 };
@@ -557,6 +560,7 @@ struct TypeAlias {
 struct TypeSpecifier {
     unsigned int line_number;
 
+    char*        package_posit; // 空表示当前package
     // 只有非 bool/int/int64/double/string 时, identifier才会有效
     // 如类, 函数别名
     char*          identifier;
@@ -883,6 +887,11 @@ struct RVM_FreeValueBlock {
     RVM_FreeValue* list;
 };
 
+struct RVM_TypeSpecifier_Class {
+    unsigned int package_index; // 定义 class的package 的全局索引
+    unsigned int class_def_index;
+};
+
 struct RVM_TypeSpecifier_Array {
     unsigned int       dimension; // 维度，用来指明sub
     RVM_TypeSpecifier* sub;
@@ -900,11 +909,10 @@ struct RVM_TypeSpecifier_Func {
 // Only used by back-end of compiler.
 struct RVM_TypeSpecifier {
     Ring_BasicType kind;
-    bool           is_pointer; // 只能是 class array
 
     union {
         RVM_TypeSpecifier_Array* array_t;
-        unsigned int             class_def_index;
+        RVM_TypeSpecifier_Class* class_t;
         RVM_TypeSpecifier_Func*  func_t;
     } u;
 };
@@ -1576,6 +1584,8 @@ struct EnumItemDeclaration {
 
 
 struct ClassDefinition {
+    PackageUnit*     package_unit; // 所属的 package_unit
+
     std::string      source_file;
     unsigned int     start_line_number; // 源码的开始行
     unsigned int     end_line_number;   // 源码的结束行
@@ -3229,8 +3239,10 @@ SubLinearRangeExpression*     create_linear_range_expression(Expression* collect
 
 TypeSpecifier*                create_type_specifier(Ring_BasicType basic_type);
 TypeSpecifier*                create_type_specifier_array(TypeSpecifier* sub_type, DimensionExpression* dimension);
-TypeSpecifier*                create_type_specifier_alias(char* identifier);
+TypeSpecifier*                create_type_specifier_alias(char* package_posit, char* identifier);
 
+TypeAlias*                    add_type_alias_class(char*            class_identifier,
+                                                   ClassDefinition* class_def);
 TypeAlias*                    add_type_alias_func(Parameter*          parameter_list,
                                                   FunctionReturnList* return_list,
                                                   Identifier*         identifier);
@@ -3330,7 +3342,7 @@ void                        fix_statement_list(Statement* statement_list, Block*
 void                        fix_statement(Statement* statement, Block* block, FunctionTuple* func);
 void                        fix_expression(Expression* expression, Block* block, FunctionTuple* func);
 void                        add_local_declaration(VarDecl* declaration, Block* block, FunctionTuple* func);
-void                        fix_type_specfier(TypeSpecifier* type_specifier);
+void                        fix_type_specfier(TypeSpecifier* type_specifier, Package* curr_package);
 void                        fix_block(Block* block, FunctionTuple* func);
 void                        fix_if_statement(IfStatement* if_statement, Block* block, FunctionTuple* func);
 void                        fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple* func);
@@ -3406,7 +3418,7 @@ void                        fix_class_object_literal_expression(Expression* expr
 void                        fix_field_member_expression(Expression* expression, MemberExpression* member_expression, Block* block, FunctionTuple* func);
 void                        fix_class_member_expression(MemberExpression* member_expression, Expression* object_expression, char* member_identifier);
 ClassDefinition*            search_class_definition(char* class_identifier);
-TypeAlias*                  search_type_alias(char* identifier);
+TypeAlias*                  search_type_alias(Package* package, char* identifier);
 FieldMember*                search_class_field(ClassDefinition* class_definition, char* identifier);
 MethodMember*               search_class_method(ClassDefinition* class_definition, char* identifier);
 
@@ -3433,7 +3445,8 @@ void                        add_parameter_to_declaration(Parameter* parameter, B
 
 Package*                    resolve_package(char*        package_posit,
                                             unsigned int line_number,
-                                            Block*       block);
+                                            Block*       block,
+                                            Package*     current_package);
 Variable*                   resolve_variable(Package* package, char* identifier, Block* block);
 Variable*                   resolve_variable_global(Package* package, char* identifier, Block* block);
 Variable*                   resolve_variable_recur(Package* package, char* identifier, Block* block);
@@ -3486,7 +3499,9 @@ void crop_unitary_expression(Expression* expression,
  * function definition
  *
  */
-Package_Executer* package_executer_create(ExecuterEntry* executer_entry, char* package_name);
+Package_Executer* package_executer_create(ExecuterEntry* executer_entry,
+                                          char*          package_name,
+                                          unsigned int   package_index);
 void              print_package_executer(Package_Executer* package_executer);
 void              package_executer_dump(Package_Executer* package_executer);
 

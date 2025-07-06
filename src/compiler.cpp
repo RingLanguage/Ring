@@ -521,6 +521,7 @@ int package_unit_add_class_definition(ClassDefinition* class_definition) {
 int package_unit_add_type_alias(TypeAlias* type_alias) {
     assert(g_package_unit != nullptr);
     assert(type_alias != nullptr);
+    // TODO: 需要判读名称是否重复
 
     g_package_unit->type_alias_list.push_back(type_alias);
     return 0;

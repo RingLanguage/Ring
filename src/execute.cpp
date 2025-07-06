@@ -285,11 +285,11 @@ void rvm_add_static_variable(Package_Executer*  executer,
  *
  */
 void rvm_init_static_variable(Ring_VirtualMachine* rvm,
-                              Package_Executer*    executer,
+                              Package_Executer*    package_executer,
                               RVM_RuntimeStatic*   runtime_static) {
 
-    unsigned int         size                 = executer->global_variable_size;
-    RVM_Variable*        global_variable_list = executer->global_variable_list;
+    unsigned int         size                 = package_executer->global_variable_size;
+    RVM_Variable*        global_variable_list = package_executer->global_variable_list;
     RVM_TypeSpecifier*   type_specifier       = nullptr;
     RVM_ClassDefinition* rvm_class_definition = nullptr;
     RVM_String*          string               = nullptr;
@@ -317,9 +317,12 @@ void rvm_init_static_variable(Ring_VirtualMachine* rvm,
             rvm_fill_string(rvm, string, ROUND_UP8(1));
             STATIC_SET_STRING_INDEX(i, string);
             break;
-        case RING_BASIC_TYPE_CLASS:
-            rvm_class_definition = &(rvm->class_list[type_specifier->u.class_def_index]);
-            class_ob             = rvm_gc_new_class_ob_meta(rvm);
+        case RING_BASIC_TYPE_CLASS: {
+            unsigned package_index = type_specifier->u.class_t->package_index;
+            unsigned class_index   = type_specifier->u.class_t->class_def_index;
+            rvm_class_definition   = &(package_executer->executer_entry->package_executer_list[package_index]->class_list[class_index]);
+        }
+            class_ob = rvm_gc_new_class_ob_meta(rvm);
             rvm_fill_class_ob(rvm, class_ob, rvm_class_definition);
             STATIC_SET_CLASS_OB_INDEX(i, class_ob);
             break;
@@ -331,7 +334,9 @@ void rvm_init_static_variable(Ring_VirtualMachine* rvm,
             RVM_Array_Type       array_type           = convert_rvm_array_type(type_specifier);
             RVM_ClassDefinition* sub_class_definition = nullptr;
             if (sub_type_specifier->kind == RING_BASIC_TYPE_CLASS) {
-                sub_class_definition = &(rvm->class_list[sub_type_specifier->u.class_def_index]);
+                unsigned package_index = sub_type_specifier->u.class_t->package_index;
+                unsigned class_index   = sub_type_specifier->u.class_t->class_def_index;
+                sub_class_definition   = &(package_executer->executer_entry->package_executer_list[package_index]->class_list[class_index]);
             }
 
             array = rvm_gc_new_array_meta(rvm,
@@ -360,7 +365,7 @@ void rvm_init_static_variable(Ring_VirtualMachine* rvm,
  */
 int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
-    RVM_Constant*        constant_list          = rvm->executer->constant_pool->list;
+    RVM_Constant*        constant_list          = nullptr;
 
     unsigned int         runtime_static_index   = 0;
     unsigned int         oper_num               = 0;
@@ -542,29 +547,40 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             break;
 
         case RVM_CODE_PUSH_INT:
-            const_index = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            const_index   = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            package_index = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            constant_list = rvm->executer_entry->package_executer_list[package_index]->constant_pool->list;
+
             STACK_SET_INT_OFFSET(0, constant_list[const_index].u.int_value);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
+            VM_CUR_CO_PC += 4;
             break;
         case RVM_CODE_PUSH_INT64:
-            const_index = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            const_index   = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            package_index = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            constant_list = rvm->executer_entry->package_executer_list[package_index]->constant_pool->list;
+
             STACK_SET_INT64_OFFSET(0, constant_list[const_index].u.int64_value);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
+            VM_CUR_CO_PC += 4;
             break;
         case RVM_CODE_PUSH_DOUBLE:
-            const_index = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            const_index   = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            package_index = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            constant_list = rvm->executer_entry->package_executer_list[package_index]->constant_pool->list;
+
             STACK_SET_DOUBLE_OFFSET(0, constant_list[const_index].u.double_value);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
+            VM_CUR_CO_PC += 4;
             break;
         case RVM_CODE_PUSH_STRING:
-            const_index  = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-            string_value = constant_list[const_index].u.string_value;
-            STACK_SET_STRING_OFFSET(0, string_value);
+            const_index   = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            package_index = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            constant_list = rvm->executer_entry->package_executer_list[package_index]->constant_pool->list;
+
+            STACK_SET_STRING_OFFSET(0, constant_list[const_index].u.string_value);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
+            VM_CUR_CO_PC += 4;
             break;
 
 
@@ -1344,14 +1360,15 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             break;
         case RVM_CODE_NEW_ARRAY_LITERAL_CLASS_OB:
             // TODO: class_index 有个限制，不能超过255
-            array_size           = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-            class_index          = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
-            rvm_class_definition = &(rvm->class_list[class_index]);
+            package_index        = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            class_index          = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 2]);
+            array_size           = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            rvm_class_definition = &(rvm->executer_entry->package_executer_list[package_index]->class_list[class_index]);
             array_value          = rvm_new_array_literal_class_object(rvm, array_size, rvm_class_definition);
             VM_CUR_CO_STACK_TOP_INDEX -= array_size;
             STACK_SET_ARRAY_OFFSET(0, array_value);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 4;
+            VM_CUR_CO_PC += 5;
             break;
         case RVM_CODE_NEW_ARRAY_LITERAL_CLOSURE:
             array_size  = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
@@ -1499,14 +1516,15 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
         // class
         case RVM_CODE_NEW_CLASS_OB_LITERAL:
-            class_index          = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-            rvm_class_definition = &(rvm->class_list[class_index]);
+            package_index        = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            class_index          = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 2]);
+            rvm_class_definition = &(rvm->executer_entry->package_executer_list[package_index]->class_list[class_index]);
 
             class_ob_value       = rvm_gc_new_class_ob_meta(rvm);
             rvm_fill_class_ob(rvm, class_ob_value, rvm_class_definition);
             STACK_SET_CLASS_OB_OFFSET(0, class_ob_value);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 2;
+            VM_CUR_CO_PC += 3;
             break;
 
         case RVM_CODE_POP_FIELD_BOOL:
@@ -2170,6 +2188,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
         // closure
         case RVM_CODE_NEW_CLOSURE:
+            constant_list  = rvm->executer->constant_pool->list;
             const_index    = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
             anonymous_func = constant_list[const_index].u.anonymous_func_value;
             closure_value  = new_closure(rvm, caller_function, caller_closure, anonymous_func);
@@ -2883,9 +2902,13 @@ void init_derive_function_local_variable(Ring_VirtualMachine* rvm,
             rvm_fill_string(rvm, string, ROUND_UP8(1));
             STACK_SET_STRING_INDEX(VM_CUR_CO_STACK_TOP_INDEX + local_vari_stack_offset, string);
             break;
-        case RING_BASIC_TYPE_CLASS:
-            rvm_class_definition = &(rvm->class_list[type_specifier->u.class_def_index]);
-            class_ob             = rvm_gc_new_class_ob_meta(rvm);
+        case RING_BASIC_TYPE_CLASS: {
+            unsigned package_index = type_specifier->u.class_t->package_index;
+            unsigned class_index   = type_specifier->u.class_t->class_def_index;
+
+            rvm_class_definition   = &(rvm->executer_entry->package_executer_list[package_index]->class_list[class_index]);
+        }
+            class_ob = rvm_gc_new_class_ob_meta(rvm);
             rvm_fill_class_ob(rvm, class_ob, rvm_class_definition);
             STACK_SET_CLASS_OB_INDEX(VM_CUR_CO_STACK_TOP_INDEX + local_vari_stack_offset, class_ob);
             break;
@@ -2895,7 +2918,10 @@ void init_derive_function_local_variable(Ring_VirtualMachine* rvm,
             RVM_Array_Type       array_type           = convert_rvm_array_type(type_specifier);
             RVM_ClassDefinition* sub_class_definition = nullptr;
             if (sub_type_specifier->kind == RING_BASIC_TYPE_CLASS) {
-                sub_class_definition = &(rvm->class_list[sub_type_specifier->u.class_def_index]);
+                unsigned package_index = sub_type_specifier->u.class_t->package_index;
+                unsigned class_index   = sub_type_specifier->u.class_t->class_def_index;
+
+                sub_class_definition   = &(rvm->executer_entry->package_executer_list[package_index]->class_list[class_index]);
             }
 
             array = rvm_gc_new_array_meta(rvm,
@@ -3590,7 +3616,10 @@ RVM_Array* init_derive_function_variadic_argument(Ring_VirtualMachine* rvm,
     RVM_ClassDefinition* rvm_class_definition = nullptr;
 
     if (parameter->type_specifier->kind == RING_BASIC_TYPE_CLASS) {
-        rvm_class_definition = &(rvm->class_list[parameter->type_specifier->u.class_def_index]);
+        unsigned package_index = parameter->type_specifier->u.class_t->package_index;
+        unsigned class_index   = parameter->type_specifier->u.class_t->class_def_index;
+
+        rvm_class_definition   = &(rvm->executer_entry->package_executer_list[package_index]->class_list[class_index]);
     }
 
     // 默认一维数组

@@ -319,7 +319,7 @@ void init_coroutine_entry_func_local_variable(Ring_VirtualMachine* rvm,
             break;
 
         case RING_BASIC_TYPE_CLASS:
-            rvm_class_definition = &(rvm->class_list[type_specifier->u.class_def_index]);
+            rvm_class_definition = &(rvm->class_list[type_specifier->u.class_t->class_def_index]);
             class_ob             = rvm_gc_new_class_ob_meta(rvm);
             rvm_fill_class_ob(rvm, class_ob, rvm_class_definition);
             co->runtime_stack->data[co->runtime_stack->top_index + local_vari_stack_offset].type             = RVM_VALUE_TYPE_CLASS_OB;
@@ -331,7 +331,7 @@ void init_coroutine_entry_func_local_variable(Ring_VirtualMachine* rvm,
             RVM_Array_Type       array_type           = convert_rvm_array_type(type_specifier);
             RVM_ClassDefinition* sub_class_definition = nullptr;
             if (sub_type_specifier->kind == RING_BASIC_TYPE_CLASS) {
-                sub_class_definition = &(rvm->class_list[sub_type_specifier->u.class_def_index]);
+                sub_class_definition = &(rvm->class_list[sub_type_specifier->u.class_t->class_def_index]);
             }
 
             array = rvm_gc_new_array_meta(rvm,

@@ -1279,21 +1279,46 @@ TypeSpecifier* create_type_specifier_array(TypeSpecifier*       sub_type,
 }
 
 
-// 浪费空间
 // e.g.
 // var a tmp0;
 // var a tmp1;
 // 在这里 两次a 占用了两次相同的空间
 // 在ast的过程中 会认为是类或者是 typedef定义的函数别名
-TypeSpecifier* create_type_specifier_alias(char* identifier) {
+TypeSpecifier* create_type_specifier_alias(char* package_posit, char* identifier) {
     debug_ast_info_with_yellow("\t");
 
     TypeSpecifier* type_specifier = (TypeSpecifier*)mem_alloc(get_front_mem_pool(), sizeof(TypeSpecifier));
     type_specifier->line_number   = package_unit_get_line_number();
+    type_specifier->package_posit = package_posit;
     type_specifier->identifier    = identifier;
     type_specifier->kind          = RING_BASIC_TYPE_UNKNOW;
+    // 这里只记录一个 别名，在fix_ast 中进行语义修正
 
     return type_specifier;
+}
+
+TypeAlias* add_type_alias_class(char*            class_identifier,
+                                ClassDefinition* class_def) {
+
+    Ring_DeriveType_Class* class_type = (Ring_DeriveType_Class*)mem_alloc(get_front_mem_pool(), sizeof(Ring_DeriveType_Class));
+    class_type->package               = get_package_unit()->parent_package;
+    class_type->class_identifier      = class_identifier;
+    class_type->class_definition      = class_def;
+
+    TypeSpecifier* type_specifier     = (TypeSpecifier*)mem_alloc(get_front_mem_pool(), sizeof(TypeSpecifier));
+    type_specifier->line_number       = package_unit_get_line_number();
+    type_specifier->kind              = RING_BASIC_TYPE_CLASS;
+    type_specifier->u.class_t         = class_type;
+
+
+    TypeAlias* type_alias             = (TypeAlias*)mem_alloc(get_front_mem_pool(), sizeof(TypeAlias));
+    type_alias->line_number           = package_unit_get_line_number();
+    type_alias->identifier            = class_identifier;
+    type_alias->type_specifier        = type_specifier;
+
+    package_unit_add_type_alias(type_alias);
+
+    return type_alias;
 }
 
 TypeAlias* add_type_alias_func(Parameter*          parameter_list,
@@ -1689,6 +1714,7 @@ ClassDefinition* start_class_definition(char* class_identifier) {
     debug_ast_info_with_yellow("\t");
 
     ClassDefinition* class_def   = (ClassDefinition*)mem_alloc(get_front_mem_pool(), sizeof(ClassDefinition));
+    class_def->package_unit      = get_package_unit();
     class_def->source_file       = package_unit_get_file_name();
     class_def->start_line_number = package_unit_get_line_number();
     class_def->end_line_number   = package_unit_get_line_number();
@@ -1700,7 +1726,10 @@ ClassDefinition* start_class_definition(char* class_identifier) {
     class_def->next              = nullptr;
 
 
+    // TODO: 删除 class_definition_list ，统一通过 type_alias_list 来代替
     package_unit_add_class_definition(class_def);
+    // 后续主推的逻辑 在bison语法中
+    //  add_type_alias_class(class_identifier, class_def);
 
     return class_def;
 }

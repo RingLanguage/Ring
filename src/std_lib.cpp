@@ -185,7 +185,10 @@ void compile_std_lib(CompilerEntry* compiler_entry, ExecuterEntry* executer_entr
         package_compile(std_package);
 
         // 生成代码
-        Package_Executer* package_executer = package_executer_create(executer_entry, std_package->package_name);
+        Package_Executer* package_executer = package_executer_create(
+            executer_entry,
+            std_package->package_name,
+            executer_entry->package_executer_list.size());
         ring_generate_vm_code(std_package, package_executer);
         executer_entry->package_executer_list.push_back(package_executer);
 

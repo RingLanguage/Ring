@@ -10,7 +10,8 @@ extern RVM_Opcode_Info RVM_Opcode_Infos[];
 
 // init Package-Executer
 Package_Executer* package_executer_create(ExecuterEntry* executer_entry,
-                                          char*          package_name) {
+                                          char*          package_name,
+                                          unsigned int   package_index) {
 
     RVM_ConstantPool* constant_pool           = (RVM_ConstantPool*)mem_alloc(NULL_MEM_POOL,
                                                                              sizeof(RVM_ConstantPool));
@@ -19,7 +20,7 @@ Package_Executer* package_executer_create(ExecuterEntry* executer_entry,
     constant_pool->string_index_map           = std::unordered_map<std::string, int>{};
     Package_Executer* executer                = (Package_Executer*)mem_alloc(NULL_MEM_POOL, sizeof(Package_Executer));
     executer->executer_entry                  = executer_entry;
-    executer->package_index                   = -1;
+    executer->package_index                   = package_index;
     executer->package_name                    = package_name;
     executer->constant_pool                   = constant_pool;
     executer->global_variable_size            = 0;
@@ -521,9 +522,11 @@ void add_top_level_code(Package* package, Package_Executer* executer) {
     unsigned int argument_num = 0;
     if (main_func->parameter_size == 1) {
         for (unsigned int i = 0; i < package->shell_args.size(); i++) {
-            int index = constant_pool_add_string(executer, package->shell_args[i].c_str());
+            int          constant_index = constant_pool_add_string(executer, package->shell_args[i].c_str());
+            unsigned int package_index  = executer->package_index;
+            unsigned int operand        = (constant_index << 8) | package_index;
             generate_vmcode(executer, opcode_buffer,
-                            RVM_CODE_PUSH_STRING, index, 0);
+                            RVM_CODE_PUSH_STRING, operand, 0);
         }
         generate_vmcode(executer, opcode_buffer,
                         RVM_CODE_NEW_ARRAY_LITERAL_STRING, package->shell_args.size(), 0);
@@ -1821,8 +1824,11 @@ void generate_vmcode_from_int_expression(Package_Executer* executer,
     } else if (256 <= expression->u.int_literal && expression->u.int_literal < 65536) {
         generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT_2BYTE, expression->u.int_literal, expression->line_number);
     } else {
-        int constant_index = constant_pool_add_int(executer, expression->u.int_literal);
-        generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT, constant_index, expression->line_number);
+        int          constant_index = constant_pool_add_int(executer, expression->u.int_literal);
+        unsigned int package_index  = executer->package_index;
+        unsigned int operand        = (constant_index << 8) | package_index;
+
+        generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT, operand, expression->line_number);
     }
 }
 
@@ -1837,8 +1843,11 @@ void generate_vmcode_from_int64_expression(Package_Executer* executer,
     assert(expression->type == EXPRESSION_TYPE_LITERAL_INT64);
 
 
-    int constant_index = constant_pool_add_int64(executer, expression->u.int64_literal);
-    generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT64, constant_index, expression->line_number);
+    int          constant_index = constant_pool_add_int64(executer, expression->u.int64_literal);
+    unsigned int package_index  = executer->package_index;
+    unsigned int operand        = (constant_index << 8) | package_index;
+
+    generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT64, operand, expression->line_number);
 }
 
 void generate_vmcode_from_double_expression(Package_Executer* executer,
@@ -1851,8 +1860,11 @@ void generate_vmcode_from_double_expression(Package_Executer* executer,
     }
     assert(expression->type == EXPRESSION_TYPE_LITERAL_DOUBLE);
 
-    int constant_index = constant_pool_add_double(executer, expression->u.double_literal);
-    generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_DOUBLE, constant_index, expression->line_number);
+    int          constant_index = constant_pool_add_double(executer, expression->u.double_literal);
+    unsigned int package_index  = executer->package_index;
+    unsigned int operand        = (constant_index << 8) | package_index;
+
+    generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_DOUBLE, operand, expression->line_number);
 }
 
 void generate_vmcode_from_string_expression(Package_Executer* executer,
@@ -1862,8 +1874,11 @@ void generate_vmcode_from_string_expression(Package_Executer* executer,
     debug_generate_info_with_darkgreen("\t");
     // 都放在常量区
     assert(expression->type == EXPRESSION_TYPE_LITERAL_STRING);
-    int constant_index = constant_pool_add_string(executer, expression->u.string_literal);
-    generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_STRING, constant_index, expression->line_number);
+    int          constant_index = constant_pool_add_string(executer, expression->u.string_literal);
+    unsigned int package_index  = executer->package_index;
+    unsigned int operand        = (constant_index << 8) | package_index;
+
+    generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_STRING, operand, expression->line_number);
 }
 
 void generate_vmcode_from_function_call_expression(Package_Executer*       executer,
@@ -2404,15 +2419,16 @@ void generate_vmcode_from_class_object_literal_expreesion(Package_Executer*     
     debug_generate_info_with_darkgreen("\t");
     assert(literal_expression != nullptr);
     assert(literal_expression->type_specifier != nullptr);
-    assert(literal_expression->field_init_expression_list != nullptr);
 
 
     assert(literal_expression->type_specifier->kind == RING_BASIC_TYPE_CLASS);
     assert(literal_expression->type_specifier->u.class_t->class_definition != nullptr);
     ClassDefinition* class_definition = literal_expression->type_specifier->u.class_t->class_definition;
+    unsigned int     package_index    = literal_expression->type_specifier->u.class_t->package->package_index;
+    unsigned int     operand          = (package_index << 8) | class_definition->class_index;
 
     // 0. new class-object
-    generate_vmcode(executer, opcode_buffer, RVM_CODE_NEW_CLASS_OB_LITERAL, class_definition->class_index, literal_expression->line_number);
+    generate_vmcode(executer, opcode_buffer, RVM_CODE_NEW_CLASS_OB_LITERAL, operand, literal_expression->line_number);
 
 
     FieldInitExpression* pos = literal_expression->field_init_expression_list;
@@ -2469,6 +2485,7 @@ void generate_vmcode_from_array_literal_expreesion(Package_Executer*       execu
         ClassDefinition* class_definition = nullptr;
         RVM_Opcode       opcode           = RVM_CODE_UNKNOW;
         unsigned int     operand          = size;
+        unsigned int     package_index    = 0;
 
         switch (sub_type_specifier->kind) {
         case RING_BASIC_TYPE_BOOL: opcode = RVM_CODE_NEW_ARRAY_LITERAL_BOOL; break;
@@ -2479,7 +2496,8 @@ void generate_vmcode_from_array_literal_expreesion(Package_Executer*       execu
         case RING_BASIC_TYPE_CLASS:
             opcode           = RVM_CODE_NEW_ARRAY_LITERAL_CLASS_OB;
             class_definition = sub_type_specifier->u.class_t->class_definition;
-            operand          = (size << 8) | (class_definition->class_index);
+            package_index    = sub_type_specifier->u.class_t->package->package_index;
+            operand          = (package_index << 24) | (class_definition->class_index << 16) | size;
             break;
         case RING_BASIC_TYPE_FUNC: opcode = RVM_CODE_NEW_ARRAY_LITERAL_CLOSURE; break;
         default:
@@ -2963,7 +2981,10 @@ void type_specifier_deep_copy(RVM_TypeSpecifier* dst, TypeSpecifier* src) {
     if (src->kind == RING_BASIC_TYPE_CLASS) {
         // class_index 在 type_specifier_deep_copy 没有修正
         // TODO: 前后端没有完全解耦
-        dst->u.class_def_index = src->u.class_t->class_definition->class_index;
+        dst->u.class_t                  = (RVM_TypeSpecifier_Class*)mem_alloc(NULL_MEM_POOL, sizeof(RVM_TypeSpecifier_Class));
+
+        dst->u.class_t->package_index   = src->u.class_t->package->package_index;
+        dst->u.class_t->class_def_index = src->u.class_t->class_definition->class_index;
     }
 
     if (src->kind == RING_BASIC_TYPE_ARRAY) {

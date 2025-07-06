@@ -87,7 +87,7 @@ void ring_compiler_fix_ast(Package* package) {
 
                 for (VarDecl* pos = statement->u.var_decl_statement; pos != nullptr; pos = pos->next) {
 
-                    fix_type_specfier(pos->type_specifier);
+                    fix_type_specfier(pos->type_specifier, package);
 
 
                     // 添加全局变量
@@ -134,7 +134,7 @@ void ring_compiler_fix_ast(Package* package) {
         case STATEMENT_TYPE_VAR_DECL: {
             VarDecl* declaration = global_statement->u.var_decl_statement;
             for (; declaration != nullptr; declaration = declaration->next) {
-                fix_type_specfier(declaration->type_specifier);
+                fix_type_specfier(declaration->type_specifier, package);
             }
         } break;
         case STATEMENT_TYPE_EXPRESSION: {
@@ -233,12 +233,12 @@ Function* create_global_init_func(Package* package) {
 void fix_function_definition(Function* func) {
     Parameter* pos = func->parameter_list;
     for (; pos != nullptr; pos = pos->next) {
-        fix_type_specfier(pos->type_specifier);
+        fix_type_specfier(pos->type_specifier, func->package);
     }
 
     FunctionReturnList* return_list = func->return_list;
     for (; return_list != nullptr; return_list = return_list->next) {
-        fix_type_specfier(return_list->type_specifier);
+        fix_type_specfier(return_list->type_specifier, func->package);
     }
 }
 
@@ -454,7 +454,7 @@ void add_local_declaration(VarDecl* declaration, Block* block, FunctionTuple* fu
         decl_pos->next = nullptr;
 
         // fix type specifier
-        fix_type_specfier(decl_pos->type_specifier);
+        fix_type_specfier(decl_pos->type_specifier, block->package_unit->parent_package);
 
 
         // 添加局部变量
@@ -492,14 +492,14 @@ void add_local_declaration(VarDecl* declaration, Block* block, FunctionTuple* fu
     }
 }
 
-void fix_type_specfier(TypeSpecifier* type_specifier) {
+// curr_package 为定义/使用 TypeSpecifier 所在的Package
+void fix_type_specfier(TypeSpecifier* type_specifier, Package* curr_package) {
     if (type_specifier == nullptr) {
         return;
     }
 
 
-    ClassDefinition* class_definition = nullptr;
-    TypeAlias*       type_alias       = nullptr;
+    TypeAlias* type_alias = nullptr;
 
     // e.g. var a tmp;
     // 1. a 是一个类-类型, 从全局类定义中搜索
@@ -508,20 +508,9 @@ void fix_type_specfier(TypeSpecifier* type_specifier) {
 
         assert(type_specifier->identifier != nullptr);
 
-        // step-1. 是个类
-        class_definition = search_class_definition(type_specifier->identifier);
-        if (class_definition != nullptr) {
-            Ring_DeriveType_Class* class_type = (Ring_DeriveType_Class*)mem_alloc(get_front_mem_pool(), sizeof(Ring_DeriveType_Class));
-            class_type->class_identifier      = type_specifier->identifier;
-            class_type->class_definition      = class_definition;
-
-            type_specifier->kind              = RING_BASIC_TYPE_CLASS;
-            type_specifier->u.class_t         = class_type;
-            goto END;
-        }
-
         // step-2. 是个函数别名
-        type_alias = search_type_alias(type_specifier->identifier);
+        Package* package = resolve_package(type_specifier->package_posit, type_specifier->line_number, nullptr, curr_package);
+        type_alias       = search_type_alias(package, type_specifier->identifier);
         if (type_alias != nullptr) {
             // shallow copy
             type_specifier->kind = type_alias->type_specifier->kind;
@@ -564,8 +553,9 @@ END:
 
     // 递归修正数组
     // 其实修正递归数组，只会对 class-object的数组生效
+    // TODO: 这里递归修正数组，有可能浪费时间
     if (type_specifier->kind == RING_BASIC_TYPE_ARRAY) {
-        fix_type_specfier(type_specifier->u.array_t->sub);
+        fix_type_specfier(type_specifier->u.array_t->sub, curr_package);
     }
 
     if (type_specifier->kind == RING_BASIC_TYPE_FUNC) {
@@ -574,14 +564,14 @@ END:
         for (Parameter* param_pos = func_type->parameter_list;
              param_pos != nullptr;
              param_pos = param_pos->next) {
-            fix_type_specfier(param_pos->type_specifier);
+            fix_type_specfier(param_pos->type_specifier, curr_package);
         }
 
 
         for (FunctionReturnList* return_pos = func_type->return_list;
              return_pos != nullptr;
              return_pos = return_pos->next) {
-            fix_type_specfier(return_pos->type_specifier);
+            fix_type_specfier(return_pos->type_specifier, curr_package);
         }
     }
 }
@@ -811,7 +801,7 @@ void fix_range_expression(RangeExpression* range_expression,
         } else {
             // 上面已经处理过了
         }
-        fix_type_specfier(item_type);
+        fix_type_specfier(item_type, block->package_unit->parent_package);
 
         EXPRESSION_CLEAR_CONVERT_TYPE(range_expression);
         EXPRESSION_ADD_CONVERT_TYPE(range_expression, &int64_type_specifier);
@@ -1078,7 +1068,7 @@ void fix_identifier_expression(Expression*           expression,
     Function*      function       = nullptr;
     TypeSpecifier* type_specifier = nullptr;
 
-    Package*       package        = resolve_package(identifier_expression->package_posit, identifier_expression->line_number, block);
+    Package*       package        = resolve_package(identifier_expression->package_posit, identifier_expression->line_number, block, nullptr);
     //
     variable = resolve_variable(package, identifier_expression->identifier, block);
     if (variable != nullptr) {
@@ -2074,7 +2064,7 @@ void fix_function_call_expression(Expression*             expression,
 
 
     // 1. 判断是否为closure
-    Package* package = resolve_package(nullptr, 0, block);
+    Package* package = resolve_package(nullptr, 0, block, nullptr);
     variable         = resolve_variable(package,
                                         function_call_expression->func_identifier,
                                         block);
@@ -2117,7 +2107,7 @@ void fix_function_call_expression(Expression*             expression,
 
     // 3. 搜素剩下的函数
     // 如果还不能搜索到，就需要报错了
-    package  = resolve_package(function_call_expression->package_posit, function_call_expression->line_number, block);
+    package  = resolve_package(function_call_expression->package_posit, function_call_expression->line_number, block, nullptr);
     function = search_function(package,
                                function_call_expression->func_identifier);
     // Ring-Compiler-Error-Report ERROR_UNDEFINITE_FUNCTION
@@ -2306,14 +2296,16 @@ void fix_class_definition(ClassDefinition* class_definition) {
 }
 
 void fix_class_field(ClassDefinition* class_definition, FieldMember* field) {
-    fix_type_specfier(field->type_specifier);
+    fix_type_specfier(field->type_specifier, class_definition->package_unit->parent_package);
 }
 
 void fix_class_method(ClassDefinition* class_definition, MethodMember* method) {
     Block* block = method->block;
 
     // `self` variable
-    TypeSpecifier* type_specifier    = create_type_specifier_alias(class_definition->identifier);
+    Package*       package           = class_definition->package_unit->parent_package;
+    TypeAlias*     type_alias        = search_type_alias(package, class_definition->identifier);
+    TypeSpecifier* type_specifier    = type_alias->type_specifier;
 
     VarDecl*       self_declaration  = (VarDecl*)mem_alloc(get_front_mem_pool(), sizeof(VarDecl));
     self_declaration->line_number    = method->start_line_number;
@@ -2330,7 +2322,7 @@ void fix_class_method(ClassDefinition* class_definition, MethodMember* method) {
 
     FunctionReturnList* return_list = method->return_list;
     for (; return_list != nullptr; return_list = return_list->next) {
-        fix_type_specfier(return_list->type_specifier);
+        fix_type_specfier(return_list->type_specifier, class_definition->package_unit->parent_package);
     }
 
     if (block != nullptr) {
@@ -2350,7 +2342,7 @@ void fix_array_index_expression(Expression*           expression,
     char*     array_identifier = array_index_expression->array_expression->u.identifier_expression->identifier;
     Variable* variable         = nullptr;
 
-    Package*  package          = resolve_package(package_posit, array_index_expression->line_number, block);
+    Package*  package          = resolve_package(package_posit, array_index_expression->line_number, block, nullptr);
     variable                   = resolve_variable(package,
                                                   array_identifier,
                                                   block);
@@ -2480,7 +2472,7 @@ void fix_array_index_expression(Expression*           expression,
     } else {
         // 上面已经处理过了
     }
-    fix_type_specfier(type);
+    fix_type_specfier(type, block->package_unit->parent_package);
 
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, type);
@@ -2497,7 +2489,7 @@ void fix_slice_expression(Expression*      expression,
     char*     array_identifier = slice_expression->operand->u.identifier_expression->identifier;
     Variable* variable         = nullptr;
 
-    Package*  package          = resolve_package(package_posit, slice_expression->line_number, block);
+    Package*  package          = resolve_package(package_posit, slice_expression->line_number, block, nullptr);
     variable                   = resolve_variable(package,
                                                   array_identifier,
                                                   block);
@@ -2571,7 +2563,7 @@ void fix_new_array_expression(Expression*         expression,
                               FunctionTuple*      func) {
 
     fix_dimension_expression(new_array_expression->dimension_expression, block, func);
-    fix_type_specfier(new_array_expression->type_specifier);
+    fix_type_specfier(new_array_expression->type_specifier, block->package_unit->parent_package);
 
     TypeSpecifier* sub_type_specifier = new_array_expression->type_specifier->u.array_t->sub;
     assert(sub_type_specifier != nullptr);
@@ -2601,7 +2593,7 @@ void fix_array_literal_expression(Expression*             expression,
 
     assert(array_literal_expression != nullptr);
 
-    fix_type_specfier(array_literal_expression->type_specifier);
+    fix_type_specfier(array_literal_expression->type_specifier, block->package_unit->parent_package);
     TypeSpecifier* array_type = array_literal_expression->type_specifier;
     TypeSpecifier* item_type  = nullptr;
     assert(array_type->kind = RING_BASIC_TYPE_ARRAY);
@@ -2691,7 +2683,7 @@ void fix_class_object_literal_expression(Expression*                   expressio
 
     assert(literal_expression != nullptr);
 
-    fix_type_specfier(literal_expression->type_specifier);
+    fix_type_specfier(literal_expression->type_specifier, block->package_unit->parent_package);
 
     ClassDefinition* class_definition = literal_expression->type_specifier->u.class_t->class_definition;
 
@@ -2930,10 +2922,10 @@ ClassDefinition* search_class_definition(char* class_identifier) {
     return nullptr;
 }
 
-TypeAlias* search_type_alias(char* identifier) {
+TypeAlias* search_type_alias(Package* package, char* identifier) {
     assert(identifier != nullptr);
 
-    for (TypeAlias* pos : get_package_unit()->type_alias_list) {
+    for (TypeAlias* pos : package->type_alias_list) {
         if (str_eq(pos->identifier, identifier)) {
             return pos;
         }
@@ -3170,7 +3162,7 @@ void fix_anonymous_func_expression(Expression*              expression,
     // 这里的实现方式和 fix_function_definition 一样
     FunctionReturnList* return_list = closure->return_list;
     for (; return_list != nullptr; return_list = return_list->next) {
-        fix_type_specfier(return_list->type_specifier);
+        fix_type_specfier(return_list->type_specifier, block->package_unit->parent_package);
     }
 
     if (closure->block) {
@@ -3212,13 +3204,13 @@ void fix_iife_expression(Expression*                   expression,
 
     Parameter*     parameter_list = anonymous_func->parameter_list;
     for (; parameter_list != nullptr; parameter_list = parameter_list->next) {
-        fix_type_specfier(parameter_list->type_specifier);
+        fix_type_specfier(parameter_list->type_specifier, block->package_unit->parent_package);
     }
 
     // 这里的实现方式和 fix_function_definition 一样
     FunctionReturnList* return_list = anonymous_func->return_list;
     for (; return_list != nullptr; return_list = return_list->next) {
-        fix_type_specfier(return_list->type_specifier);
+        fix_type_specfier(return_list->type_specifier, block->package_unit->parent_package);
     }
 
     if (anonymous_func->block) {
@@ -3289,19 +3281,25 @@ void add_parameter_to_declaration(Parameter* parameter, Block* block) {
     }
 }
 
+// block current_package 二者选其一
 Package* resolve_package(char*        package_posit,
                          unsigned int line_number,
-                         Block*       block) {
+                         Block*       block,
+                         Package*     current_package) {
 
     Package* package = nullptr;
 
     if (package_posit == nullptr || strlen(package_posit) == 0) {
-        assert(block != nullptr);
-        assert(block->package_unit != nullptr);
-        assert(block->package_unit->parent_package != nullptr);
-
         // 在当前 package中查找
-        return block->package_unit->parent_package;
+
+        if (block != nullptr) {
+            assert(block->package_unit != nullptr);
+            assert(block->package_unit->parent_package != nullptr);
+            return block->package_unit->parent_package;
+        } else if (current_package != nullptr) {
+            return current_package;
+        }
+        // else 不合法的情况
     }
 
     // Ring-Compiler-Error-Report ERROR_USE_PACKAGE_MAIN_IMPORT

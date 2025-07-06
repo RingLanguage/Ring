@@ -37,10 +37,10 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_PUSH_INT__1, "push_int__1", OPCODE_OPERAND_TYPE_0BYTE, "+1", 1, "push -1 to stack", "[]-->[int]", "So(0).int = -1"},
     {RVM_CODE_PUSH_DOUBLE_1, "push_double_1", OPCODE_OPERAND_TYPE_0BYTE, "+1", 1, "push 1.0 to stack", "[]-->[double]", "So(0).double = 1.0"},
 
-    {RVM_CODE_PUSH_INT, "push_int", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant int value to stack", "[]-->[int]", "So(0).int = C(As).int"},
-    {RVM_CODE_PUSH_INT64, "push_int64", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant int64 value to stack", "[]-->[int]", "So(0).int64 = C(As).int64"},
-    {RVM_CODE_PUSH_DOUBLE, "push_double", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant double value to stack", "[]-->[double]", "So(0).double = C(As).double"},
-    {RVM_CODE_PUSH_STRING, "push_string", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "push constant string value to stack", "[]-->[string]", "So(0).string = C(As).string"},
+    {RVM_CODE_PUSH_INT, "push_int", OPCODE_OPERAND_TYPE_3BYTE_AsB, "+1", 1, "push constant int value to stack", "[]-->[int]", "So(0).int = C(As).int"},
+    {RVM_CODE_PUSH_INT64, "push_int64", OPCODE_OPERAND_TYPE_3BYTE_AsB, "+1", 1, "push constant int64 value to stack", "[]-->[int]", "So(0).int64 = C(As).int64"},
+    {RVM_CODE_PUSH_DOUBLE, "push_double", OPCODE_OPERAND_TYPE_3BYTE_AsB, "+1", 1, "push constant double value to stack", "[]-->[double]", "So(0).double = C(As).double"},
+    {RVM_CODE_PUSH_STRING, "push_string", OPCODE_OPERAND_TYPE_3BYTE_AsB, "+1", 1, "push constant string value to stack", "[]-->[string]", "So(0).string = C(As).string"},
 
 
     // static
@@ -152,7 +152,7 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_NEW_ARRAY_LITERAL_INT64, "new_array_literal_int64", OPCODE_OPERAND_TYPE_2BYTE_As, "-As+1", INT_MIN, "create an array of int64 with literal", "", ""},
     {RVM_CODE_NEW_ARRAY_LITERAL_DOUBLE, "new_array_literal_double", OPCODE_OPERAND_TYPE_2BYTE_As, "-As+1", INT_MIN, "create an array of double with literal", "", ""},
     {RVM_CODE_NEW_ARRAY_LITERAL_STRING, "new_array_literal_string", OPCODE_OPERAND_TYPE_2BYTE_As, "-As+1", INT_MIN, "create an array of string with literal", "", ""},
-    {RVM_CODE_NEW_ARRAY_LITERAL_CLASS_OB, "new_array_literal_class_ob", OPCODE_OPERAND_TYPE_3BYTE_AsB, "-As+1", INT_MIN, "create an array of object with literal", "", ""},
+    {RVM_CODE_NEW_ARRAY_LITERAL_CLASS_OB, "new_array_literal_class_ob", OPCODE_OPERAND_TYPE_4BYTE_ABCs, "-As+1", INT_MIN, "create an array of object with literal", "", ""},
     {RVM_CODE_NEW_ARRAY_LITERAL_CLOSURE, "new_array_literal_closure", OPCODE_OPERAND_TYPE_2BYTE_As, "-As+1", INT_MIN, "create an array of closure with literal", "", ""},
     {RVM_CODE_NEW_ARRAY_LITERAL_A, "new_array_literal_a", OPCODE_OPERAND_TYPE_4BYTE_ABCs, "-Cs+1", INT_MIN, "", "", ""},
 
@@ -173,7 +173,7 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
 
 
     // class
-    {RVM_CODE_NEW_CLASS_OB_LITERAL, "new_class_ob_literal", OPCODE_OPERAND_TYPE_1BYTE_A, "+1", 1, "", "", ""},
+    {RVM_CODE_NEW_CLASS_OB_LITERAL, "new_class_ob_literal", OPCODE_OPERAND_TYPE_2BYTE_AB, "+1", 1, "", "", ""},
 
     {RVM_CODE_POP_FIELD_BOOL, "pop_field_bool", OPCODE_OPERAND_TYPE_2BYTE_As, "-2", -2, "assign to class field whith bool", "[bool,object]->[]", "Field(So(-1).object, As).bool = So(-2).bool"},
     {RVM_CODE_POP_FIELD_INT, "pop_field_int", OPCODE_OPERAND_TYPE_2BYTE_As, "-2", -2, "", "[int,object]->[]", "Field(So(-1).object, As).int = So(-2).int"},

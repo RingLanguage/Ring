@@ -13,8 +13,8 @@ int yylex();
 
 %locations                       // 开启locations
 %glr-parser                      // 使用 GLR 解析
-%expect    3                     // legitimate 0 shift/reduce conflicts
-%expect-rr 4                     // legitimate 0 reduce/reduce conflicts
+%expect    4                     // legitimate 0 shift/reduce conflicts
+%expect-rr 5                     // legitimate 0 reduce/reduce conflicts
 
 // 在 array_literal_expression 的 class_type_specifier dimension_expression TOKEN_LC expression_list TOKEN_RC
 // 存在 reduce/reduce conflicts, 需要使用 %code_completion 进行处理
@@ -400,10 +400,11 @@ definition_or_statement
     ;
 
 class_definition
-    : TOKEN_TYPEDEF IDENTIFIER TOKEN_ASSIGN TOKEN_CLASS {$<m_class_definition>$ = start_class_definition(nullptr);} TOKEN_LC class_member_declaration_list TOKEN_RC
+    : TOKEN_TYPEDEF IDENTIFIER TOKEN_ASSIGN TOKEN_CLASS {$<m_class_definition>$ = start_class_definition($2);} TOKEN_LC class_member_declaration_list TOKEN_RC
     {
         debug_bison_info_with_green("[RULE::class_definition]\t ");
         $<m_class_definition>$ = finish_class_definition($<m_class_definition>5, $7, $2);
+        $<m_type_alias_def>$ = add_type_alias_class($2, $<m_class_definition>5);
     }
     ;
 
@@ -915,11 +916,17 @@ basic_type_specifier
     }
     ;
 
+// TODO: 这里的名称需要修改一下，应该叫 type_specifier_alias
 class_type_specifier
     : IDENTIFIER
     {
         debug_bison_info_with_green("[RULE::class_type_specifier]\t variable_type(TOKEN_ANY) ");
-        $$ = create_type_specifier_alias($1);
+        $$ = create_type_specifier_alias(nullptr, $1);
+    }
+    | IDENTIFIER TOKEN_2COLON IDENTIFIER
+    {
+        // TODO: 目前只能一级查找，后续支持多级
+        $$ = create_type_specifier_alias($1, $3);
     }
     ;
 
@@ -1467,6 +1474,11 @@ class_object_literal_expression
     {
         debug_bison_info_with_green("[RULE::class_object_literal_expression]\t ");
         $$ = create_class_object_literal_expression($1, $3);
+    }
+    | class_type_specifier TOKEN_LC                                           TOKEN_RC
+    {
+        debug_bison_info_with_green("[RULE::class_object_literal_expression]\t ");
+        $$ = create_class_object_literal_expression($1, nullptr);
     }
     | class_type_specifier TOKEN_LC class_field_init_element_list TOKEN_COMMA TOKEN_RC
     {

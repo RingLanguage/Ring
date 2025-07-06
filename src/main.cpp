@@ -338,10 +338,8 @@ ExecuterEntry* ring_compile_main(std::string              input_file_name,
     compiler_entry->main_package = main_package;
 
     // 初始化代码生成阶段相关的struct
-    ExecuterEntry*    executer_entry        = executer_entry_create();
-    Package_Executer* main_package_executer = package_executer_create(executer_entry, (char*)PACKAGE_MAIN);
-    //
-    executer_entry->main_package_executer = main_package_executer;
+    ExecuterEntry* executer_entry = executer_entry_create();
+
 
     // Step-0: 预编译官方std包, 并生成vmcode
     compile_std_lib(compiler_entry, executer_entry);
@@ -350,8 +348,15 @@ ExecuterEntry* ring_compile_main(std::string              input_file_name,
     // Step-2: bison 语法分析，构建语法树
     // Step-3: 修正语法树
     package_compile(main_package);
+    Package_Executer* main_package_executer = package_executer_create(
+        executer_entry,
+        (char*)PACKAGE_MAIN,
+        executer_entry->package_executer_list.size());
+    //
+    executer_entry->main_package_executer = main_package_executer;
 
     // Step-4: 生成虚拟机中间代码
+    // 这里只是 main package
     ring_generate_vm_code(compiler_entry, executer_entry);
 
     // Step-5: 链接符号表
