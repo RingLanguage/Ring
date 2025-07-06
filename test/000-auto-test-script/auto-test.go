@@ -98,6 +98,8 @@ var (
 		"067-std-package-math",
 		"068-std-package-strings",
 		"069-std-package-encoding",
+
+		"100-ring-project-manage",
 	}
 
 	NOT_TEST_FILES = []string{

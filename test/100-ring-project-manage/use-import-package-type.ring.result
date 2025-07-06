@@ -1,0 +1,18 @@
+test_0------------------
+
+{Bool:false Int:0 Int64:0 Double:0.000000 String:}
+{Bool:true Int:2 Int64:3 Double:44.440000 String:hello ring}
+true
+2
+3
+44.440000
+hello ring
+{Bool:false Int:222 Int64:333 Double:444.000000 String:ring-compiler}
+false
+222
+333
+444.000000
+ring-compiler
+test_1------------------
+
+[{Bool:true Int:2 Int64:3 Double:44.440000 String:hello ring} {Bool:true Int:2 Int64:3 Double:44.440000 String:hello ring}]
