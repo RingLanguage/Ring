@@ -15,8 +15,8 @@ global {
 
 }
 
-@native
 // build-in
+@native
 fn exit(var int int_value);
 
 @native
