@@ -522,7 +522,7 @@ void add_top_level_code(Package* package, Package_Executer* executer) {
     unsigned int argument_num = 0;
     if (main_func->parameter_size == 1) {
         for (unsigned int i = 0; i < package->shell_args.size(); i++) {
-            int          constant_index = constant_pool_add_string(executer, package->shell_args[i].c_str());
+            unsigned int constant_index = constant_pool_add_string(executer, package->shell_args[i].c_str());
             unsigned int package_index  = executer->package_index;
             unsigned int operand        = (constant_index << 8) | package_index;
             generate_vmcode(executer, opcode_buffer,
@@ -1143,7 +1143,7 @@ void generate_vmcode_from_defer_statement(Package_Executer* executer,
     }
 
     // opcode: new_closure
-    int constant_index = constant_pool_add_closure(executer, dst);
+    unsigned int constant_index = constant_pool_add_closure(executer, dst);
     generate_vmcode(executer, opcode_buffer, RVM_CODE_NEW_CLOSURE, constant_index, iife->line_number);
 
     // opcode: push_defer
@@ -1824,7 +1824,7 @@ void generate_vmcode_from_int_expression(Package_Executer* executer,
     } else if (256 <= expression->u.int_literal && expression->u.int_literal < 65536) {
         generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_INT_2BYTE, expression->u.int_literal, expression->line_number);
     } else {
-        int          constant_index = constant_pool_add_int(executer, expression->u.int_literal);
+        unsigned int constant_index = constant_pool_add_int(executer, expression->u.int_literal);
         unsigned int package_index  = executer->package_index;
         unsigned int operand        = (constant_index << 8) | package_index;
 
@@ -1843,7 +1843,7 @@ void generate_vmcode_from_int64_expression(Package_Executer* executer,
     assert(expression->type == EXPRESSION_TYPE_LITERAL_INT64);
 
 
-    int          constant_index = constant_pool_add_int64(executer, expression->u.int64_literal);
+    unsigned int constant_index = constant_pool_add_int64(executer, expression->u.int64_literal);
     unsigned int package_index  = executer->package_index;
     unsigned int operand        = (constant_index << 8) | package_index;
 
@@ -1860,7 +1860,7 @@ void generate_vmcode_from_double_expression(Package_Executer* executer,
     }
     assert(expression->type == EXPRESSION_TYPE_LITERAL_DOUBLE);
 
-    int          constant_index = constant_pool_add_double(executer, expression->u.double_literal);
+    unsigned int constant_index = constant_pool_add_double(executer, expression->u.double_literal);
     unsigned int package_index  = executer->package_index;
     unsigned int operand        = (constant_index << 8) | package_index;
 
@@ -1874,7 +1874,7 @@ void generate_vmcode_from_string_expression(Package_Executer* executer,
     debug_generate_info_with_darkgreen("\t");
     // 都放在常量区
     assert(expression->type == EXPRESSION_TYPE_LITERAL_STRING);
-    int          constant_index = constant_pool_add_string(executer, expression->u.string_literal);
+    unsigned int constant_index = constant_pool_add_string(executer, expression->u.string_literal);
     unsigned int package_index  = executer->package_index;
     unsigned int operand        = (constant_index << 8) | package_index;
 
@@ -2238,7 +2238,7 @@ void generate_vmcode_from_launch_expression(Package_Executer* executer,
         }
 
         // opcode: new_closure
-        int constant_index = constant_pool_add_closure(executer, dst);
+        unsigned int constant_index = constant_pool_add_closure(executer, dst);
         generate_vmcode(executer, opcode_buffer, RVM_CODE_NEW_CLOSURE, constant_index, iife->line_number);
 
         // opcode: launch_closure
@@ -2329,7 +2329,7 @@ void generate_vmcode_from_anonymous_func_expreesion(Package_Executer*        exe
     deep_copy_closure(dst, src);
     generate_code_from_function_definition(executer, dst, (FunctionTuple*)src);
 
-    int constant_index = constant_pool_add_closure(executer, dst);
+    unsigned int constant_index = constant_pool_add_closure(executer, dst);
     generate_vmcode(executer, opcode_buffer, RVM_CODE_NEW_CLOSURE, constant_index, closure_expression->line_number);
 }
 
@@ -2357,7 +2357,7 @@ void generate_vmcode_from_iife_expreesion(Package_Executer*             executer
     }
 
     // opcode: new_closure
-    int constant_index = constant_pool_add_closure(executer, dst);
+    unsigned int constant_index = constant_pool_add_closure(executer, dst);
     generate_vmcode(executer, opcode_buffer, RVM_CODE_NEW_CLOSURE, constant_index, iife->line_number);
 
     // opcode: invoke_closure
@@ -2675,11 +2675,11 @@ void generate_vmcode(Package_Executer* executer,
     }
 }
 
-int constant_pool_grow(Package_Executer* executer, unsigned int growth_size) {
+unsigned int constant_pool_grow(Package_Executer* executer, unsigned int growth_size) {
     debug_generate_info_with_darkgreen("\t");
-    int    old_size       = executer->constant_pool->size;
+    unsigned int old_size       = executer->constant_pool->size;
 
-    size_t old_alloc_size = executer->constant_pool->size * sizeof(RVM_Constant);
+    size_t       old_alloc_size = executer->constant_pool->size * sizeof(RVM_Constant);
     executer->constant_pool->size += growth_size;
     size_t new_alloc_size         = executer->constant_pool->size * sizeof(RVM_Constant);
 
@@ -2692,28 +2692,28 @@ int constant_pool_grow(Package_Executer* executer, unsigned int growth_size) {
     return old_size;
 }
 
-int constant_pool_add_int(Package_Executer* executer, int int_literal) {
+unsigned int constant_pool_add_int(Package_Executer* executer, int int_literal) {
     debug_generate_info_with_darkgreen("\t");
 
-    int index                                        = constant_pool_grow(executer, 1);
+    unsigned int index                               = constant_pool_grow(executer, 1);
     executer->constant_pool->list[index].type        = CONSTANTPOOL_TYPE_INT;
     executer->constant_pool->list[index].u.int_value = int_literal;
     return index;
 }
 
-int constant_pool_add_int64(Package_Executer* executer, long long int64_literal) {
+unsigned int constant_pool_add_int64(Package_Executer* executer, long long int64_literal) {
     debug_generate_info_with_darkgreen("\t");
 
-    int index                                          = constant_pool_grow(executer, 1);
+    unsigned int index                                 = constant_pool_grow(executer, 1);
     executer->constant_pool->list[index].type          = CONSTANTPOOL_TYPE_INT64;
     executer->constant_pool->list[index].u.int64_value = int64_literal;
     return index;
 }
 
-int constant_pool_add_double(Package_Executer* executer, double double_literal) {
+unsigned int constant_pool_add_double(Package_Executer* executer, double double_literal) {
     debug_generate_info_with_darkgreen("\t");
 
-    int index                                           = constant_pool_grow(executer, 1);
+    unsigned int index                                  = constant_pool_grow(executer, 1);
     executer->constant_pool->list[index].type           = CONSTANTPOOL_TYPE_DOUBLE;
     executer->constant_pool->list[index].u.double_value = double_literal;
     return index;
@@ -2727,7 +2727,7 @@ int constant_pool_add_double(Package_Executer* executer, double double_literal) 
  * 要去重
  * TODO: 这里引入一个问题：编译器前后端没有完全解耦合
  */
-int constant_pool_add_string(Package_Executer* executer, const char* string_literal) {
+unsigned int constant_pool_add_string(Package_Executer* executer, const char* string_literal) {
     debug_generate_info_with_darkgreen("\t");
 
     std::string str = string_literal;
@@ -2737,7 +2737,7 @@ int constant_pool_add_string(Package_Executer* executer, const char* string_lite
         return executer->constant_pool->string_index_map[str];
     }
 
-    int index                                           = constant_pool_grow(executer, 1);
+    unsigned int index                                  = constant_pool_grow(executer, 1);
     executer->constant_pool->string_index_map[str]      = index;
 
     RVM_String* rvm_string                              = string_literal_to_rvm_string(string_literal);
@@ -2746,10 +2746,10 @@ int constant_pool_add_string(Package_Executer* executer, const char* string_lite
     return index;
 }
 
-int constant_pool_add_closure(Package_Executer* executer, RVM_Function* func) {
+unsigned int constant_pool_add_closure(Package_Executer* executer, RVM_Function* func) {
     debug_generate_info_with_darkgreen("\t");
 
-    int index                                                   = constant_pool_grow(executer, 1);
+    unsigned int index                                          = constant_pool_grow(executer, 1);
     executer->constant_pool->list[index].type                   = CONSTANTPOOL_TYPE_CLOSURE;
     executer->constant_pool->list[index].u.anonymous_func_value = func;
     return index;

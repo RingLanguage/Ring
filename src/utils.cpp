@@ -314,9 +314,9 @@ void ring_vm_code_dump(RVM_Function* function,
             break;
 
         case OPCODE_OPERAND_TYPE_3BYTE_AsB:
-            operand1 = code_list[i++];
-            operand2 = code_list[i++] << 8;
-            operand2 += code_list[i++];
+            operand1 = code_list[i++] << 8;
+            operand1 += code_list[i++];
+            operand2    = code_list[i++];
             operand_str = std::to_string(operand1) + ", " + std::to_string(operand2);
             break;
         case OPCODE_OPERAND_TYPE_4BYTE_ABCs:
@@ -694,9 +694,9 @@ void dump_vm_function(Package_Executer*    package_executer,
                 break;
 
             case OPCODE_OPERAND_TYPE_3BYTE_AsB:
-                operand1 = code_list[i++];
-                operand2 = code_list[i++] << 8;
-                operand2 += code_list[i++];
+                operand1 = code_list[i++] << 8;
+                operand1 += code_list[i++];
+                operand2    = code_list[i++];
                 operand_str = std::to_string(operand1) + ", " + std::to_string(operand2);
                 break;
 

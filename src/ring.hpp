@@ -3603,12 +3603,12 @@ void              generate_vmcode_from_slice_expression(Package_Executer* execut
 
 void              generate_vmcode(Package_Executer* executer, RVM_OpcodeBuffer* opcode_buffer, RVM_Opcode opcode, unsigned int operand, unsigned int line_number);
 
-int               constant_pool_grow(Package_Executer* executer, unsigned int growth_size);
-int               constant_pool_add_int(Package_Executer* executer, int int_literal);
-int               constant_pool_add_int64(Package_Executer* executer, long long int64_literal);
-int               constant_pool_add_double(Package_Executer* executer, double double_literal);
-int               constant_pool_add_string(Package_Executer* executer, const char* string_literal);
-int               constant_pool_add_closure(Package_Executer* executer, RVM_Function* func);
+unsigned int      constant_pool_grow(Package_Executer* executer, unsigned int growth_size);
+unsigned int      constant_pool_add_int(Package_Executer* executer, int int_literal);
+unsigned int      constant_pool_add_int64(Package_Executer* executer, long long int64_literal);
+unsigned int      constant_pool_add_double(Package_Executer* executer, double double_literal);
+unsigned int      constant_pool_add_string(Package_Executer* executer, const char* string_literal);
+unsigned int      constant_pool_add_closure(Package_Executer* executer, RVM_Function* func);
 
 unsigned int      opcode_buffer_get_label(RVM_OpcodeBuffer* opcode_buffer);
 void              opcode_buffer_set_label(RVM_OpcodeBuffer* opcode_buffer, unsigned int label, unsigned int label_address);
