@@ -65,9 +65,16 @@ TypeSpecifier func_type_specifier = TypeSpecifier{
 extern Ring_Command_Arg global_ring_command_arg;
 
 
-//
+// 这里修正是有依赖关系的，需要重构，根据依赖图需要重新设计
 void ring_compiler_fix_ast(Package* package) {
 
+
+    // step-1. fix class list
+    unsigned int class_index = 0;
+    for (ClassDefinition* class_def : package->class_definition_list) {
+        class_def->class_index = class_index++;
+        fix_class_definition(class_def);
+    }
 
     // step-3. fix function list
     unsigned int func_index = 0;
@@ -151,13 +158,9 @@ void ring_compiler_fix_ast(Package* package) {
     }
 
 
-    // step-1. fix class list
-    unsigned int class_index = 0;
-    for (ClassDefinition* class_def : package->class_definition_list) {
-        class_def->class_index = class_index++;
-        fix_class_definition(class_def);
-    }
-
+    // 为什么这个放在后边
+    // 需要先 注册所有的class的类型表之后，
+    // 才能开始修正做语义检查
     func_index = 0;
     for (Function* func : package->function_list) {
         func->func_index = func_index++;
