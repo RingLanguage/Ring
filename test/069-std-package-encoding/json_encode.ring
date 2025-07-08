@@ -42,8 +42,8 @@ typedef Job1 = class {
     var string  String;
 }
 
-fn main() {
-	var Job local_job_value_0 = Job{
+global {
+	var Job global_job_value_0 = Job{
 		Bool: true,
 		Int: 42,
 		Int64: 1234567890L,
@@ -136,8 +136,19 @@ fn main() {
 			},
 		},
 	};
+}
 
+
+fn main() {
+	test_json_encode_object();
+	test_json_encode_array();
+}
+
+fn test_json_encode_object() {
+	fmt::printf("test_json_encode_object ---------------\n");
+	
 	var string json_string;
+	var Job local_job_value_0 = global_job_value_0;
 
 	// 1. println
 	fmt::println(local_job_value_0);
@@ -153,4 +164,28 @@ fn main() {
 	json_string = encoding::json_encode_indent(local_job_value_0);
 	fmt::println(json_string);
 
+}
+
+
+fn test_json_encode_array() {
+	fmt::printf("test_json_encode_array ---------------\n");
+	
+	var string json_string;
+	var Job[] local_job_array_0 = Job[]{
+		global_job_value_0
+	};
+
+	// 1. println
+	fmt::println(local_job_array_0);
+
+	// 2. var_dump
+	debug::var_dump(local_job_array_0);
+
+	// 3. json_encode
+	json_string = encoding::json_encode(local_job_array_0);
+	fmt::println(json_string);
+
+	// 4. json_encode_indent
+	json_string = encoding::json_encode_indent(local_job_array_0);
+	fmt::println(json_string);
 }

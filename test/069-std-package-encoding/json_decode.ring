@@ -42,9 +42,8 @@ typedef Job1 = class {
     var string  String;
 }
 
-
-fn main() {
-	var Job local_job_value_0 = Job{
+global {
+	var Job global_job_value_0 = Job{
 		Bool: true,
 		Int: 42,
 		Int64: 1234567890L,
@@ -137,16 +136,29 @@ fn main() {
 			},
 		},
 	};
+}
 
+fn main() {
+	test_json_decode_object();
+	test_json_decode_array();
+}
+
+// local_job_value_0 -> json_string_0 -> local_job_value_1 -> json_string_1
+// check json_string_0 == json_string_1
+fn test_json_decode_object() {
+	fmt::printf("test_json_decode_object ---------------\n");
+
+	var Job local_job_value_0 = global_job_value_0;
+	var Job local_job_value_1;
 	var string json_string_0;
 	var string json_string_1;
-	var Job local_job_value_1;
     var string json_decode_res;
 
+
+
 	// 1. json_encode
-	fmt::println(local_job_value_0);
 	json_string_0 = encoding::json_encode(local_job_value_0);
-	// fmt::println(json_string_0);
+
 
 	// 2. json_decode
 	local_job_value_1, json_decode_res = encoding::json_decode(local_job_value_0, json_string_0);
@@ -157,8 +169,49 @@ fn main() {
 	fmt::println(local_job_value_1);
 
 
-
-    // 3. check
+	// 3. json_encode
     json_string_1 = encoding::json_encode(local_job_value_1);
+
+
+	// 4. check
     debug::assert(json_string_0 == json_string_1);
 }
+
+
+
+// local_job_value_0 -> json_string_0 -> local_job_value_1 -> json_string_1
+// check json_string_0 == json_string_1
+fn test_json_decode_array() {
+	fmt::printf("test_json_decode_array ---------------\n");
+
+	var Job[] local_job_array_0 = Job[]{
+		global_job_value_0
+	};
+	var Job[] local_job_array_1;
+	var string json_string_0;
+	var string json_string_1;
+    var string json_decode_res;
+
+
+
+	// 1. json_encode
+	json_string_0 = encoding::json_encode(local_job_array_0);
+
+
+	// 2. json_decode
+	local_job_array_1, json_decode_res = encoding::json_decode(local_job_array_1, json_string_0);
+    if json_decode_res != "" {
+        fmt::printf("json_decode_res error: {}\n", json_decode_res);
+        return;
+    }
+	fmt::println(local_job_array_1);
+
+	
+	// 3. json_encode
+    json_string_1 = encoding::json_encode(local_job_array_1);
+
+
+	// 4. check
+    debug::assert(json_string_0 == json_string_1);
+}
+

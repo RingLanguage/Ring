@@ -27,13 +27,13 @@ Tool::test3()::3
 #1 $ring!test3()
     ./test/060-std-package-debug/debug-stack-009.ring:120
 #2 $ring!Tool.test3()
-    ./test/060-std-package-debug/debug-stack-009.ring:73
+    ./test/060-std-package-debug/debug-stack-009.ring:74
 #3 $ring!Tool.test2()
-    ./test/060-std-package-debug/debug-stack-009.ring:63
+    ./test/060-std-package-debug/debug-stack-009.ring:64
 #4 $ring!Tool.test1()
-    ./test/060-std-package-debug/debug-stack-009.ring:55
+    ./test/060-std-package-debug/debug-stack-009.ring:56
 #5 $ring!Job.test3()
-    ./test/060-std-package-debug/debug-stack-009.ring:41
+    ./test/060-std-package-debug/debug-stack-009.ring:42
 #6 $ring!Job.test2()
     ./test/060-std-package-debug/debug-stack-009.ring:31
 #7 $ring!Job.test1()

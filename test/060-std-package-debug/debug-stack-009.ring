@@ -34,11 +34,12 @@ typedef Job = class {
     }
 
 	fn test3() {
+		var Tool   local_tool_value;
 		fmt::println("Job::test3()::0");
 		fmt::println("Job::test3()::1");
 		fmt::println("Job::test3()::2");
 		fmt::println("Job::test3()::3");
-		global_tool_value.test1();
+		local_tool_value.test1();
     }
 }
 
@@ -81,7 +82,6 @@ global {
 	var double global_double_value;
 	var string global_string_value;
 	var Job    global_job_value;
-	var Tool   global_tool_value;
 }
 
 // TestDetail: 测试 debug::print_call_stack()
