@@ -6,25 +6,25 @@ call_info:
 - line:30
 
 call_info:
-- pc:3
+- pc:0
 - file:./test/064-std-package-runtime/runtime-call-info.ring
 - func_name:test2()
 - line:26
 
 call_info:
-- pc:3
+- pc:0
 - file:./test/064-std-package-runtime/runtime-call-info.ring
 - func_name:test1()
 - line:22
 
 call_info:
-- pc:3
+- pc:0
 - file:./test/064-std-package-runtime/runtime-call-info.ring
 - func_name:main()
 - line:18
 
 call_info:
-- pc:8
+- pc:6
 - file:
 - func_name:~start()
 - line:0

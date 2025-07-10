@@ -30,7 +30,7 @@ $main()    <./test/004-derive-function/function-021.ring:22,30>
  ├──var int              int_value_0         
  ├──var int              int_value_1         
 +FreeValue:        0
-+Instructions: 23
++Instructions: 24
  ├──*Num    *PC     *Instruction                  *Operand            *SourceLineNum    
  ├──0       0       push_int_1byte                1                   26                
  ├──1       2       pop_stack_int                 0                                     
@@ -38,8 +38,7 @@ $main()    <./test/004-derive-function/function-021.ring:22,30>
  ├──3       7       pop_stack_int                 1                                     
  ├──4       10      push_stack_int                0                   29                
  ├──5       13      push_stack_int                1                                     
- ├──6       16      push_func                     10, 0                                 
- ├──7       19      invoke_func                   2                                     
- ├──8       21      pop_defer                                         30                
- ├──9       22      function_finish                                                     
+ ├──6       16      invoke_func                   10, 0, 2                              
+ ├──7       22      pop_defer                                         30                
+ ├──8       23      function_finish                                                     
 
