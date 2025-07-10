@@ -1,6 +1,6 @@
 
 call_info:
-- pc:5
+- pc:2
 - file:./test/064-std-package-runtime/runtime-call-info.ring
 - func_name:test3()
 - line:30
