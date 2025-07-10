@@ -498,22 +498,13 @@ void add_top_level_code(Package* package, Package_Executer* executer) {
     // __global_init() 函数是不允许调试的
     // 但是 __global_init() 函数调用的 函数是允许调试的
     if (executer->exist_global_init_func) {
-        // unsigned int       package_offset     = 0;
-        // unsigned int       offset             = 0;
-        // unsigned int       argument_list_size = 0;
-        // unsigned long long operand            = 0;
-
-        // package_offset                        = package->compiler_entry->package_list.size() - 1;
-        // offset                                = executer->global_init_func_index;
-        // operand                               = (package_offset << 24) | (offset << 8) | argument_list_size;
+        unsigned int       package_index      = package->compiler_entry->package_list.size() - 1;
+        unsigned int       func_index         = executer->global_init_func_index;
+        unsigned int       argument_list_size = 0;
+        unsigned long long operand            = (package_index << 24) | (func_index << 8) | argument_list_size;
 
         generate_vmcode(executer, opcode_buffer,
-                        RVM_CODE_PUSH_FUNC,
-                        ((package->compiler_entry->package_list.size() - 1) << 8)
-                            | executer->global_init_func_index,
-                        0);
-        generate_vmcode(executer, opcode_buffer,
-                        RVM_CODE_INVOKE_FUNC, 0, 0);
+                        RVM_CODE_INVOKE_FUNC, operand, 0);
     }
 
 
@@ -543,21 +534,13 @@ void add_top_level_code(Package* package, Package_Executer* executer) {
     }
 
 
-    // unsigned int       package_offset = 0;
-    // unsigned int       offset         = 0;
-    // unsigned long long operand        = 0;
-
-    // package_offset                    = package->compiler_entry->package_list.size() - 1;
-    // offset                            = executer->main_func_index;
-    // operand                           = (package_offset << 24) | (offset << 8) | argument_num;
+    unsigned int       package_index = package->compiler_entry->package_list.size() - 1;
+    unsigned int       func_index    = executer->main_func_index;
+    unsigned long long operand       = (package_index << 24) | (func_index << 8) | argument_num;
 
     generate_vmcode(executer, opcode_buffer,
-                    RVM_CODE_PUSH_FUNC,
-                    ((package->compiler_entry->package_list.size() - 1) << 8)
-                        | executer->main_func_index,
-                    0);
-    generate_vmcode(executer, opcode_buffer,
-                    RVM_CODE_INVOKE_FUNC, argument_num, 0);
+                    RVM_CODE_INVOKE_FUNC, operand, 0);
+
 
     // step-3. exit 字节码
     unsigned int exit_code = 0;
@@ -1936,32 +1919,24 @@ void generate_vmcode_from_function_call_expression(Package_Executer*       execu
 
     if (function_call_expression->type == FUNCTION_CALL_TYPE_FUNC) {
 
-        unsigned int       package_offset = 0;
-        unsigned int       offset         = 0;
-        unsigned long long operand        = 0;
+        unsigned int       package_index = 0;
+        unsigned int       func_index    = 0;
+        unsigned long long operand       = 0;
+        RVM_Opcode         opcode        = RVM_CODE_UNKNOW;
+
+
+        package_index                    = function_call_expression->u.fc.function->package->package_index;
+        func_index                       = function_call_expression->u.fc.function->func_index;
+        operand                          = (package_index << 24) | (func_index << 8) | argument_list_size;
 
 
         if (function_call_expression->u.fc.function->type == FUNCTION_TYPE_NATIVE) {
-            package_offset = function_call_expression->u.fc.function->package->package_index;
-            offset         = function_call_expression->u.fc.function->func_index;
-            operand        = (package_offset << 24) | (offset << 8) | argument_list_size;
-
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_INVOKE_FUNC_NATIVE, operand, function_call_expression->line_number);
+            opcode = RVM_CODE_INVOKE_FUNC_NATIVE;
         } else if (function_call_expression->u.fc.function->type == FUNCTION_TYPE_DERIVE) {
-            // package_offset = function_call_expression->u.fc.function->package->package_index;
-            // offset         = function_call_expression->u.fc.function->func_index;
-            // operand        = (package_offset << 24) | (offset << 8) | argument_list_size;
-
-            unsigned int package_offset = 0;
-            unsigned int offset         = 0;
-            unsigned int operand        = 0;
-
-            package_offset              = function_call_expression->u.fc.function->package->package_index;
-            offset                      = function_call_expression->u.fc.function->func_index;
-            operand                     = (package_offset << 8) | offset;
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_FUNC, operand, function_call_expression->line_number);
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_INVOKE_FUNC, argument_list_size, function_call_expression->line_number);
+            opcode = RVM_CODE_INVOKE_FUNC;
         }
+
+        generate_vmcode(executer, opcode_buffer, opcode, operand, function_call_expression->line_number);
 
     } else if (function_call_expression->type == FUNCTION_CALL_TYPE_CLOSURE) {
 
@@ -2010,15 +1985,13 @@ void generate_vmcode_from_member_call_expression(Package_Executer*     executer,
     generate_vmcode_from_expression(executer, member_call_expression->object_expression, opcode_buffer);
 
     // push_func invoke
-    MethodMember* method_member  = nullptr;
-    FieldMember*  field_member   = nullptr;
-    unsigned      index_of_class = 0;
+    FieldMember* field_member   = nullptr;
+    unsigned     index_of_class = 0;
     if (member_call_expression->type == MEMBER_CALL_TYPE_METHOD) {
-        method_member  = member_call_expression->u.mc.method_member;
-        index_of_class = method_member->index_of_class;
+        index_of_class             = member_call_expression->u.mc.method_member->index_of_class;
+        unsigned long long operand = (index_of_class << 8) | argument_list_size;
 
-        generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_METHOD, index_of_class, member_call_expression->line_number);
-        generate_vmcode(executer, opcode_buffer, RVM_CODE_INVOKE_METHOD, argument_list_size, member_call_expression->line_number);
+        generate_vmcode(executer, opcode_buffer, RVM_CODE_INVOKE_METHOD, operand, member_call_expression->line_number);
     } else if (member_call_expression->type == MEMBER_CALL_TYPE_FIELD) {
         field_member   = member_call_expression->u.fc.field_member;
         index_of_class = field_member->index_of_class;

@@ -1328,7 +1328,7 @@ struct RVM_CallInfo {
     RVM_Byte*        code_list;
     unsigned int     code_size;
     unsigned int     pc; // 在运行字节码的时候，会实时运行
-    unsigned int     resume_pc;
+    unsigned int     caller_resume_pc;
     // 在完成一个函数调用之后，或者完成一个协程调度之后
     // 要进行字节码的恢复，恢复到 resume_pc
     // 只有在函数调用之前、协程调度之前才会被设置
@@ -3649,11 +3649,9 @@ void                 invoke_native_function(Ring_VirtualMachine* rvm, RVM_Functi
 void                 invoke_derive_function(Ring_VirtualMachine* rvm,
                                             RVM_ClassObject** caller_object, RVM_Function** caller_function, RVM_Closure** caller_closure,
                                             RVM_ClassObject* callee_object, RVM_Function* callee_function, RVM_Closure* callee_closure,
+                                            unsigned int caller_resume_pc,
                                             unsigned int argument_list_size,
                                             bool         invoke_by_defer);
-void                 derive_function_return(Ring_VirtualMachine* rvm,
-                                            RVM_Function** caller_function, RVM_Function* callee_function,
-                                            unsigned int return_value_list_size);
 void                 derive_function_finish(Ring_VirtualMachine* rvm,
                                             RVM_ClassObject** caller_object, RVM_Function** caller_function, RVM_Closure** caller_closure,
                                             RVM_Function* callee_function,

@@ -2107,29 +2107,25 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             callee_function    = &(rvm->executer_entry->package_executer_list[package_index]->function_list[func_index]);
             assert(callee_function->type == RVM_FUNCTION_TYPE_NATIVE);
 
-            // TODO: 需要在外部显式修改PC
             invoke_native_function(rvm,
                                    callee_function,
                                    argument_list_size);
             VM_CUR_CO_PC += 6;
             break;
         case RVM_CODE_INVOKE_FUNC:
-            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-            oper_num           = STACK_GET_INT_OFFSET(-1);
-            package_index      = oper_num >> 8;
-            func_index         = oper_num & 0XFF;
-            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            package_index      = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            func_index         = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 5]);
 
-            callee_function = &(rvm->executer_entry->package_executer_list[package_index]->function_list[func_index]);
+            callee_function    = &(rvm->executer_entry->package_executer_list[package_index]->function_list[func_index]);
             assert(callee_function->type == RVM_FUNCTION_TYPE_DERIVE);
 
-            // TODO: 需要在外部显式修改PC
             invoke_derive_function(rvm,
                                    &caller_class_ob, &caller_function, &caller_closure,
                                    nullptr, callee_function, nullptr,
+                                   VM_CUR_CO_PC + 6,
                                    argument_list_size,
                                    false);
-
             break;
         case RVM_CODE_INVOKE_CLOSURE:
             argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
@@ -2138,19 +2134,18 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
             assert_throw_nil_closure(closure_value == nullptr || closure_value->anonymous_func == nullptr);
 
-            // TODO: 需要在外部显式修改PC
             invoke_derive_function(rvm,
                                    &caller_class_ob, &caller_function, &caller_closure,
                                    nullptr, closure_value->anonymous_func, closure_value,
+                                   VM_CUR_CO_PC + 2,
                                    argument_list_size,
                                    false);
-
             break;
         case RVM_CODE_INVOKE_METHOD:
-            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-            callee_class_ob    = STACK_GET_CLASS_OB_OFFSET(-2);
-            method_index       = STACK_GET_INT_OFFSET(-1);
-            VM_CUR_CO_STACK_TOP_INDEX -= 2;
+            method_index       = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 2]);
+            callee_class_ob    = STACK_GET_CLASS_OB_OFFSET(-1);
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
 
             // 每个对象的成员变量 是单独存储的
             // 但是 method 没必要单独存储, 在 class_definition 中就可以, 通过指针寻找 class_definition
@@ -2159,10 +2154,10 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             callee_method   = &(callee_class_ob->class_def->method_list[method_index]);
             callee_function = callee_method->rvm_function;
 
-            // TODO: 需要在外部显式修改PC
             invoke_derive_function(rvm,
                                    &caller_class_ob, &caller_function, &caller_closure,
                                    callee_class_ob, callee_function, nullptr,
+                                   VM_CUR_CO_PC + 3,
                                    argument_list_size,
                                    false);
             break;
@@ -2224,6 +2219,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
                     invoke_derive_function(rvm,
                                            &caller_class_ob, &caller_function, &caller_closure,
                                            nullptr, closure_value->anonymous_func, closure_value,
+                                           VM_CUR_CO_PC,
                                            argument_list_size,
                                            true);
                 }
@@ -2396,8 +2392,11 @@ void invoke_native_function(Ring_VirtualMachine* rvm,
 void invoke_derive_function(Ring_VirtualMachine* rvm,
                             RVM_ClassObject** caller_object, RVM_Function** caller_function, RVM_Closure** caller_closure,
                             RVM_ClassObject* callee_object, RVM_Function* callee_function, RVM_Closure* callee_closure,
+                            unsigned int caller_resume_pc,
                             unsigned int argument_list_size,
                             bool         invoke_by_defer) {
+
+    assert(caller_resume_pc != 0);
 
     RVM_CallInfo* callinfo         = (RVM_CallInfo*)mem_alloc(rvm->meta_pool, sizeof(RVM_CallInfo));
     callinfo->caller_object        = *caller_object;
@@ -2413,6 +2412,7 @@ void invoke_derive_function(Ring_VirtualMachine* rvm,
     callinfo->code_list            = callee_function->u.derive_func->code_list;
     callinfo->code_size            = callee_function->u.derive_func->code_size;
     callinfo->pc                   = 0;
+    callinfo->caller_resume_pc     = caller_resume_pc;
     callinfo->prev                 = nullptr;
     callinfo->next                 = nullptr;
 
@@ -2484,12 +2484,6 @@ void invoke_derive_function(Ring_VirtualMachine* rvm,
     // 这里延后释放，代码逻辑简化了，但是栈空间有浪费
 }
 
-void derive_function_return(Ring_VirtualMachine* rvm,
-                            RVM_Function** caller_function, RVM_Function* callee_function,
-                            unsigned int return_list_size) {
-    debug_exec_info_with_white("\t");
-}
-
 /*
  * derive_function_finish
  *
@@ -2505,13 +2499,13 @@ void derive_function_finish(Ring_VirtualMachine* rvm,
                             RVM_Function* callee_function,
                             unsigned int  return_value_list_size) {
 
-    unsigned int old_return_value_list_index;
+    unsigned int old_return_value_list_index = 0;
 
-    old_return_value_list_index = VM_CUR_CO_STACK_TOP_INDEX - return_value_list_size;
+    old_return_value_list_index              = VM_CUR_CO_STACK_TOP_INDEX - return_value_list_size;
 
 
-    RVM_CallInfo* callinfo      = nullptr;
-    callinfo                    = restore_callinfo(&VM_CUR_CO_CALLINFO);
+    RVM_CallInfo* callinfo                   = nullptr;
+    callinfo                                 = restore_callinfo(&VM_CUR_CO_CALLINFO);
 
     if (RING_DEBUG_TRACE_FUNC_BACKTRACE) {
         std::string prefix     = "[RING_DEBUG::trace_func_backtrace] [finish_func::]";
@@ -2579,13 +2573,8 @@ void derive_function_finish(Ring_VirtualMachine* rvm,
         return;
     }
 
-    if (!callinfo->caller_is_defer) {
-        // 调用完成之后，上层的函数 pc + 2
-        // TODO: 应该在函数调用之前设置好，否则后续不好维护
-        VM_CUR_CO_PC += 2;
-    } else {
-        // 如果上层是defer，那么他的pc不会+1，需要继续执行 pop_defer指令
-    }
+    // 恢复 caller 的pc
+    VM_CUR_CO_PC = callinfo->caller_resume_pc;
 
 
     // 检查函数栈空间是否合法
