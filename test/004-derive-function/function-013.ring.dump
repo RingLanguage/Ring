@@ -22,7 +22,7 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
 +Local:       1
  ├──var int              score               
 +FreeValue:        0
-+Instructions: 397
++Instructions: 409
  ├──*Num    *PC     *Instruction                  *Operand            *SourceLineNum    
  ├──0       0       push_int_1byte                0                   13                
  ├──1       2       push_stack_int                0                                     
@@ -34,166 +34,154 @@ $get_level_by_score(int)->(int)    <./test/004-derive-function/function-013.ring
  ├──7       16      push_int_1byte                10                                    
  ├──8       18      lt_int                                                              
  ├──9       19      logical_and                                                         
- ├──10      20      jump_if_false                 35                  38                
+ ├──10      20      jump_if_false                 36                  38                
  ├──11      23      push_string                   0, 10               14                
- ├──12      27      push_func                     2, 4                                  
- ├──13      30      invoke_func_native            1                                     
- ├──14      32      jump                          387                 38                
- ├──15      35      push_int_1byte                10                  15                
- ├──16      37      push_stack_int                0                                     
- ├──17      40      le_int                                                              
- ├──18      41      shallow_copy                  0, 1                                  
- ├──19      44      nop                                                                 
- ├──20      45      jump_if_false                 55                                    
- ├──21      48      push_stack_int                0                                     
- ├──22      51      push_int_1byte                20                                    
- ├──23      53      lt_int                                                              
- ├──24      54      logical_and                                                         
- ├──25      55      jump_if_false                 70                  17                
- ├──26      58      push_string                   1, 10               16                
- ├──27      62      push_func                     2, 4                                  
- ├──28      65      invoke_func_native            1                                     
- ├──29      67      jump                          387                 17                
- ├──30      70      push_int_1byte                20                                    
- ├──31      72      push_stack_int                0                                     
- ├──32      75      le_int                                                              
- ├──33      76      shallow_copy                  0, 1                                  
- ├──34      79      nop                                                                 
- ├──35      80      jump_if_false                 90                                    
- ├──36      83      push_stack_int                0                                     
- ├──37      86      push_int_1byte                30                                    
- ├──38      88      lt_int                                                              
- ├──39      89      logical_and                                                         
- ├──40      90      jump_if_false                 105                 19                
- ├──41      93      push_string                   2, 10               18                
- ├──42      97      push_func                     2, 4                                  
- ├──43      100     invoke_func_native            1                                     
- ├──44      102     jump                          387                 19                
- ├──45      105     push_int_1byte                30                                    
- ├──46      107     push_stack_int                0                                     
- ├──47      110     le_int                                                              
- ├──48      111     shallow_copy                  0, 1                                  
- ├──49      114     nop                                                                 
- ├──50      115     jump_if_false                 125                                   
- ├──51      118     push_stack_int                0                                     
- ├──52      121     push_int_1byte                40                                    
- ├──53      123     lt_int                                                              
- ├──54      124     logical_and                                                         
- ├──55      125     jump_if_false                 140                 21                
- ├──56      128     push_string                   3, 10               20                
- ├──57      132     push_func                     2, 4                                  
- ├──58      135     invoke_func_native            1                                     
- ├──59      137     jump                          387                 21                
- ├──60      140     push_int_1byte                40                                    
- ├──61      142     push_stack_int                0                                     
- ├──62      145     le_int                                                              
- ├──63      146     shallow_copy                  0, 1                                  
- ├──64      149     nop                                                                 
- ├──65      150     jump_if_false                 160                                   
- ├──66      153     push_stack_int                0                                     
- ├──67      156     push_int_1byte                50                                    
- ├──68      158     lt_int                                                              
- ├──69      159     logical_and                                                         
- ├──70      160     jump_if_false                 175                 23                
- ├──71      163     push_string                   4, 10               22                
- ├──72      167     push_func                     2, 4                                  
- ├──73      170     invoke_func_native            1                                     
- ├──74      172     jump                          387                 23                
- ├──75      175     push_int_1byte                50                                    
- ├──76      177     push_stack_int                0                                     
- ├──77      180     le_int                                                              
- ├──78      181     shallow_copy                  0, 1                                  
- ├──79      184     nop                                                                 
- ├──80      185     jump_if_false                 195                                   
- ├──81      188     push_stack_int                0                                     
- ├──82      191     push_int_1byte                60                                    
- ├──83      193     lt_int                                                              
- ├──84      194     logical_and                                                         
- ├──85      195     jump_if_false                 210                 25                
- ├──86      198     push_string                   5, 10               24                
- ├──87      202     push_func                     2, 4                                  
- ├──88      205     invoke_func_native            1                                     
- ├──89      207     jump                          387                 25                
- ├──90      210     push_int_1byte                60                                    
- ├──91      212     push_stack_int                0                                     
- ├──92      215     le_int                                                              
- ├──93      216     shallow_copy                  0, 1                                  
- ├──94      219     nop                                                                 
- ├──95      220     jump_if_false                 230                                   
- ├──96      223     push_stack_int                0                                     
- ├──97      226     push_int_1byte                70                                    
- ├──98      228     lt_int                                                              
- ├──99      229     logical_and                                                         
- ├──100     230     jump_if_false                 245                 27                
- ├──101     233     push_string                   6, 10               26                
- ├──102     237     push_func                     2, 4                                  
- ├──103     240     invoke_func_native            1                                     
- ├──104     242     jump                          387                 27                
- ├──105     245     push_int_1byte                70                                    
- ├──106     247     push_stack_int                0                                     
- ├──107     250     le_int                                                              
- ├──108     251     shallow_copy                  0, 1                                  
- ├──109     254     nop                                                                 
- ├──110     255     jump_if_false                 265                                   
- ├──111     258     push_stack_int                0                                     
- ├──112     261     push_int_1byte                80                                    
- ├──113     263     lt_int                                                              
- ├──114     264     logical_and                                                         
- ├──115     265     jump_if_false                 280                 29                
- ├──116     268     push_string                   7, 10               28                
- ├──117     272     push_func                     2, 4                                  
- ├──118     275     invoke_func_native            1                                     
- ├──119     277     jump                          387                 29                
- ├──120     280     push_int_1byte                80                                    
- ├──121     282     push_stack_int                0                                     
- ├──122     285     le_int                                                              
- ├──123     286     shallow_copy                  0, 1                                  
- ├──124     289     nop                                                                 
- ├──125     290     jump_if_false                 300                                   
- ├──126     293     push_stack_int                0                                     
- ├──127     296     push_int_1byte                90                                    
- ├──128     298     lt_int                                                              
- ├──129     299     logical_and                                                         
- ├──130     300     jump_if_false                 315                 31                
- ├──131     303     push_string                   8, 10               30                
- ├──132     307     push_func                     2, 4                                  
- ├──133     310     invoke_func_native            1                                     
- ├──134     312     jump                          387                 31                
- ├──135     315     push_int_1byte                90                                    
- ├──136     317     push_stack_int                0                                     
- ├──137     320     le_int                                                              
- ├──138     321     shallow_copy                  0, 1                                  
- ├──139     324     nop                                                                 
- ├──140     325     jump_if_false                 335                                   
- ├──141     328     push_stack_int                0                                     
- ├──142     331     push_int_1byte                100                                   
- ├──143     333     le_int                                                              
- ├──144     334     logical_and                                                         
- ├──145     335     jump_if_false                 350                 33                
- ├──146     338     push_string                   9, 10               32                
- ├──147     342     push_func                     2, 4                                  
- ├──148     345     invoke_func_native            1                                     
- ├──149     347     jump                          387                 33                
- ├──150     350     push_stack_int                0                                     
- ├──151     353     push_int_1byte                100                                   
- ├──152     355     eq_int                                                              
- ├──153     356     jump_if_false                 371                 35                
- ├──154     359     push_string                   10, 10              34                
- ├──155     363     push_func                     2, 4                                  
- ├──156     366     invoke_func_native            1                                     
- ├──157     368     jump                          387                 35                
- ├──158     371     push_string                   11, 10              36                
- ├──159     375     push_func                     2, 4                                  
- ├──160     378     invoke_func_native            1                                     
- ├──161     380     push_int_1byte                0                   37                
- ├──162     382     return                        1                                     
- ├──163     384     jump                          387                 36                
- ├──164     387     push_stack_int                0                   40                
- ├──165     390     push_int_1byte                10                                    
- ├──166     392     div_int                                                             
- ├──167     393     return                        1                                     
- ├──168     395     pop_defer                                         41                
- ├──169     396     function_finish                                                     
+ ├──12      27      invoke_func_native            2, 4, 1                               
+ ├──13      33      jump                          399                 38                
+ ├──14      36      push_int_1byte                10                  15                
+ ├──15      38      push_stack_int                0                                     
+ ├──16      41      le_int                                                              
+ ├──17      42      shallow_copy                  0, 1                                  
+ ├──18      45      nop                                                                 
+ ├──19      46      jump_if_false                 56                                    
+ ├──20      49      push_stack_int                0                                     
+ ├──21      52      push_int_1byte                20                                    
+ ├──22      54      lt_int                                                              
+ ├──23      55      logical_and                                                         
+ ├──24      56      jump_if_false                 72                  17                
+ ├──25      59      push_string                   1, 10               16                
+ ├──26      63      invoke_func_native            2, 4, 1                               
+ ├──27      69      jump                          399                 17                
+ ├──28      72      push_int_1byte                20                                    
+ ├──29      74      push_stack_int                0                                     
+ ├──30      77      le_int                                                              
+ ├──31      78      shallow_copy                  0, 1                                  
+ ├──32      81      nop                                                                 
+ ├──33      82      jump_if_false                 92                                    
+ ├──34      85      push_stack_int                0                                     
+ ├──35      88      push_int_1byte                30                                    
+ ├──36      90      lt_int                                                              
+ ├──37      91      logical_and                                                         
+ ├──38      92      jump_if_false                 108                 19                
+ ├──39      95      push_string                   2, 10               18                
+ ├──40      99      invoke_func_native            2, 4, 1                               
+ ├──41      105     jump                          399                 19                
+ ├──42      108     push_int_1byte                30                                    
+ ├──43      110     push_stack_int                0                                     
+ ├──44      113     le_int                                                              
+ ├──45      114     shallow_copy                  0, 1                                  
+ ├──46      117     nop                                                                 
+ ├──47      118     jump_if_false                 128                                   
+ ├──48      121     push_stack_int                0                                     
+ ├──49      124     push_int_1byte                40                                    
+ ├──50      126     lt_int                                                              
+ ├──51      127     logical_and                                                         
+ ├──52      128     jump_if_false                 144                 21                
+ ├──53      131     push_string                   3, 10               20                
+ ├──54      135     invoke_func_native            2, 4, 1                               
+ ├──55      141     jump                          399                 21                
+ ├──56      144     push_int_1byte                40                                    
+ ├──57      146     push_stack_int                0                                     
+ ├──58      149     le_int                                                              
+ ├──59      150     shallow_copy                  0, 1                                  
+ ├──60      153     nop                                                                 
+ ├──61      154     jump_if_false                 164                                   
+ ├──62      157     push_stack_int                0                                     
+ ├──63      160     push_int_1byte                50                                    
+ ├──64      162     lt_int                                                              
+ ├──65      163     logical_and                                                         
+ ├──66      164     jump_if_false                 180                 23                
+ ├──67      167     push_string                   4, 10               22                
+ ├──68      171     invoke_func_native            2, 4, 1                               
+ ├──69      177     jump                          399                 23                
+ ├──70      180     push_int_1byte                50                                    
+ ├──71      182     push_stack_int                0                                     
+ ├──72      185     le_int                                                              
+ ├──73      186     shallow_copy                  0, 1                                  
+ ├──74      189     nop                                                                 
+ ├──75      190     jump_if_false                 200                                   
+ ├──76      193     push_stack_int                0                                     
+ ├──77      196     push_int_1byte                60                                    
+ ├──78      198     lt_int                                                              
+ ├──79      199     logical_and                                                         
+ ├──80      200     jump_if_false                 216                 25                
+ ├──81      203     push_string                   5, 10               24                
+ ├──82      207     invoke_func_native            2, 4, 1                               
+ ├──83      213     jump                          399                 25                
+ ├──84      216     push_int_1byte                60                                    
+ ├──85      218     push_stack_int                0                                     
+ ├──86      221     le_int                                                              
+ ├──87      222     shallow_copy                  0, 1                                  
+ ├──88      225     nop                                                                 
+ ├──89      226     jump_if_false                 236                                   
+ ├──90      229     push_stack_int                0                                     
+ ├──91      232     push_int_1byte                70                                    
+ ├──92      234     lt_int                                                              
+ ├──93      235     logical_and                                                         
+ ├──94      236     jump_if_false                 252                 27                
+ ├──95      239     push_string                   6, 10               26                
+ ├──96      243     invoke_func_native            2, 4, 1                               
+ ├──97      249     jump                          399                 27                
+ ├──98      252     push_int_1byte                70                                    
+ ├──99      254     push_stack_int                0                                     
+ ├──100     257     le_int                                                              
+ ├──101     258     shallow_copy                  0, 1                                  
+ ├──102     261     nop                                                                 
+ ├──103     262     jump_if_false                 272                                   
+ ├──104     265     push_stack_int                0                                     
+ ├──105     268     push_int_1byte                80                                    
+ ├──106     270     lt_int                                                              
+ ├──107     271     logical_and                                                         
+ ├──108     272     jump_if_false                 288                 29                
+ ├──109     275     push_string                   7, 10               28                
+ ├──110     279     invoke_func_native            2, 4, 1                               
+ ├──111     285     jump                          399                 29                
+ ├──112     288     push_int_1byte                80                                    
+ ├──113     290     push_stack_int                0                                     
+ ├──114     293     le_int                                                              
+ ├──115     294     shallow_copy                  0, 1                                  
+ ├──116     297     nop                                                                 
+ ├──117     298     jump_if_false                 308                                   
+ ├──118     301     push_stack_int                0                                     
+ ├──119     304     push_int_1byte                90                                    
+ ├──120     306     lt_int                                                              
+ ├──121     307     logical_and                                                         
+ ├──122     308     jump_if_false                 324                 31                
+ ├──123     311     push_string                   8, 10               30                
+ ├──124     315     invoke_func_native            2, 4, 1                               
+ ├──125     321     jump                          399                 31                
+ ├──126     324     push_int_1byte                90                                    
+ ├──127     326     push_stack_int                0                                     
+ ├──128     329     le_int                                                              
+ ├──129     330     shallow_copy                  0, 1                                  
+ ├──130     333     nop                                                                 
+ ├──131     334     jump_if_false                 344                                   
+ ├──132     337     push_stack_int                0                                     
+ ├──133     340     push_int_1byte                100                                   
+ ├──134     342     le_int                                                              
+ ├──135     343     logical_and                                                         
+ ├──136     344     jump_if_false                 360                 33                
+ ├──137     347     push_string                   9, 10               32                
+ ├──138     351     invoke_func_native            2, 4, 1                               
+ ├──139     357     jump                          399                 33                
+ ├──140     360     push_stack_int                0                                     
+ ├──141     363     push_int_1byte                100                                   
+ ├──142     365     eq_int                                                              
+ ├──143     366     jump_if_false                 382                 35                
+ ├──144     369     push_string                   10, 10              34                
+ ├──145     373     invoke_func_native            2, 4, 1                               
+ ├──146     379     jump                          399                 35                
+ ├──147     382     push_string                   11, 10              36                
+ ├──148     386     invoke_func_native            2, 4, 1                               
+ ├──149     392     push_int_1byte                0                   37                
+ ├──150     394     return                        1                                     
+ ├──151     396     jump                          399                 36                
+ ├──152     399     push_stack_int                0                   40                
+ ├──153     402     push_int_1byte                10                                    
+ ├──154     404     div_int                                                             
+ ├──155     405     return                        1                                     
+ ├──156     407     pop_defer                                         41                
+ ├──157     408     function_finish                                                     
 
 $main()    <./test/004-derive-function/function-013.ring:45,61>
 +Parameter:   0
@@ -201,7 +189,7 @@ $main()    <./test/004-derive-function/function-013.ring:45,61>
  ├──var int              score               
  ├──var int              level               
 +FreeValue:        0
-+Instructions: 83
++Instructions: 88
  ├──*Num    *PC     *Instruction                  *Operand            *SourceLineNum    
  ├──0       0       push_int_1byte                9                   50                
  ├──1       2       minus_int                                                           
@@ -209,31 +197,26 @@ $main()    <./test/004-derive-function/function-013.ring:45,61>
  ├──3       6       push_stack_int                0                                     
  ├──4       9       push_int_1byte                110                                   
  ├──5       11      le_int                                                              
- ├──6       12      jump_if_false                 81                                    
+ ├──6       12      jump_if_false                 86                                    
  ├──7       15      push_stack_int                0                   51                
  ├──8       18      push_func                     10, 0                                 
  ├──9       21      invoke_func                   1                                     
  ├──10      23      pop_stack_int                 1                                     
  ├──11      26      push_string                   12, 10              53                
- ├──12      30      push_func                     2, 4                                  
- ├──13      33      invoke_func_native            1                                     
- ├──14      35      push_stack_int                0                   54                
- ├──15      38      push_func                     2, 1                                  
- ├──16      41      invoke_func_native            1                                     
- ├──17      43      push_stack_int                1                   55                
- ├──18      46      push_func                     2, 1                                  
- ├──19      49      invoke_func_native            1                                     
- ├──20      51      push_string                   12, 10              56                
- ├──21      55      push_func                     2, 4                                  
- ├──22      58      invoke_func_native            1                                     
- ├──23      60      push_string                   13, 10              58                
- ├──24      64      push_func                     2, 4                                  
- ├──25      67      invoke_func_native            1                                     
- ├──26      69      push_stack_int                0                   50                
- ├──27      72      push_int_1byte                10                                    
- ├──28      74      add_int                                                             
- ├──29      75      pop_stack_int                 0                                     
- ├──30      78      jump                          6                   59                
- ├──31      81      pop_defer                                         61                
- ├──32      82      function_finish                                                     
+ ├──12      30      invoke_func_native            2, 4, 1                               
+ ├──13      36      push_stack_int                0                   54                
+ ├──14      39      invoke_func_native            2, 1, 1                               
+ ├──15      45      push_stack_int                1                   55                
+ ├──16      48      invoke_func_native            2, 1, 1                               
+ ├──17      54      push_string                   12, 10              56                
+ ├──18      58      invoke_func_native            2, 4, 1                               
+ ├──19      64      push_string                   13, 10              58                
+ ├──20      68      invoke_func_native            2, 4, 1                               
+ ├──21      74      push_stack_int                0                   50                
+ ├──22      77      push_int_1byte                10                                    
+ ├──23      79      add_int                                                             
+ ├──24      80      pop_stack_int                 0                                     
+ ├──25      83      jump                          6                   59                
+ ├──26      86      pop_defer                                         61                
+ ├──27      87      function_finish                                                     
 

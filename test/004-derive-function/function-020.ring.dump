@@ -96,342 +96,294 @@ $main()    <./test/004-derive-function/function-020.ring:39,96>
 +Parameter:   0
 +Local:       0
 +FreeValue:        0
-+Instructions: 769
++Instructions: 817
  ├──*Num    *PC     *Instruction                  *Operand            *SourceLineNum    
  ├──0       0       push_string                   0, 10               41                
- ├──1       4       push_func                     2, 4                                  
- ├──2       7       invoke_func_native            1                                     
- ├──3       9       push_int_1byte                1                   42                
- ├──4       11      push_func                     10, 0                                 
- ├──5       14      invoke_func                   1                                     
- ├──6       16      push_func                     2, 1                                  
- ├──7       19      invoke_func_native            1                                     
- ├──8       21      push_int_1byte                2                   43                
- ├──9       23      push_func                     10, 0                                 
- ├──10      26      invoke_func                   1                                     
- ├──11      28      push_func                     2, 1                                  
- ├──12      31      invoke_func_native            1                                     
- ├──13      33      push_int_1byte                3                   44                
- ├──14      35      push_func                     10, 0                                 
- ├──15      38      invoke_func                   1                                     
- ├──16      40      push_func                     2, 1                                  
- ├──17      43      invoke_func_native            1                                     
- ├──18      45      push_int_1byte                4                   45                
- ├──19      47      push_func                     10, 0                                 
- ├──20      50      invoke_func                   1                                     
- ├──21      52      push_func                     2, 1                                  
- ├──22      55      invoke_func_native            1                                     
- ├──23      57      push_int_1byte                5                   46                
- ├──24      59      push_func                     10, 0                                 
- ├──25      62      invoke_func                   1                                     
- ├──26      64      push_func                     2, 1                                  
- ├──27      67      invoke_func_native            1                                     
- ├──28      69      push_int_1byte                6                   47                
- ├──29      71      push_func                     10, 0                                 
- ├──30      74      invoke_func                   1                                     
- ├──31      76      push_func                     2, 1                                  
- ├──32      79      invoke_func_native            1                                     
- ├──33      81      push_int_1byte                7                   48                
- ├──34      83      push_func                     10, 0                                 
- ├──35      86      invoke_func                   1                                     
- ├──36      88      push_func                     2, 1                                  
- ├──37      91      invoke_func_native            1                                     
- ├──38      93      push_int_1byte                8                   49                
- ├──39      95      push_func                     10, 0                                 
- ├──40      98      invoke_func                   1                                     
- ├──41      100     push_func                     2, 1                                  
- ├──42      103     invoke_func_native            1                                     
- ├──43      105     push_int_1byte                9                   50                
- ├──44      107     push_func                     10, 0                                 
- ├──45      110     invoke_func                   1                                     
- ├──46      112     push_func                     2, 1                                  
- ├──47      115     invoke_func_native            1                                     
- ├──48      117     push_int_1byte                10                  51                
- ├──49      119     push_func                     10, 0                                 
- ├──50      122     invoke_func                   1                                     
- ├──51      124     push_func                     2, 1                                  
- ├──52      127     invoke_func_native            1                                     
- ├──53      129     push_string                   1, 10               55                
- ├──54      133     push_func                     2, 4                                  
- ├──55      136     invoke_func_native            1                                     
- ├──56      138     push_int_1byte                1                   56                
- ├──57      140     push_func                     10, 1                                 
- ├──58      143     invoke_func                   1                                     
- ├──59      145     push_func                     2, 1                                  
- ├──60      148     invoke_func_native            1                                     
- ├──61      150     push_int_1byte                2                   57                
- ├──62      152     push_func                     10, 1                                 
- ├──63      155     invoke_func                   1                                     
- ├──64      157     push_func                     2, 1                                  
- ├──65      160     invoke_func_native            1                                     
- ├──66      162     push_int_1byte                3                   58                
- ├──67      164     push_func                     10, 1                                 
- ├──68      167     invoke_func                   1                                     
- ├──69      169     push_func                     2, 1                                  
- ├──70      172     invoke_func_native            1                                     
- ├──71      174     push_int_1byte                4                   59                
- ├──72      176     push_func                     10, 1                                 
- ├──73      179     invoke_func                   1                                     
- ├──74      181     push_func                     2, 1                                  
- ├──75      184     invoke_func_native            1                                     
- ├──76      186     push_int_1byte                5                   60                
- ├──77      188     push_func                     10, 1                                 
- ├──78      191     invoke_func                   1                                     
- ├──79      193     push_func                     2, 1                                  
- ├──80      196     invoke_func_native            1                                     
- ├──81      198     push_int_1byte                6                   61                
- ├──82      200     push_func                     10, 1                                 
- ├──83      203     invoke_func                   1                                     
- ├──84      205     push_func                     2, 1                                  
- ├──85      208     invoke_func_native            1                                     
- ├──86      210     push_int_1byte                7                   62                
- ├──87      212     push_func                     10, 1                                 
- ├──88      215     invoke_func                   1                                     
- ├──89      217     push_func                     2, 1                                  
- ├──90      220     invoke_func_native            1                                     
- ├──91      222     push_int_1byte                8                   63                
- ├──92      224     push_func                     10, 1                                 
- ├──93      227     invoke_func                   1                                     
- ├──94      229     push_func                     2, 1                                  
- ├──95      232     invoke_func_native            1                                     
- ├──96      234     push_int_1byte                9                   64                
- ├──97      236     push_func                     10, 1                                 
- ├──98      239     invoke_func                   1                                     
- ├──99      241     push_func                     2, 1                                  
- ├──100     244     invoke_func_native            1                                     
- ├──101     246     push_int_1byte                10                  65                
- ├──102     248     push_func                     10, 1                                 
- ├──103     251     invoke_func                   1                                     
- ├──104     253     push_func                     2, 1                                  
- ├──105     256     invoke_func_native            1                                     
- ├──106     258     push_string                   2, 10               68                
- ├──107     262     push_func                     2, 4                                  
- ├──108     265     invoke_func_native            1                                     
- ├──109     267     push_int_1byte                1                   69                
- ├──110     269     push_func                     10, 0                                 
- ├──111     272     invoke_func                   1                                     
- ├──112     274     push_int_1byte                1                                     
- ├──113     276     push_func                     10, 1                                 
- ├──114     279     invoke_func                   1                                     
- ├──115     281     eq_int                                                              
- ├──116     282     push_func                     0, 0                                  
- ├──117     285     invoke_func_native            1                                     
- ├──118     287     push_int_1byte                2                   70                
- ├──119     289     push_func                     10, 0                                 
- ├──120     292     invoke_func                   1                                     
- ├──121     294     push_int_1byte                2                                     
- ├──122     296     push_func                     10, 1                                 
- ├──123     299     invoke_func                   1                                     
- ├──124     301     eq_int                                                              
- ├──125     302     push_func                     0, 0                                  
- ├──126     305     invoke_func_native            1                                     
- ├──127     307     push_int_1byte                3                   71                
- ├──128     309     push_func                     10, 0                                 
- ├──129     312     invoke_func                   1                                     
- ├──130     314     push_int_1byte                3                                     
- ├──131     316     push_func                     10, 1                                 
- ├──132     319     invoke_func                   1                                     
- ├──133     321     eq_int                                                              
- ├──134     322     push_func                     0, 0                                  
- ├──135     325     invoke_func_native            1                                     
- ├──136     327     push_int_1byte                4                   72                
- ├──137     329     push_func                     10, 0                                 
- ├──138     332     invoke_func                   1                                     
- ├──139     334     push_int_1byte                4                                     
- ├──140     336     push_func                     10, 1                                 
- ├──141     339     invoke_func                   1                                     
- ├──142     341     eq_int                                                              
- ├──143     342     push_func                     0, 0                                  
- ├──144     345     invoke_func_native            1                                     
- ├──145     347     push_int_1byte                5                   73                
- ├──146     349     push_func                     10, 0                                 
- ├──147     352     invoke_func                   1                                     
- ├──148     354     push_int_1byte                5                                     
- ├──149     356     push_func                     10, 1                                 
- ├──150     359     invoke_func                   1                                     
- ├──151     361     eq_int                                                              
- ├──152     362     push_func                     0, 0                                  
- ├──153     365     invoke_func_native            1                                     
- ├──154     367     push_int_1byte                6                   74                
- ├──155     369     push_func                     10, 0                                 
- ├──156     372     invoke_func                   1                                     
- ├──157     374     push_int_1byte                6                                     
- ├──158     376     push_func                     10, 1                                 
- ├──159     379     invoke_func                   1                                     
- ├──160     381     eq_int                                                              
- ├──161     382     push_func                     0, 0                                  
- ├──162     385     invoke_func_native            1                                     
- ├──163     387     push_int_1byte                7                   75                
- ├──164     389     push_func                     10, 0                                 
- ├──165     392     invoke_func                   1                                     
- ├──166     394     push_int_1byte                7                                     
- ├──167     396     push_func                     10, 1                                 
- ├──168     399     invoke_func                   1                                     
- ├──169     401     eq_int                                                              
- ├──170     402     push_func                     0, 0                                  
- ├──171     405     invoke_func_native            1                                     
- ├──172     407     push_int_1byte                8                   76                
- ├──173     409     push_func                     10, 0                                 
- ├──174     412     invoke_func                   1                                     
- ├──175     414     push_int_1byte                8                                     
- ├──176     416     push_func                     10, 1                                 
- ├──177     419     invoke_func                   1                                     
- ├──178     421     eq_int                                                              
- ├──179     422     push_func                     0, 0                                  
- ├──180     425     invoke_func_native            1                                     
- ├──181     427     push_int_1byte                9                   77                
- ├──182     429     push_func                     10, 0                                 
- ├──183     432     invoke_func                   1                                     
- ├──184     434     push_int_1byte                9                                     
- ├──185     436     push_func                     10, 1                                 
- ├──186     439     invoke_func                   1                                     
- ├──187     441     eq_int                                                              
- ├──188     442     push_func                     0, 0                                  
- ├──189     445     invoke_func_native            1                                     
- ├──190     447     push_int_1byte                10                  78                
- ├──191     449     push_func                     10, 0                                 
- ├──192     452     invoke_func                   1                                     
- ├──193     454     push_int_1byte                10                                    
- ├──194     456     push_func                     10, 1                                 
- ├──195     459     invoke_func                   1                                     
- ├──196     461     eq_int                                                              
- ├──197     462     push_func                     0, 0                                  
- ├──198     465     invoke_func_native            1                                     
- ├──199     467     push_int_1byte                11                  79                
- ├──200     469     push_func                     10, 0                                 
- ├──201     472     invoke_func                   1                                     
- ├──202     474     push_int_1byte                11                                    
- ├──203     476     push_func                     10, 1                                 
- ├──204     479     invoke_func                   1                                     
- ├──205     481     eq_int                                                              
- ├──206     482     push_func                     0, 0                                  
- ├──207     485     invoke_func_native            1                                     
- ├──208     487     push_int_1byte                12                  80                
- ├──209     489     push_func                     10, 0                                 
- ├──210     492     invoke_func                   1                                     
- ├──211     494     push_int_1byte                12                                    
- ├──212     496     push_func                     10, 1                                 
- ├──213     499     invoke_func                   1                                     
- ├──214     501     eq_int                                                              
- ├──215     502     push_func                     0, 0                                  
- ├──216     505     invoke_func_native            1                                     
- ├──217     507     push_int_1byte                13                  81                
- ├──218     509     push_func                     10, 0                                 
- ├──219     512     invoke_func                   1                                     
- ├──220     514     push_int_1byte                13                                    
- ├──221     516     push_func                     10, 1                                 
- ├──222     519     invoke_func                   1                                     
- ├──223     521     eq_int                                                              
- ├──224     522     push_func                     0, 0                                  
- ├──225     525     invoke_func_native            1                                     
- ├──226     527     push_int_1byte                14                  82                
- ├──227     529     push_func                     10, 0                                 
- ├──228     532     invoke_func                   1                                     
- ├──229     534     push_int_1byte                14                                    
- ├──230     536     push_func                     10, 1                                 
- ├──231     539     invoke_func                   1                                     
- ├──232     541     eq_int                                                              
- ├──233     542     push_func                     0, 0                                  
- ├──234     545     invoke_func_native            1                                     
- ├──235     547     push_int_1byte                15                  83                
- ├──236     549     push_func                     10, 0                                 
- ├──237     552     invoke_func                   1                                     
- ├──238     554     push_int_1byte                15                                    
- ├──239     556     push_func                     10, 1                                 
- ├──240     559     invoke_func                   1                                     
- ├──241     561     eq_int                                                              
- ├──242     562     push_func                     0, 0                                  
- ├──243     565     invoke_func_native            1                                     
- ├──244     567     push_int_1byte                16                  84                
- ├──245     569     push_func                     10, 0                                 
- ├──246     572     invoke_func                   1                                     
- ├──247     574     push_int_1byte                16                                    
- ├──248     576     push_func                     10, 1                                 
- ├──249     579     invoke_func                   1                                     
- ├──250     581     eq_int                                                              
- ├──251     582     push_func                     0, 0                                  
- ├──252     585     invoke_func_native            1                                     
- ├──253     587     push_int_1byte                17                  85                
- ├──254     589     push_func                     10, 0                                 
- ├──255     592     invoke_func                   1                                     
- ├──256     594     push_int_1byte                17                                    
- ├──257     596     push_func                     10, 1                                 
- ├──258     599     invoke_func                   1                                     
- ├──259     601     eq_int                                                              
- ├──260     602     push_func                     0, 0                                  
- ├──261     605     invoke_func_native            1                                     
- ├──262     607     push_int_1byte                18                  86                
- ├──263     609     push_func                     10, 0                                 
- ├──264     612     invoke_func                   1                                     
- ├──265     614     push_int_1byte                18                                    
- ├──266     616     push_func                     10, 1                                 
- ├──267     619     invoke_func                   1                                     
- ├──268     621     eq_int                                                              
- ├──269     622     push_func                     0, 0                                  
- ├──270     625     invoke_func_native            1                                     
- ├──271     627     push_int_1byte                19                  87                
- ├──272     629     push_func                     10, 0                                 
- ├──273     632     invoke_func                   1                                     
- ├──274     634     push_int_1byte                19                                    
- ├──275     636     push_func                     10, 1                                 
- ├──276     639     invoke_func                   1                                     
- ├──277     641     eq_int                                                              
- ├──278     642     push_func                     0, 0                                  
- ├──279     645     invoke_func_native            1                                     
- ├──280     647     push_int_1byte                20                  88                
- ├──281     649     push_func                     10, 0                                 
- ├──282     652     invoke_func                   1                                     
- ├──283     654     push_int_1byte                20                                    
- ├──284     656     push_func                     10, 1                                 
- ├──285     659     invoke_func                   1                                     
- ├──286     661     eq_int                                                              
- ├──287     662     push_func                     0, 0                                  
- ├──288     665     invoke_func_native            1                                     
- ├──289     667     push_int_1byte                21                  89                
- ├──290     669     push_func                     10, 0                                 
- ├──291     672     invoke_func                   1                                     
- ├──292     674     push_int_1byte                21                                    
- ├──293     676     push_func                     10, 1                                 
- ├──294     679     invoke_func                   1                                     
- ├──295     681     eq_int                                                              
- ├──296     682     push_func                     0, 0                                  
- ├──297     685     invoke_func_native            1                                     
- ├──298     687     push_int_1byte                22                  90                
- ├──299     689     push_func                     10, 0                                 
- ├──300     692     invoke_func                   1                                     
- ├──301     694     push_int_1byte                22                                    
- ├──302     696     push_func                     10, 1                                 
- ├──303     699     invoke_func                   1                                     
- ├──304     701     eq_int                                                              
- ├──305     702     push_func                     0, 0                                  
- ├──306     705     invoke_func_native            1                                     
- ├──307     707     push_int_1byte                23                  91                
- ├──308     709     push_func                     10, 0                                 
- ├──309     712     invoke_func                   1                                     
- ├──310     714     push_int_1byte                23                                    
- ├──311     716     push_func                     10, 1                                 
- ├──312     719     invoke_func                   1                                     
- ├──313     721     eq_int                                                              
- ├──314     722     push_func                     0, 0                                  
- ├──315     725     invoke_func_native            1                                     
- ├──316     727     push_int_1byte                24                  92                
- ├──317     729     push_func                     10, 0                                 
- ├──318     732     invoke_func                   1                                     
- ├──319     734     push_int_1byte                24                                    
- ├──320     736     push_func                     10, 1                                 
- ├──321     739     invoke_func                   1                                     
- ├──322     741     eq_int                                                              
- ├──323     742     push_func                     0, 0                                  
- ├──324     745     invoke_func_native            1                                     
- ├──325     747     push_int_1byte                25                  93                
- ├──326     749     push_func                     10, 0                                 
- ├──327     752     invoke_func                   1                                     
- ├──328     754     push_int_1byte                25                                    
- ├──329     756     push_func                     10, 1                                 
- ├──330     759     invoke_func                   1                                     
- ├──331     761     eq_int                                                              
- ├──332     762     push_func                     0, 0                                  
- ├──333     765     invoke_func_native            1                                     
- ├──334     767     pop_defer                                         96                
- ├──335     768     function_finish                                                     
+ ├──1       4       invoke_func_native            2, 4, 1                               
+ ├──2       10      push_int_1byte                1                   42                
+ ├──3       12      push_func                     10, 0                                 
+ ├──4       15      invoke_func                   1                                     
+ ├──5       17      invoke_func_native            2, 1, 1                               
+ ├──6       23      push_int_1byte                2                   43                
+ ├──7       25      push_func                     10, 0                                 
+ ├──8       28      invoke_func                   1                                     
+ ├──9       30      invoke_func_native            2, 1, 1                               
+ ├──10      36      push_int_1byte                3                   44                
+ ├──11      38      push_func                     10, 0                                 
+ ├──12      41      invoke_func                   1                                     
+ ├──13      43      invoke_func_native            2, 1, 1                               
+ ├──14      49      push_int_1byte                4                   45                
+ ├──15      51      push_func                     10, 0                                 
+ ├──16      54      invoke_func                   1                                     
+ ├──17      56      invoke_func_native            2, 1, 1                               
+ ├──18      62      push_int_1byte                5                   46                
+ ├──19      64      push_func                     10, 0                                 
+ ├──20      67      invoke_func                   1                                     
+ ├──21      69      invoke_func_native            2, 1, 1                               
+ ├──22      75      push_int_1byte                6                   47                
+ ├──23      77      push_func                     10, 0                                 
+ ├──24      80      invoke_func                   1                                     
+ ├──25      82      invoke_func_native            2, 1, 1                               
+ ├──26      88      push_int_1byte                7                   48                
+ ├──27      90      push_func                     10, 0                                 
+ ├──28      93      invoke_func                   1                                     
+ ├──29      95      invoke_func_native            2, 1, 1                               
+ ├──30      101     push_int_1byte                8                   49                
+ ├──31      103     push_func                     10, 0                                 
+ ├──32      106     invoke_func                   1                                     
+ ├──33      108     invoke_func_native            2, 1, 1                               
+ ├──34      114     push_int_1byte                9                   50                
+ ├──35      116     push_func                     10, 0                                 
+ ├──36      119     invoke_func                   1                                     
+ ├──37      121     invoke_func_native            2, 1, 1                               
+ ├──38      127     push_int_1byte                10                  51                
+ ├──39      129     push_func                     10, 0                                 
+ ├──40      132     invoke_func                   1                                     
+ ├──41      134     invoke_func_native            2, 1, 1                               
+ ├──42      140     push_string                   1, 10               55                
+ ├──43      144     invoke_func_native            2, 4, 1                               
+ ├──44      150     push_int_1byte                1                   56                
+ ├──45      152     push_func                     10, 1                                 
+ ├──46      155     invoke_func                   1                                     
+ ├──47      157     invoke_func_native            2, 1, 1                               
+ ├──48      163     push_int_1byte                2                   57                
+ ├──49      165     push_func                     10, 1                                 
+ ├──50      168     invoke_func                   1                                     
+ ├──51      170     invoke_func_native            2, 1, 1                               
+ ├──52      176     push_int_1byte                3                   58                
+ ├──53      178     push_func                     10, 1                                 
+ ├──54      181     invoke_func                   1                                     
+ ├──55      183     invoke_func_native            2, 1, 1                               
+ ├──56      189     push_int_1byte                4                   59                
+ ├──57      191     push_func                     10, 1                                 
+ ├──58      194     invoke_func                   1                                     
+ ├──59      196     invoke_func_native            2, 1, 1                               
+ ├──60      202     push_int_1byte                5                   60                
+ ├──61      204     push_func                     10, 1                                 
+ ├──62      207     invoke_func                   1                                     
+ ├──63      209     invoke_func_native            2, 1, 1                               
+ ├──64      215     push_int_1byte                6                   61                
+ ├──65      217     push_func                     10, 1                                 
+ ├──66      220     invoke_func                   1                                     
+ ├──67      222     invoke_func_native            2, 1, 1                               
+ ├──68      228     push_int_1byte                7                   62                
+ ├──69      230     push_func                     10, 1                                 
+ ├──70      233     invoke_func                   1                                     
+ ├──71      235     invoke_func_native            2, 1, 1                               
+ ├──72      241     push_int_1byte                8                   63                
+ ├──73      243     push_func                     10, 1                                 
+ ├──74      246     invoke_func                   1                                     
+ ├──75      248     invoke_func_native            2, 1, 1                               
+ ├──76      254     push_int_1byte                9                   64                
+ ├──77      256     push_func                     10, 1                                 
+ ├──78      259     invoke_func                   1                                     
+ ├──79      261     invoke_func_native            2, 1, 1                               
+ ├──80      267     push_int_1byte                10                  65                
+ ├──81      269     push_func                     10, 1                                 
+ ├──82      272     invoke_func                   1                                     
+ ├──83      274     invoke_func_native            2, 1, 1                               
+ ├──84      280     push_string                   2, 10               68                
+ ├──85      284     invoke_func_native            2, 4, 1                               
+ ├──86      290     push_int_1byte                1                   69                
+ ├──87      292     push_func                     10, 0                                 
+ ├──88      295     invoke_func                   1                                     
+ ├──89      297     push_int_1byte                1                                     
+ ├──90      299     push_func                     10, 1                                 
+ ├──91      302     invoke_func                   1                                     
+ ├──92      304     eq_int                                                              
+ ├──93      305     invoke_func_native            0, 0, 1                               
+ ├──94      311     push_int_1byte                2                   70                
+ ├──95      313     push_func                     10, 0                                 
+ ├──96      316     invoke_func                   1                                     
+ ├──97      318     push_int_1byte                2                                     
+ ├──98      320     push_func                     10, 1                                 
+ ├──99      323     invoke_func                   1                                     
+ ├──100     325     eq_int                                                              
+ ├──101     326     invoke_func_native            0, 0, 1                               
+ ├──102     332     push_int_1byte                3                   71                
+ ├──103     334     push_func                     10, 0                                 
+ ├──104     337     invoke_func                   1                                     
+ ├──105     339     push_int_1byte                3                                     
+ ├──106     341     push_func                     10, 1                                 
+ ├──107     344     invoke_func                   1                                     
+ ├──108     346     eq_int                                                              
+ ├──109     347     invoke_func_native            0, 0, 1                               
+ ├──110     353     push_int_1byte                4                   72                
+ ├──111     355     push_func                     10, 0                                 
+ ├──112     358     invoke_func                   1                                     
+ ├──113     360     push_int_1byte                4                                     
+ ├──114     362     push_func                     10, 1                                 
+ ├──115     365     invoke_func                   1                                     
+ ├──116     367     eq_int                                                              
+ ├──117     368     invoke_func_native            0, 0, 1                               
+ ├──118     374     push_int_1byte                5                   73                
+ ├──119     376     push_func                     10, 0                                 
+ ├──120     379     invoke_func                   1                                     
+ ├──121     381     push_int_1byte                5                                     
+ ├──122     383     push_func                     10, 1                                 
+ ├──123     386     invoke_func                   1                                     
+ ├──124     388     eq_int                                                              
+ ├──125     389     invoke_func_native            0, 0, 1                               
+ ├──126     395     push_int_1byte                6                   74                
+ ├──127     397     push_func                     10, 0                                 
+ ├──128     400     invoke_func                   1                                     
+ ├──129     402     push_int_1byte                6                                     
+ ├──130     404     push_func                     10, 1                                 
+ ├──131     407     invoke_func                   1                                     
+ ├──132     409     eq_int                                                              
+ ├──133     410     invoke_func_native            0, 0, 1                               
+ ├──134     416     push_int_1byte                7                   75                
+ ├──135     418     push_func                     10, 0                                 
+ ├──136     421     invoke_func                   1                                     
+ ├──137     423     push_int_1byte                7                                     
+ ├──138     425     push_func                     10, 1                                 
+ ├──139     428     invoke_func                   1                                     
+ ├──140     430     eq_int                                                              
+ ├──141     431     invoke_func_native            0, 0, 1                               
+ ├──142     437     push_int_1byte                8                   76                
+ ├──143     439     push_func                     10, 0                                 
+ ├──144     442     invoke_func                   1                                     
+ ├──145     444     push_int_1byte                8                                     
+ ├──146     446     push_func                     10, 1                                 
+ ├──147     449     invoke_func                   1                                     
+ ├──148     451     eq_int                                                              
+ ├──149     452     invoke_func_native            0, 0, 1                               
+ ├──150     458     push_int_1byte                9                   77                
+ ├──151     460     push_func                     10, 0                                 
+ ├──152     463     invoke_func                   1                                     
+ ├──153     465     push_int_1byte                9                                     
+ ├──154     467     push_func                     10, 1                                 
+ ├──155     470     invoke_func                   1                                     
+ ├──156     472     eq_int                                                              
+ ├──157     473     invoke_func_native            0, 0, 1                               
+ ├──158     479     push_int_1byte                10                  78                
+ ├──159     481     push_func                     10, 0                                 
+ ├──160     484     invoke_func                   1                                     
+ ├──161     486     push_int_1byte                10                                    
+ ├──162     488     push_func                     10, 1                                 
+ ├──163     491     invoke_func                   1                                     
+ ├──164     493     eq_int                                                              
+ ├──165     494     invoke_func_native            0, 0, 1                               
+ ├──166     500     push_int_1byte                11                  79                
+ ├──167     502     push_func                     10, 0                                 
+ ├──168     505     invoke_func                   1                                     
+ ├──169     507     push_int_1byte                11                                    
+ ├──170     509     push_func                     10, 1                                 
+ ├──171     512     invoke_func                   1                                     
+ ├──172     514     eq_int                                                              
+ ├──173     515     invoke_func_native            0, 0, 1                               
+ ├──174     521     push_int_1byte                12                  80                
+ ├──175     523     push_func                     10, 0                                 
+ ├──176     526     invoke_func                   1                                     
+ ├──177     528     push_int_1byte                12                                    
+ ├──178     530     push_func                     10, 1                                 
+ ├──179     533     invoke_func                   1                                     
+ ├──180     535     eq_int                                                              
+ ├──181     536     invoke_func_native            0, 0, 1                               
+ ├──182     542     push_int_1byte                13                  81                
+ ├──183     544     push_func                     10, 0                                 
+ ├──184     547     invoke_func                   1                                     
+ ├──185     549     push_int_1byte                13                                    
+ ├──186     551     push_func                     10, 1                                 
+ ├──187     554     invoke_func                   1                                     
+ ├──188     556     eq_int                                                              
+ ├──189     557     invoke_func_native            0, 0, 1                               
+ ├──190     563     push_int_1byte                14                  82                
+ ├──191     565     push_func                     10, 0                                 
+ ├──192     568     invoke_func                   1                                     
+ ├──193     570     push_int_1byte                14                                    
+ ├──194     572     push_func                     10, 1                                 
+ ├──195     575     invoke_func                   1                                     
+ ├──196     577     eq_int                                                              
+ ├──197     578     invoke_func_native            0, 0, 1                               
+ ├──198     584     push_int_1byte                15                  83                
+ ├──199     586     push_func                     10, 0                                 
+ ├──200     589     invoke_func                   1                                     
+ ├──201     591     push_int_1byte                15                                    
+ ├──202     593     push_func                     10, 1                                 
+ ├──203     596     invoke_func                   1                                     
+ ├──204     598     eq_int                                                              
+ ├──205     599     invoke_func_native            0, 0, 1                               
+ ├──206     605     push_int_1byte                16                  84                
+ ├──207     607     push_func                     10, 0                                 
+ ├──208     610     invoke_func                   1                                     
+ ├──209     612     push_int_1byte                16                                    
+ ├──210     614     push_func                     10, 1                                 
+ ├──211     617     invoke_func                   1                                     
+ ├──212     619     eq_int                                                              
+ ├──213     620     invoke_func_native            0, 0, 1                               
+ ├──214     626     push_int_1byte                17                  85                
+ ├──215     628     push_func                     10, 0                                 
+ ├──216     631     invoke_func                   1                                     
+ ├──217     633     push_int_1byte                17                                    
+ ├──218     635     push_func                     10, 1                                 
+ ├──219     638     invoke_func                   1                                     
+ ├──220     640     eq_int                                                              
+ ├──221     641     invoke_func_native            0, 0, 1                               
+ ├──222     647     push_int_1byte                18                  86                
+ ├──223     649     push_func                     10, 0                                 
+ ├──224     652     invoke_func                   1                                     
+ ├──225     654     push_int_1byte                18                                    
+ ├──226     656     push_func                     10, 1                                 
+ ├──227     659     invoke_func                   1                                     
+ ├──228     661     eq_int                                                              
+ ├──229     662     invoke_func_native            0, 0, 1                               
+ ├──230     668     push_int_1byte                19                  87                
+ ├──231     670     push_func                     10, 0                                 
+ ├──232     673     invoke_func                   1                                     
+ ├──233     675     push_int_1byte                19                                    
+ ├──234     677     push_func                     10, 1                                 
+ ├──235     680     invoke_func                   1                                     
+ ├──236     682     eq_int                                                              
+ ├──237     683     invoke_func_native            0, 0, 1                               
+ ├──238     689     push_int_1byte                20                  88                
+ ├──239     691     push_func                     10, 0                                 
+ ├──240     694     invoke_func                   1                                     
+ ├──241     696     push_int_1byte                20                                    
+ ├──242     698     push_func                     10, 1                                 
+ ├──243     701     invoke_func                   1                                     
+ ├──244     703     eq_int                                                              
+ ├──245     704     invoke_func_native            0, 0, 1                               
+ ├──246     710     push_int_1byte                21                  89                
+ ├──247     712     push_func                     10, 0                                 
+ ├──248     715     invoke_func                   1                                     
+ ├──249     717     push_int_1byte                21                                    
+ ├──250     719     push_func                     10, 1                                 
+ ├──251     722     invoke_func                   1                                     
+ ├──252     724     eq_int                                                              
+ ├──253     725     invoke_func_native            0, 0, 1                               
+ ├──254     731     push_int_1byte                22                  90                
+ ├──255     733     push_func                     10, 0                                 
+ ├──256     736     invoke_func                   1                                     
+ ├──257     738     push_int_1byte                22                                    
+ ├──258     740     push_func                     10, 1                                 
+ ├──259     743     invoke_func                   1                                     
+ ├──260     745     eq_int                                                              
+ ├──261     746     invoke_func_native            0, 0, 1                               
+ ├──262     752     push_int_1byte                23                  91                
+ ├──263     754     push_func                     10, 0                                 
+ ├──264     757     invoke_func                   1                                     
+ ├──265     759     push_int_1byte                23                                    
+ ├──266     761     push_func                     10, 1                                 
+ ├──267     764     invoke_func                   1                                     
+ ├──268     766     eq_int                                                              
+ ├──269     767     invoke_func_native            0, 0, 1                               
+ ├──270     773     push_int_1byte                24                  92                
+ ├──271     775     push_func                     10, 0                                 
+ ├──272     778     invoke_func                   1                                     
+ ├──273     780     push_int_1byte                24                                    
+ ├──274     782     push_func                     10, 1                                 
+ ├──275     785     invoke_func                   1                                     
+ ├──276     787     eq_int                                                              
+ ├──277     788     invoke_func_native            0, 0, 1                               
+ ├──278     794     push_int_1byte                25                  93                
+ ├──279     796     push_func                     10, 0                                 
+ ├──280     799     invoke_func                   1                                     
+ ├──281     801     push_int_1byte                25                                    
+ ├──282     803     push_func                     10, 1                                 
+ ├──283     806     invoke_func                   1                                     
+ ├──284     808     eq_int                                                              
+ ├──285     809     invoke_func_native            0, 0, 1                               
+ ├──286     815     pop_defer                                         96                
+ ├──287     816     function_finish                                                     
 

@@ -9,21 +9,20 @@ $test(int...)    <./test/004-derive-function/function-021.ring:12,17>
  ├──var int[!1]          int_value_list      
  ├──var int              int_value           
 +FreeValue:        0
-+Instructions: 27
++Instructions: 28
  ├──*Num    *PC     *Instruction                  *Operand            *SourceLineNum    
  ├──0       0       push_stack_array              0                   15                
  ├──1       3       range_linear_init                                                   
- ├──2       4       range_has_next                24                                    
+ ├──2       4       range_has_next                25                                    
  ├──3       7       range_get_next_2                                                    
  ├──4       8       pop_stack_int                 1                   14                
  ├──5       11      pop                           1                   15                
  ├──6       13      push_stack_int                1                                     
- ├──7       16      push_func                     2, 6                                  
- ├──8       19      invoke_func_native            1                                     
- ├──9       21      jump                          4                                     
- ├──10      24      range_finish                                                        
- ├──11      25      pop_defer                                         17                
- ├──12      26      function_finish                                                     
+ ├──7       16      invoke_func_native            2, 6, 1                               
+ ├──8       22      jump                          4                                     
+ ├──9       25      range_finish                                                        
+ ├──10      26      pop_defer                                         17                
+ ├──11      27      function_finish                                                     
 
 $main()    <./test/004-derive-function/function-021.ring:22,30>
 +Parameter:   0
