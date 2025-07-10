@@ -70,7 +70,7 @@ json rvm_array_2_json(RVM_Array* arr) {
         return j;
     }
 
-    for (size_t i = 0; i < arr->length; ++i) {
+    for (unsigned int i = 0; i < arr->length; i++) {
         switch (arr->type) {
         case RVM_ARRAY_BOOL:
             j.push_back(arr->u.bool_array[i]);
@@ -191,7 +191,7 @@ RVM_ClassObject* json_2_rvm_class_ob(Ring_VirtualMachine* rvm,
     return class_ob;
 }
 
-// TODO: 这个函数动态内存分配了，需要优化
+// TODO: 这个函数动态内存分配了，需要优化，直接交给gc分配，不然会gc 计算的逻辑会分散在各处
 RVM_Array* json_2_rvm_array(Ring_VirtualMachine* rvm,
                             const json&          j,
                             unsigned int         expect_array_dimension,
@@ -219,7 +219,6 @@ RVM_Array* json_2_rvm_array(Ring_VirtualMachine* rvm,
                                              expect_array_item_type_kind,
                                              expect_array_class_def,
                                              expect_array_dimension);
-
     array->length    = j.size();
     array->capacity  = j.size();
 
@@ -228,7 +227,6 @@ RVM_Array* json_2_rvm_array(Ring_VirtualMachine* rvm,
     }
 
 
-    // 判断基础类型
     unsigned int alloc_size = 0;
 
     if (expect_array_dimension == 1) {
@@ -236,54 +234,51 @@ RVM_Array* json_2_rvm_array(Ring_VirtualMachine* rvm,
 
         switch (expect_array_type) {
         case RVM_ARRAY_BOOL:
-
             alloc_size          = sizeof(bool) * array->capacity;
             array->u.bool_array = (bool*)mem_alloc(rvm->data_pool, alloc_size);
-            for (size_t i = 0; i < j.size(); ++i) {
+            for (unsigned int i = 0; i < j.size(); i++) {
                 array->u.bool_array[i] = j[i].get<bool>();
             }
             break;
-
         case RVM_ARRAY_INT:
             alloc_size         = sizeof(int) * array->capacity;
             array->u.int_array = (int*)mem_alloc(rvm->data_pool, alloc_size);
-            for (size_t i = 0; i < j.size(); ++i) {
+            for (unsigned int i = 0; i < j.size(); i++) {
                 array->u.int_array[i] = j[i].get<int>();
             }
             break;
-
         case RVM_ARRAY_INT64:
             alloc_size           = sizeof(long long) * array->capacity;
             array->u.int64_array = (long long*)mem_alloc(rvm->data_pool, alloc_size);
-            for (size_t i = 0; i < j.size(); ++i) {
+            for (unsigned int i = 0; i < j.size(); i++) {
                 array->u.int64_array[i] = j[i].get<long long>();
             }
             break;
-
         case RVM_ARRAY_DOUBLE:
             alloc_size            = sizeof(double) * array->capacity;
             array->u.double_array = (double*)mem_alloc(rvm->data_pool, alloc_size);
-            for (size_t i = 0; i < j.size(); ++i) {
+            for (unsigned int i = 0; i < j.size(); i++) {
                 array->u.double_array[i] = j[i].get<double>();
             }
             break;
         case RVM_ARRAY_STRING:
             alloc_size            = sizeof(RVM_String*) * array->capacity;
             array->u.string_array = (RVM_String**)mem_alloc(rvm->data_pool, alloc_size);
-            for (size_t i = 0; i < j.size(); ++i) {
+            alloc_size            = 0; // gc-object 元信息不计入 heap的空间
+            for (unsigned int i = 0; i < j.size(); i++) {
                 array->u.string_array[i] = rvm_gc_new_rvm_string(rvm, j[i].get<std::string>().c_str());
             }
             break;
         case RVM_ARRAY_CLASS_OBJECT:
             alloc_size              = sizeof(RVM_ClassObject*) * array->capacity;
             array->u.class_ob_array = (RVM_ClassObject**)mem_alloc(rvm->data_pool, alloc_size);
-            for (size_t i = 0; i < j.size(); ++i) {
+            alloc_size              = 0; // gc-object 元信息不计入 heap的空间
+            for (unsigned int i = 0; i < j.size(); i++) {
                 array->u.class_ob_array[i] = json_2_rvm_class_ob(rvm, j[i], expect_array_class_def);
             }
             break;
         case RVM_ARRAY_A:
             // 不会出现这种情况
-
             break;
 
         default:
@@ -296,8 +291,7 @@ RVM_Array* json_2_rvm_array(Ring_VirtualMachine* rvm,
         array->u.a_array = (RVM_Array**)mem_alloc(rvm->data_pool, alloc_size);
         alloc_size       = 0; // gc-object 元信息不计入 heap的空间
 
-        for (size_t i = 0; i < j.size(); ++i) {
-            // FIXME: 这里参数不对，需要继续优化下去
+        for (unsigned int i = 0; i < j.size(); i++) {
             if (expect_array_dimension - 1 == 1) {
                 // 如果下一维是最后一维
                 // 手动更新下
@@ -312,6 +306,13 @@ RVM_Array* json_2_rvm_array(Ring_VirtualMachine* rvm,
             array->u.a_array[i]  = sub_array;
         }
     }
+
+    rvm_heap_alloc_size_incr(rvm, alloc_size);
+    debug_rvm_heap_alloc_with_green("json_2_rvm_array array_type:%d array->capacity:%d alloc_size:%u   [heap_size:%lld]",
+                                    array_type,
+                                    array->capacity,
+                                    alloc_size,
+                                    rvm_heap_size(rvm));
 
     return array;
 }
