@@ -28,6 +28,7 @@ int main() {
         case OPCODE_OPERAND_TYPE_2BYTE_AB: operand_type = "2Byte_AB"; break;
         case OPCODE_OPERAND_TYPE_3BYTE_AsB: operand_type = "3Byte_AsB"; break;
         case OPCODE_OPERAND_TYPE_4BYTE_ABCs: operand_type = "4Byte_ABCs"; break;
+        case OPCODE_OPERAND_TYPE_5BYTE_AsBsC: operand_type = "5BYTE_AsBsC"; break;
         }
 
 

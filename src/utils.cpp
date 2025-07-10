@@ -326,6 +326,14 @@ void ring_vm_code_dump(RVM_Function* function,
             operand3 += code_list[i++];
             operand_str = std::to_string(operand1) + ", " + std::to_string(operand2) + ", " + std::to_string(operand3);
             break;
+        case OPCODE_OPERAND_TYPE_5BYTE_AsBsC:
+            operand1 = code_list[i++] << 8;
+            operand1 += code_list[i++];
+            operand2 = code_list[i++] << 8;
+            operand2 += code_list[i++];
+            operand3    = code_list[i++];
+            operand_str = std::to_string(operand1) + ", " + std::to_string(operand2) + ", " + std::to_string(operand3);
+            break;
 
         default: break;
         }
@@ -705,6 +713,15 @@ void dump_vm_function(Package_Executer*    package_executer,
                 operand2 = code_list[i++];
                 operand3 = code_list[i++] << 8;
                 operand3 += code_list[i++];
+                operand_str = std::to_string(operand1) + ", " + std::to_string(operand2) + ", " + std::to_string(operand3);
+                break;
+
+            case OPCODE_OPERAND_TYPE_5BYTE_AsBsC:
+                operand1 = code_list[i++] << 8;
+                operand1 += code_list[i++];
+                operand2 = code_list[i++] << 8;
+                operand2 += code_list[i++];
+                operand3    = code_list[i++];
                 operand_str = std::to_string(operand1) + ", " + std::to_string(operand2) + ", " + std::to_string(operand3);
                 break;
 

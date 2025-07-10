@@ -969,6 +969,7 @@ typedef enum {
     OPCODE_OPERAND_TYPE_2BYTE_AB,   // 后边2BYTE操作数 两个字节分别为两个不同的操作数, pc+3
     OPCODE_OPERAND_TYPE_3BYTE_AsB,  // 后边3BYTE操作数 第1、2个字节为一个操作数, 第3个字节为一个操作数, pc+4
     OPCODE_OPERAND_TYPE_4BYTE_ABCs, // 后边4BYTE操作数 第1、2个字节各为一个操作数, 第3，4个字节为一个操作数, pc+5
+    OPCODE_OPERAND_TYPE_5BYTE_AsBsC,
 
 } OpcodeOperandType;
 
@@ -1326,10 +1327,14 @@ struct RVM_CallInfo {
 
     RVM_Byte*        code_list;
     unsigned int     code_size;
-    unsigned int     pc;
+    unsigned int     pc; // 在运行字节码的时候，会实时运行
+    unsigned int     resume_pc;
+    // 在完成一个函数调用之后，或者完成一个协程调度之后
+    // 要进行字节码的恢复，恢复到 resume_pc
+    // 只有在函数调用之前、协程调度之前才会被设置
 
-    RVM_CallInfo*    prev;
-    RVM_CallInfo*    next;
+    RVM_CallInfo* prev;
+    RVM_CallInfo* next;
 };
 
 struct CallInfo {
@@ -3601,7 +3606,7 @@ void              generate_vmcode_from_slice_expression(Package_Executer* execut
                                                         SliceExpression*  slice_expression,
                                                         RVM_OpcodeBuffer* opcode_buffer);
 
-void              generate_vmcode(Package_Executer* executer, RVM_OpcodeBuffer* opcode_buffer, RVM_Opcode opcode, unsigned int operand, unsigned int line_number);
+void              generate_vmcode(Package_Executer* executer, RVM_OpcodeBuffer* opcode_buffer, RVM_Opcode opcode, unsigned long long operand, unsigned int line_number);
 
 unsigned int      constant_pool_grow(Package_Executer* executer, unsigned int growth_size);
 unsigned int      constant_pool_add_int(Package_Executer* executer, int int_literal);

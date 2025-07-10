@@ -302,7 +302,7 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     // func
     {RVM_CODE_PUSH_FUNC, "push_func", OPCODE_OPERAND_TYPE_2BYTE_AB, "+1", 1, "", "", ""},
     {RVM_CODE_PUSH_METHOD, "push_method", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "", "", ""},
-    {RVM_CODE_INVOKE_FUNC_NATIVE, "invoke_func_native", OPCODE_OPERAND_TYPE_1BYTE_A, "-1", -1, "", "", ""},
+    {RVM_CODE_INVOKE_FUNC_NATIVE, "invoke_func_native", OPCODE_OPERAND_TYPE_5BYTE_AsBsC, "", 0, "", "", ""},
     {RVM_CODE_INVOKE_FUNC, "invoke_func", OPCODE_OPERAND_TYPE_1BYTE_A, "-1", -1, "", "", ""},
     {RVM_CODE_INVOKE_CLOSURE, "invoke_closure", OPCODE_OPERAND_TYPE_1BYTE_A, "-1", -1, "", "", ""},
     {RVM_CODE_INVOKE_METHOD, "invoke_method", OPCODE_OPERAND_TYPE_1BYTE_A, "-2", -2, "", "", ""},
@@ -365,6 +365,7 @@ int rvm_function_calc_stack_cap(RVM_Function* function) {
         case OPCODE_OPERAND_TYPE_2BYTE_AB: i += 2; break;
         case OPCODE_OPERAND_TYPE_3BYTE_AsB: i += 3; break;
         case OPCODE_OPERAND_TYPE_4BYTE_ABCs: i += 4; break;
+        case OPCODE_OPERAND_TYPE_5BYTE_AsBsC: i += 5; break;
         default: break;
         }
     }
@@ -425,6 +426,15 @@ int opcode_calc_stack_cap(RVM_Byte* code_list, unsigned int pc, RVM_Byte opcode)
                     value = OPCODE_GET_1BYTE(&code_list[pc + 2]);
                 } else if (term.variable == "Cs") {
                     value = OPCODE_GET_2BYTE(&code_list[pc + 3]);
+                }
+                break;
+            case OPCODE_OPERAND_TYPE_5BYTE_AsBsC:
+                if (term.variable == "As") {
+                    value = OPCODE_GET_2BYTE(&code_list[pc + 1]);
+                } else if (term.variable == "Bs") {
+                    value = OPCODE_GET_2BYTE(&code_list[pc + 3]);
+                } else if (term.variable == "C") {
+                    value = OPCODE_GET_1BYTE(&code_list[pc + 5]);
                 }
                 break;
             default: break;

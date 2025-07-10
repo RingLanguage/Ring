@@ -398,6 +398,7 @@ int resume_coroutine(Ring_VirtualMachine* rvm,
 
     target_co->p_co_id = curr_co->co_id;
     target_co->status  = CO_STAT_RUNNING;
+    // TODO: 这里设计的不好
     target_co->call_info->pc += 1;
 
     rvm->current_coroutine = target_co;
@@ -456,6 +457,7 @@ int yield_coroutine(Ring_VirtualMachine* rvm) {
 
     target_co->last_run_time = timestamp;
     target_co->status        = CO_STAT_RUNNING;
+    // TODO: 这里设计的不好
     target_co->call_info->pc += 1;
 
     rvm->current_coroutine = target_co;

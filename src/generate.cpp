@@ -498,6 +498,15 @@ void add_top_level_code(Package* package, Package_Executer* executer) {
     // __global_init() 函数是不允许调试的
     // 但是 __global_init() 函数调用的 函数是允许调试的
     if (executer->exist_global_init_func) {
+        // unsigned int       package_offset     = 0;
+        // unsigned int       offset             = 0;
+        // unsigned int       argument_list_size = 0;
+        // unsigned long long operand            = 0;
+
+        // package_offset                        = package->compiler_entry->package_list.size() - 1;
+        // offset                                = executer->global_init_func_index;
+        // operand                               = (package_offset << 24) | (offset << 8) | argument_list_size;
+
         generate_vmcode(executer, opcode_buffer,
                         RVM_CODE_PUSH_FUNC,
                         ((package->compiler_entry->package_list.size() - 1) << 8)
@@ -533,6 +542,14 @@ void add_top_level_code(Package* package, Package_Executer* executer) {
         argument_num = 1;
     }
 
+
+    // unsigned int       package_offset = 0;
+    // unsigned int       offset         = 0;
+    // unsigned long long operand        = 0;
+
+    // package_offset                    = package->compiler_entry->package_list.size() - 1;
+    // offset                            = executer->main_func_index;
+    // operand                           = (package_offset << 24) | (offset << 8) | argument_num;
 
     generate_vmcode(executer, opcode_buffer,
                     RVM_CODE_PUSH_FUNC,
@@ -1919,19 +1936,30 @@ void generate_vmcode_from_function_call_expression(Package_Executer*       execu
 
     if (function_call_expression->type == FUNCTION_CALL_TYPE_FUNC) {
 
-        unsigned int package_offset = 0;
-        unsigned int offset         = 0;
-        unsigned int operand        = 0;
-
-        package_offset              = function_call_expression->u.fc.function->package->package_index;
-        offset                      = function_call_expression->u.fc.function->func_index;
-        operand                     = (package_offset << 8) | offset;
-        generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_FUNC, operand, function_call_expression->line_number);
+        unsigned int       package_offset = 0;
+        unsigned int       offset         = 0;
+        unsigned long long operand        = 0;
 
 
         if (function_call_expression->u.fc.function->type == FUNCTION_TYPE_NATIVE) {
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_INVOKE_FUNC_NATIVE, argument_list_size, function_call_expression->line_number);
+            package_offset = function_call_expression->u.fc.function->package->package_index;
+            offset         = function_call_expression->u.fc.function->func_index;
+            operand        = (package_offset << 24) | (offset << 8) | argument_list_size;
+
+            generate_vmcode(executer, opcode_buffer, RVM_CODE_INVOKE_FUNC_NATIVE, operand, function_call_expression->line_number);
         } else if (function_call_expression->u.fc.function->type == FUNCTION_TYPE_DERIVE) {
+            // package_offset = function_call_expression->u.fc.function->package->package_index;
+            // offset         = function_call_expression->u.fc.function->func_index;
+            // operand        = (package_offset << 24) | (offset << 8) | argument_list_size;
+
+            unsigned int package_offset = 0;
+            unsigned int offset         = 0;
+            unsigned int operand        = 0;
+
+            package_offset              = function_call_expression->u.fc.function->package->package_index;
+            offset                      = function_call_expression->u.fc.function->func_index;
+            operand                     = (package_offset << 8) | offset;
+            generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_FUNC, operand, function_call_expression->line_number);
             generate_vmcode(executer, opcode_buffer, RVM_CODE_INVOKE_FUNC, argument_list_size, function_call_expression->line_number);
         }
 
@@ -2607,11 +2635,11 @@ void generate_vmcode_from_slice_expression(Package_Executer* executer,
     }
 }
 
-void generate_vmcode(Package_Executer* executer,
-                     RVM_OpcodeBuffer* opcode_buffer,
-                     RVM_Opcode        opcode,
-                     unsigned int      operand,
-                     unsigned int      line_number) {
+void generate_vmcode(Package_Executer*  executer,
+                     RVM_OpcodeBuffer*  opcode_buffer,
+                     RVM_Opcode         opcode,
+                     unsigned long long operand,
+                     unsigned int       line_number) {
 
     debug_generate_info_with_darkgreen("\t");
     // 这里可能会有少量的空间浪费，当前阶段暂不考虑
@@ -2654,6 +2682,14 @@ void generate_vmcode(Package_Executer* executer,
         break;
 
     case OPCODE_OPERAND_TYPE_4BYTE_ABCs:
+        opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)((operand >> 24) & 0XFF);
+        opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)((operand >> 16) & 0XFF);
+        opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)((operand >> 8) & 0XFF);
+        opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)(operand & 0XFF);
+        break;
+
+    case OPCODE_OPERAND_TYPE_5BYTE_AsBsC:
+        opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)((operand >> 32) & 0XFF);
         opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)((operand >> 24) & 0XFF);
         opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)((operand >> 16) & 0XFF);
         opcode_buffer->code_list[opcode_buffer->code_size++] = (RVM_Byte)((operand >> 8) & 0XFF);
@@ -2810,6 +2846,7 @@ void opcode_buffer_fix_label(RVM_OpcodeBuffer* opcode_buffer) {
         case OPCODE_OPERAND_TYPE_2BYTE_AB: i += 3; break;
         case OPCODE_OPERAND_TYPE_3BYTE_AsB: i += 4; break;
         case OPCODE_OPERAND_TYPE_4BYTE_ABCs: i += 5; break;
+        case OPCODE_OPERAND_TYPE_5BYTE_AsBsC: i += 6; break;
         default:
             ring_error_report("opcode_buffer_fix_label(opcode is valid:%d)\n", opcode);
             break;
