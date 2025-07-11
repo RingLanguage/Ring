@@ -1271,7 +1271,6 @@ typedef enum {
     RVM_CODE_INVOKE_METHOD,
     RVM_CODE_RETURN,
     RVM_CODE_FUNCTION_FINISH,
-    RVM_CODE_EXIT,
 
     // closure
     RVM_CODE_NEW_CLOSURE,
@@ -1287,6 +1286,9 @@ typedef enum {
     RVM_CODE_LAUNCH_METHOD,
     RVM_CODE_RESUME,
     RVM_CODE_YIELD,
+
+    // exit
+    RVM_CODE_EXIT,
 
 
     // 不对应实际的字节码, 不能在生成代码的时候使用
@@ -1328,7 +1330,9 @@ struct RVM_CallInfo {
     RVM_Byte*        code_list;
     unsigned int     code_size;
     unsigned int     pc; // 在运行字节码的时候，会实时运行
+
     unsigned int     caller_resume_pc;
+    unsigned int     coroutine_resume_pc;
     // 在完成一个函数调用之后，或者完成一个协程调度之后
     // 要进行字节码的恢复，恢复到 resume_pc
     // 只有在函数调用之前、协程调度之前才会被设置

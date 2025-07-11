@@ -50,6 +50,8 @@ RingCoroutine* launch_root_coroutine(Ring_VirtualMachine* rvm) {
     callinfo->code_list            = rvm->executer->bootloader_code_list;
     callinfo->code_size            = rvm->executer->bootloader_code_size;
     callinfo->pc                   = 0;
+    callinfo->caller_resume_pc     = 0;
+    callinfo->coroutine_resume_pc  = 0;
     callinfo->prev                 = nullptr;
     callinfo->next                 = nullptr;
 
@@ -103,7 +105,9 @@ RingCoroutine* launch_coroutine(Ring_VirtualMachine* rvm,
     callinfo->curr_closure         = callee_closure;
     callinfo->code_list            = callee_function->u.derive_func->code_list;
     callinfo->code_size            = callee_function->u.derive_func->code_size;
-    callinfo->pc                   = -1;
+    callinfo->pc                   = 0;
+    callinfo->caller_resume_pc     = 0;
+    callinfo->coroutine_resume_pc  = 0;
     callinfo->prev                 = nullptr;
     callinfo->next                 = nullptr;
 
@@ -394,13 +398,14 @@ int resume_coroutine(Ring_VirtualMachine* rvm,
 
 
     // 协程上下文切换
-    curr_co->status    = CO_STAT_SUSPENDED;
-
-    target_co->p_co_id = curr_co->co_id;
-    target_co->status  = CO_STAT_RUNNING;
-    // TODO: 这里设计的不好
-    target_co->call_info->pc += 1;
-
+    // 1. 记录协程 切回时，对应的 pc
+    curr_co->status                         = CO_STAT_SUSPENDED;
+    curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
+    // 2. 目标协程 记录 pc
+    target_co->p_co_id       = curr_co->co_id;
+    target_co->status        = CO_STAT_RUNNING;
+    target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
+    // 3. 切换 coroutine
     rvm->current_coroutine = target_co;
 
 
@@ -453,13 +458,14 @@ int yield_coroutine(Ring_VirtualMachine* rvm) {
     long long timestamp = (long long)(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 
     // 协程上下文切换
-    curr_co->status          = CO_STAT_SUSPENDED;
-
+    // 1. 记录协程 切回时，对应的 pc
+    curr_co->status                         = CO_STAT_SUSPENDED;
+    curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
+    // 2. 目标协程 记录 pc
     target_co->last_run_time = timestamp;
     target_co->status        = CO_STAT_RUNNING;
-    // TODO: 这里设计的不好
-    target_co->call_info->pc += 1;
-
+    target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
+    // 3. 切换 coroutine
     rvm->current_coroutine = target_co;
 
 
@@ -511,13 +517,15 @@ int finish_coroutine(Ring_VirtualMachine* rvm,
     clock_gettime(CLOCK_REALTIME, &ts);
     long long timestamp = (long long)(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 
-    // 上下文切换
-    curr_co->status          = CO_STAT_DEAD;
-
+    // 协程上下文切换
+    // 1. 记录协程 切回时，对应的 pc
+    curr_co->status = CO_STAT_DEAD;
+    // curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
+    // 2. 目标协程 记录 pc
     target_co->last_run_time = timestamp;
     target_co->status        = CO_STAT_RUNNING;
-    target_co->call_info->pc += 1;
-
+    target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
+    // 3. 切换 coroutine
     rvm->current_coroutine = target_co;
 
 

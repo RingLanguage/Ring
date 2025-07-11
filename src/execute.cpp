@@ -2172,12 +2172,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
                                    return_value_list_size);
             return_value_list_size = 0;
             break;
-        case RVM_CODE_EXIT:
-            oper_num  = STACK_GET_INT_OFFSET(-1);
-            exit_code = oper_num;
-            VM_CUR_CO_STACK_TOP_INDEX -= 1;
-            goto EXIT;
-            break;
+
 
         // closure
         case RVM_CODE_NEW_CLOSURE:
@@ -2231,13 +2226,12 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
         // coroutine
         case RVM_CODE_LAUNCH:
-            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-            oper_num           = STACK_GET_INT_OFFSET(-1);
-            package_index      = oper_num >> 8;
-            func_index         = oper_num & 0XFF;
-            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            package_index      = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            func_index         = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 5]);
 
-            callee_function = &(rvm->executer_entry->package_executer_list[package_index]->function_list[func_index]);
+
+            callee_function    = &(rvm->executer_entry->package_executer_list[package_index]->function_list[func_index]);
             assert(callee_function->type == RVM_FUNCTION_TYPE_DERIVE);
 
             new_coroutine = launch_coroutine(rvm,
@@ -2250,7 +2244,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             STACK_SET_INT64_OFFSET(0, new_coroutine->co_id);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
 
-            VM_CUR_CO_PC += 2;
+            VM_CUR_CO_PC += 6;
             break;
         case RVM_CODE_LAUNCH_CLOSURE:
             argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
@@ -2272,10 +2266,10 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_PC += 2;
             break;
         case RVM_CODE_LAUNCH_METHOD:
-            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
-            callee_class_ob    = STACK_GET_CLASS_OB_OFFSET(-2);
-            method_index       = STACK_GET_INT_OFFSET(-1);
-            VM_CUR_CO_STACK_TOP_INDEX -= 2;
+            method_index       = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
+            argument_list_size = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 2]);
+            callee_class_ob    = STACK_GET_CLASS_OB_OFFSET(-1);
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
 
 
             // 每个对象的成员变量 是单独存储的
@@ -2296,7 +2290,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             STACK_SET_INT64_OFFSET(0, new_coroutine->co_id);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
 
-            VM_CUR_CO_PC += 2;
+            VM_CUR_CO_PC += 3;
             break;
 
         case RVM_CODE_RESUME:
@@ -2311,13 +2305,19 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             }
             break;
         case RVM_CODE_YIELD:
-            // yield
             res = yield_coroutine(rvm);
             if (res != 0) {
                 VM_CUR_CO_PC += 1;
             }
             break;
 
+
+        // exit
+        case RVM_CODE_EXIT:
+            exit_code = STACK_GET_INT_OFFSET(-1);
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            goto EXIT;
+            break;
 
         default:
             throw_invalid_opcode(opcode, VM_CUR_CO_PC);
@@ -2413,6 +2413,7 @@ void invoke_derive_function(Ring_VirtualMachine* rvm,
     callinfo->code_size            = callee_function->u.derive_func->code_size;
     callinfo->pc                   = 0;
     callinfo->caller_resume_pc     = caller_resume_pc;
+    callinfo->coroutine_resume_pc  = 0;
     callinfo->prev                 = nullptr;
     callinfo->next                 = nullptr;
 

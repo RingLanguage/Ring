@@ -2139,17 +2139,11 @@ void generate_vmcode_from_launch_expression(Package_Executer* executer,
                 return;
             }
 
-            // push funcion
-            unsigned int package_offset = 0;
-            unsigned int offset         = 0;
-            unsigned int operand        = 0;
+            unsigned int       package_index = function_call_expression->u.fc.function->package->package_index;
+            unsigned int       func_index    = function_call_expression->u.fc.function->func_index;
+            unsigned long long operand       = (package_index << 24) | (func_index << 8) | argument_list_size;
 
-            package_offset              = function_call_expression->u.fc.function->package->package_index;
-            offset                      = function_call_expression->u.fc.function->func_index;
-            operand                     = (package_offset << 8) | offset;
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_FUNC, operand, function_call_expression->line_number);
-
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_LAUNCH, argument_list_size, function_call_expression->line_number);
+            generate_vmcode(executer, opcode_buffer, RVM_CODE_LAUNCH, operand, function_call_expression->line_number);
         } else if (function_call_expression->type == FUNCTION_CALL_TYPE_CLOSURE) {
             assert(function_call_expression->u.cc.closure_decl != nullptr);
             // 判断函数名称变量 是 global 还是 local
@@ -2197,15 +2191,13 @@ void generate_vmcode_from_launch_expression(Package_Executer* executer,
         generate_vmcode_from_expression(executer, member_call_expression->object_expression, opcode_buffer);
 
         // push_func invoke
-        MethodMember* method_member  = nullptr;
-        FieldMember*  field_member   = nullptr;
-        unsigned      index_of_class = 0;
+        FieldMember* field_member   = nullptr;
+        unsigned     index_of_class = 0;
         if (member_call_expression->type == MEMBER_CALL_TYPE_METHOD) {
-            method_member  = member_call_expression->u.mc.method_member;
-            index_of_class = method_member->index_of_class;
+            index_of_class             = member_call_expression->u.mc.method_member->index_of_class;
+            unsigned long long operand = (index_of_class << 8) | argument_list_size;
 
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_PUSH_METHOD, index_of_class, member_call_expression->line_number);
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_LAUNCH_METHOD, argument_list_size, member_call_expression->line_number);
+            generate_vmcode(executer, opcode_buffer, RVM_CODE_LAUNCH_METHOD, operand, member_call_expression->line_number);
         } else if (member_call_expression->type == MEMBER_CALL_TYPE_FIELD) {
             field_member   = member_call_expression->u.fc.field_member;
             index_of_class = field_member->index_of_class;

@@ -308,7 +308,6 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_INVOKE_METHOD, "invoke_method", OPCODE_OPERAND_TYPE_2BYTE_AB, "-1", -1, "", "", ""},
     {RVM_CODE_RETURN, "return", OPCODE_OPERAND_TYPE_1BYTE_A, "0", 0, "", "", ""},
     {RVM_CODE_FUNCTION_FINISH, "function_finish", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
-    {RVM_CODE_EXIT, "exit", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "", ""},
 
     // closure
     {RVM_CODE_NEW_CLOSURE, "new_closure", OPCODE_OPERAND_TYPE_2BYTE_As, "+1", 1, "instantiated a closure by anonymous function", "stack_top_change", "math_formula"},
@@ -320,11 +319,15 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
 
 
     // coroutine
-    {RVM_CODE_LAUNCH, "launch", OPCODE_OPERAND_TYPE_1BYTE_A, "-2", INT_MIN, "usage_comment", "stack_top_change", "math_formula"},
+    {RVM_CODE_LAUNCH, "launch", OPCODE_OPERAND_TYPE_5BYTE_AsBsC, "-2", INT_MIN, "usage_comment", "stack_top_change", "math_formula"},
     {RVM_CODE_LAUNCH_CLOSURE, "launch_closure", OPCODE_OPERAND_TYPE_1BYTE_A, "0", 0, "usage_comment", "stack_top_change", "math_formula"},
-    {RVM_CODE_LAUNCH_METHOD, "launch_method", OPCODE_OPERAND_TYPE_1BYTE_A, "0", 0, "usage_comment", "stack_top_change", "math_formula"},
+    {RVM_CODE_LAUNCH_METHOD, "launch_method", OPCODE_OPERAND_TYPE_2BYTE_AB, "0", 0, "usage_comment", "stack_top_change", "math_formula"},
     {RVM_CODE_RESUME, "resume", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "usage_comment", "stack_top_change", "math_formula"},
     {RVM_CODE_YIELD, "yield", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "usage_comment", "stack_top_change", "math_formula"},
+
+
+    // exit
+    {RVM_CODE_EXIT, "exit", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "", ""},
 
 
     {RVM_CODES_NUM, "num", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "usage_comment", "stack_top_change", "math_formula"},
