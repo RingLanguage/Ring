@@ -2798,6 +2798,7 @@ typedef enum {
     ERROR_INVALID_BREAK_STATEMENT               = 300012, // break 语句不合法
     ERROR_INVALID_CONTINUE_STATEMENT            = 300013, // continue 语句不合法
     ERROR_FUNCTION_MISS_BLOCK                   = 300014, // 函数缺少代码块
+    ERROR_NATIVE_FUNCTION_PROVIDE_BLOCK         = 300015, // native 函数禁止提供代码块
 
     // 优化AST错误
     ERROR_CODE_OPTIMIZATION_AST_ERROR,

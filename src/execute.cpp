@@ -368,7 +368,6 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
     RVM_Constant*        constant_list          = nullptr;
 
     unsigned int         runtime_static_index   = 0;
-    unsigned int         oper_num               = 0;
     unsigned int         array_size             = 0;
     unsigned int         array_index            = 0;
     unsigned int         package_index          = 0;
