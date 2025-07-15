@@ -3800,6 +3800,9 @@ void       std_lib_os_getenv(Ring_VirtualMachine* rvm,
 void       std_lib_os_setenv(Ring_VirtualMachine* rvm,
                              unsigned int arg_size, RVM_Value* args,
                              unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_os_platform(Ring_VirtualMachine* rvm,
+                               unsigned int arg_size, RVM_Value* args,
+                               unsigned int* return_size, RVM_Value** return_list);
 
 void       std_lib_io_exist(Ring_VirtualMachine* rvm,
                             unsigned int arg_size, RVM_Value* args,

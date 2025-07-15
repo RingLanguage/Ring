@@ -1,5 +1,6 @@
 #include "ring.hpp"
 #include <cassert>
+#include <cctype>
 #include <cmath>
 #include <cstring>
 #include <ctime>
@@ -8,9 +9,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 #include <vector>
-
 /*
  * make install 安装标准库
  * /usr/local/ring/std/ 为默认标准库的安装路径
@@ -124,6 +125,7 @@ std::vector<StdPackageInfo> Std_Lib_List = {
             {(char*)"remove", std_lib_io_remove, 1, 0},
             {(char*)"getenv", std_lib_os_getenv, 1, 1},
             {(char*)"setenv", std_lib_os_setenv, 2, 0},
+            {(char*)"platform", std_lib_os_platform, 0, 2},
         },
     },
 
@@ -332,6 +334,43 @@ void std_lib_os_setenv(Ring_VirtualMachine* rvm,
 
     *return_size = 0;
     *return_list = nullptr;
+}
+
+/*
+ * Package: os
+ * Function: platform
+ * Type: @native
+ */
+void std_lib_os_platform(Ring_VirtualMachine* rvm,
+                         unsigned int arg_size, RVM_Value* args,
+                         unsigned int* return_size, RVM_Value** return_list) {
+
+    std::string sysname;
+    std::string machine;
+
+#ifdef _WIN32
+    res = "windows";
+#else
+    struct utsname info;
+    if (uname(&info) == -1) {
+        // TODO: error-report
+    } else {
+        info.sysname[0] = tolower(info.sysname[0]);
+        info.machine[0] = tolower(info.machine[0]);
+
+        sysname         = std::string(info.sysname);
+        machine         = std::string(info.machine);
+    }
+
+#endif
+
+    RVM_String* return1 = rvm_gc_new_rvm_string(rvm, sysname.c_str());
+    RVM_String* return2 = rvm_gc_new_rvm_string(rvm, machine.c_str());
+
+    *return_size        = 2;
+    *return_list        = new_native_return_list(*return_size);
+    RETURN_LIST_SET_STRING(*return_list, 0, return1);
+    RETURN_LIST_SET_STRING(*return_list, 1, return2);
 }
 
 /*

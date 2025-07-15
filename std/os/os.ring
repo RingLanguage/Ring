@@ -27,3 +27,10 @@ fn getenv(var string name) -> (string);
 
 @native
 fn setenv(var string name, var string value);
+
+// return OS Name and Architecture
+// e.g. "linux", "x86_64"
+// e.g. "windows", "x86_64"
+// e.g. "darwin", "x86_64"
+@native
+fn platform() -> (string, string);
