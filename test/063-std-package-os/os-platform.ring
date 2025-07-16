@@ -16,6 +16,9 @@ fn main() {
     var string arch;
 
     os, arch = os::platform();
-    fmt::println(os);
-    fmt::println(arch);
+    // fmt::println(os);
+    // fmt::println(arch);
+
+    debug::assert(os == "darwin" or os == "linux" or os == "windows");
+    debug::assert(arch == "x86_64" or arch == "arm64");
 }
