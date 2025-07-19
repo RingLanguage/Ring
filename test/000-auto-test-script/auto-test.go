@@ -39,6 +39,7 @@ import (
 
 var (
 	TEST_MODELS = []string{
+		"000-literal",
 		"001-bool",
 		"002-int",
 		"002-int64",

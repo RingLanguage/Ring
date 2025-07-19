@@ -1,0 +1,48 @@
+test_binary_separator------------------
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+test_octal_separator------------------
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+test_hex_separator------------------
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+test_decimal_separator------------------
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
