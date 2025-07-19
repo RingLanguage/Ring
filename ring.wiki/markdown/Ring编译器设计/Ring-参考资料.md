@@ -10,6 +10,9 @@
 ### Lua源码分析
 1. Lua的LG结构lua_State和global_State  
     https://zhuanlan.zhihu.com/p/102415312
+    https://zhuanlan.zhihu.com/p/295069323
+    https://zhuanlan.zhihu.com/p/161722203
+    https://www.cnblogs.com/skychx/p/mobile-javascript-engines.html
 2. Lua设计与实现 基于lua源码对其设计与具体实现进行剖析
    https://www.zhihu.com/column/c_1097089416010567680
 3. 《自己动手实现Lua：虚拟机、编译器和标准库》代码 
