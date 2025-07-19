@@ -131,37 +131,175 @@ extern "C" int yywrap(){
     
     return IDENTIFIER;
 }
-<INITIAL>([1-9][0-9]*)|"0" {
+<INITIAL>([0-9]*(_[0-9]+)*)|"0" {
     debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),int_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
-
     package_unit_update_line_content(yytext);
-    yylval.m_literal_interface = yytext;
 
+    // TODO: 注意，这里没有去释放，是否会造成大量内存的浪费
+    unsigned int length = strlen(yytext);
+    char* decimal_str = (char*)mem_alloc(get_front_mem_pool(), ROUND_UP8(length));
+
+    // erase '_'
+    char* dst = decimal_str;
+    for(unsigned int i = 0; i < length; i++) {
+        if (yytext[i] == '_') {
+            continue;
+        }
+        *dst = yytext[i];
+        dst++;
+    }
+
+    yylval.m_literal_interface = decimal_str;
     return INT_LITERAL;
 }
-<INITIAL>([1-9][0-9]*L)|"0L" {
+<INITIAL>([0-9]*(_[0-9]+)*L)|"0L" { 
+    // 十进制常量，支持下划线分隔
     debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),int64_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
-
     package_unit_update_line_content(yytext);
-    yylval.m_literal_interface = yytext;
 
+    // TODO: 注意，这里没有去释放，是否会造成大量内存的浪费
+    unsigned int length = strlen(yytext);
+    char* decimal_str = (char*)mem_alloc(get_front_mem_pool(), ROUND_UP8(length));
+
+    // erase '_'
+    char* dst = decimal_str;
+    for(unsigned int i = 0; i < length; i++) {
+        if (yytext[i] == '_') {
+            continue;
+        }
+        *dst = yytext[i];
+        dst++;
+    }
+
+    yylval.m_literal_interface = decimal_str;
     return INT64_LITERAL;
 }
-<INITIAL>[0-9]+\.[0-9]+ {
+
+<INITIAL>0b[01]+(_[01]+)*L? { 
+    // 二进制常量，支持下划线分隔
+    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),binary_literal(%s)",
+        package_unit_get_line_number(), 
+        package_unit_get_column_number(), 
+        yytext);
+    package_unit_update_line_content(yytext);
+
+    unsigned long long value = 0;
+    unsigned int length = strlen(yytext);
+    for(unsigned int i = 0; i < length; i++) {
+        if (yytext[i] == '_' || yytext[i] == 'L') {
+            continue;
+        }
+        if ('0' <= yytext[i] && yytext[i] <= '1') {
+            value = (value << 1) | (yytext[i] - '0');
+        }
+    }
+
+    // TODO: 注意，这里没有去释放，是否会造成大量内存的浪费
+    char* decimal_str = (char*)mem_alloc(get_front_mem_pool(), 32);
+    snprintf(decimal_str, 32, "%llu", value);
+
+    yylval.m_literal_interface = decimal_str;
+    if(yytext[length-1] == 'L') {
+        return INT64_LITERAL;
+    } else {
+        return INT_LITERAL;
+    }
+}
+
+<INITIAL>0o[0-7]+(_[0-7]+)*L? {
+    // 八进制常量，支持下划线分隔
+    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),hex_literal(%s)",
+        package_unit_get_line_number(), 
+        package_unit_get_column_number(), 
+        yytext);
+    package_unit_update_line_content(yytext);
+
+    unsigned long long value = 0;
+    unsigned int length = strlen(yytext);
+    for(unsigned int i = 0; i < length; i++) {
+        if (yytext[i] == '_' || yytext[i] == 'L') {
+            continue;
+        }
+        if ('0' <= yytext[i] && yytext[i] <= '7') {
+            value = (value << 3) | (yytext[i] - '0');
+        } 
+    }
+
+    // TODO: 注意，这里没有去释放，是否会造成大量内存的浪费
+    char *decimal_str = (char*)mem_alloc(get_front_mem_pool(), 32);
+    snprintf(decimal_str, 32, "%llu", value);
+
+    yylval.m_literal_interface = decimal_str;
+    if(yytext[length-1] == 'L') {
+        return INT64_LITERAL;
+    } else {
+        return INT_LITERAL;
+    }
+}
+
+<INITIAL>0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*L? {
+    // 十六进制常量，支持下划线分隔
+    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),hex_literal(%s)",
+        package_unit_get_line_number(), 
+        package_unit_get_column_number(), 
+        yytext);
+    package_unit_update_line_content(yytext);
+
+    unsigned long long value = 0;
+    unsigned int length = strlen(yytext);
+    for(unsigned int i = 0; i < length; i++) {
+        if (yytext[i] == '_' || yytext[i] == 'L') {
+            continue;
+        }
+        if ('0' <= yytext[i] && yytext[i] <= '9') {
+            value = (value << 4) | (yytext[i] - '0');
+        } else if ('a' <= yytext[i] && yytext[i] <= 'f') {
+            value = (value << 4) | (yytext[i] - 'a' + 10);
+        } else if ('A' <= yytext[i] && yytext[i] <= 'F') {
+            value = (value << 4) | (yytext[i] - 'A' + 10);
+        }
+    }
+
+    // TODO: 注意，这里没有去释放，是否会造成大量内存的浪费
+    char *decimal_str = (char*)mem_alloc(get_front_mem_pool(), 32);
+    snprintf(decimal_str, 32, "%llu", value);
+
+    yylval.m_literal_interface = decimal_str;
+    if(yytext[length-1] == 'L') {
+        return INT64_LITERAL;
+    } else {
+        return INT_LITERAL;
+    }
+}
+
+<INITIAL>[0-9]+(_[0-9]+)*\.[0-9]+(_[0-9]+)* {
     debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),double_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
-
     package_unit_update_line_content(yytext);
-    yylval.m_literal_interface = yytext;
 
+    // TODO: 注意，这里没有去释放，是否会造成大量内存的浪费
+    unsigned int length = strlen(yytext);
+    char* decimal_str = (char*)mem_alloc(get_front_mem_pool(), ROUND_UP8(length));
+
+    // erase '_'
+    char* dst = decimal_str;
+    for(unsigned int i = 0; i < length; i++) {
+        if (yytext[i] == '_') {
+            continue;
+        }
+        *dst = yytext[i];
+        dst++;
+    }
+
+    yylval.m_literal_interface = decimal_str;
     return DOUBLE_LITERAL;
 }
 

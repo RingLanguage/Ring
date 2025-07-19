@@ -14,7 +14,7 @@ import {
 fn len(var any array) -> (int);
 
 @native
-fn capacity(var any array) -> (int);
+fn cap(var any array) -> (int);
 
 
 @native
@@ -29,5 +29,12 @@ fn to_string(var any value) -> (string);
 
 @native
 fn to_int64(var any value) -> (int64);
+
+
+@native
+fn resume(var int64 co_id);
+
+@native
+fn yield();
 
 

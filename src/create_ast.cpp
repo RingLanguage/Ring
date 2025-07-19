@@ -366,12 +366,12 @@ Expression* create_expression_literal(ExpressionType type, char* literal_interfa
     } break;
     case EXPRESSION_TYPE_LITERAL_INT64: {
         unsigned int literal_length = strlen(literal_interface);
-        if (literal_interface[literal_length - 1] != 'L') {
+        if (literal_interface[literal_length - 1] == 'L') {
             // error report  invalid int64 literal
+            literal_interface[literal_length - 1] = '\0';
         }
-        literal_interface[literal_length - 1] = '\0';
 
-        unsigned long long int64_value        = 0;
+        unsigned long long int64_value = 0;
         sscanf(literal_interface, "%llu", &int64_value);
 
         expression->type            = EXPRESSION_TYPE_LITERAL_INT64;
