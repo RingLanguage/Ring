@@ -2019,6 +2019,92 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_PC += 1;
             break;
 
+        // bitwise
+        case RVM_CODE_BITWISE_NOT_INT:
+            int_value = STACK_GET_INT_OFFSET(-1);
+            STACK_SET_INT_OFFSET(-1, ~int_value);
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_NOT_INT64:
+            int64_value = STACK_GET_INT64_OFFSET(-1);
+            STACK_SET_INT64_OFFSET(-1, ~int64_value);
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_AND_INT:
+            STACK_SET_INT_OFFSET(-2, STACK_GET_INT_OFFSET(-2) & STACK_GET_INT_OFFSET(-1));
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_AND_INT64:
+            STACK_SET_INT64_OFFSET(-2, STACK_GET_INT64_OFFSET(-2) & STACK_GET_INT64_OFFSET(-1));
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_OR_INT:
+            STACK_SET_INT_OFFSET(-2, STACK_GET_INT_OFFSET(-2) | STACK_GET_INT_OFFSET(-1));
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_OR_INT64:
+            STACK_SET_INT64_OFFSET(-2, STACK_GET_INT64_OFFSET(-2) | STACK_GET_INT64_OFFSET(-1));
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_XOR_INT:
+            STACK_SET_INT_OFFSET(-2, STACK_GET_INT_OFFSET(-2) ^ STACK_GET_INT_OFFSET(-1));
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_XOR_INT64:
+            STACK_SET_INT64_OFFSET(-2, STACK_GET_INT64_OFFSET(-2) ^ STACK_GET_INT64_OFFSET(-1));
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_LSH_INT:
+            if (STACK_GET_INT_OFFSET(-1) >= 32) {
+                int_value = 0;
+            } else {
+                int_value = (STACK_GET_INT_OFFSET(-2)) << (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x1F);
+            }
+            STACK_SET_INT_OFFSET(-2, int_value);
+
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_LSH_INT64:
+            if (STACK_GET_INT_OR_INT64_OFFSET(-1) >= 32) {
+                int64_value = 0;
+            } else {
+                int64_value = (STACK_GET_INT64_OFFSET(-2)) << (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x1F);
+            }
+            STACK_SET_INT64_OFFSET(-2, int64_value);
+
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_RSH_INT:
+            if (STACK_GET_INT_OR_INT64_OFFSET(-1) >= 32) {
+                int_value = 0;
+            } else {
+                int_value = (STACK_GET_INT_OFFSET(-2)) >> (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x1F);
+            }
+            STACK_SET_INT_OFFSET(-2, int_value);
+
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_BITWISE_RSH_INT64:
+            if (STACK_GET_INT_OR_INT64_OFFSET(-1) >= 32) {
+                int64_value = 0;
+            } else {
+                int64_value = (STACK_GET_INT64_OFFSET(-2)) >> (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x1F);
+            }
+            STACK_SET_INT64_OFFSET(-2, int64_value);
+
+            VM_CUR_CO_STACK_TOP_INDEX -= 1;
+            VM_CUR_CO_PC += 1;
+            break;
+
 
         // jump
         case RVM_CODE_JUMP:

@@ -752,6 +752,12 @@ std::string trans_flex_token_to_human_char(std::string str) {
         {"`!`", "TOKEN_EXCLAM_MARK"},
         {"`=`", "TOKEN_ASSIGN"},
         {"`#`", "TOKEN_NUM_SIGN"},
+        {"`~`", "TOKEN_BIT_NOT"},
+        {"`&`", "TOKEN_BIT_AND"},
+        {"`|`", "TOKEN_BIT_OR"},
+        {"`^`", "TOKEN_BIT_XOR"},
+        {"`<<`", "TOKEN_BIT_LSHIFT"},
+        {"`>>`", "TOKEN_BIT_RSHIFT"},
     };
 
     // 先排一下顺序, 在字符串替换的时候要先匹配最长的, 再匹配最短的

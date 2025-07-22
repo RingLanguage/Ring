@@ -169,6 +169,25 @@ std::string formate_operator(ExpressionType expression_type) {
         oper = "<=";
         break;
 
+    case EXPRESSION_TYPE_BITWISE_UNITARY_NOT:
+        oper = "~";
+        break;
+    case EXPRESSION_TYPE_BITWISE_AND:
+        oper = "&";
+        break;
+    case EXPRESSION_TYPE_BITWISE_OR:
+        oper = "|";
+        break;
+    case EXPRESSION_TYPE_BITWISE_XOR:
+        oper = "^";
+        break;
+    case EXPRESSION_TYPE_BITWISE_LSH:
+        oper = "<<";
+        break;
+    case EXPRESSION_TYPE_BITWISE_RSH:
+        oper = ">>";
+        break;
+
     case EXPRESSION_TYPE_ARITHMETIC_ADD:
         oper = "+";
         break;

@@ -360,6 +360,18 @@ void crop_binary_match_expression(Expression*       expression,
     }
 }
 
+void crop_bitwise_binary_match_expression(Expression*       expression,
+                                          BinaryExpression* binary_expression,
+                                          Block* block, FunctionTuple* func) {
+
+    Expression* left  = binary_expression->left_expression;
+    Expression* right = binary_expression->right_expression;
+
+    assert(left->next == nullptr);
+    assert(right->next == nullptr);
+
+    // TODO:
+}
 
 void crop_unitary_expression(Expression* expression,
                              Expression* unitary_expression,
@@ -383,6 +395,14 @@ void crop_unitary_expression(Expression* expression,
         if (operand->type == EXPRESSION_TYPE_LITERAL_BOOL) {
             expression->type           = EXPRESSION_TYPE_LITERAL_BOOL;
             expression->u.bool_literal = !operand->u.bool_literal;
+        }
+    } else if (expression->type == EXPRESSION_TYPE_BITWISE_UNITARY_NOT) {
+        if (operand->type == EXPRESSION_TYPE_LITERAL_INT) {
+            expression->type          = EXPRESSION_TYPE_LITERAL_INT;
+            expression->u.int_literal = ~operand->u.int_literal;
+        } else if (operand->type == EXPRESSION_TYPE_LITERAL_INT64) {
+            expression->type            = EXPRESSION_TYPE_LITERAL_INT64;
+            expression->u.int64_literal = ~operand->u.int64_literal;
         }
     }
 }

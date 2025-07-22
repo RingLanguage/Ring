@@ -285,6 +285,21 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_RELATIONAL_LE_STRING, "le_string", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[string,string]->[bool]", ""},
 
 
+    // bitwise
+    {RVM_CODE_BITWISE_NOT_INT, "bitwise_not_int", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "[int]->[int]", ""},
+    {RVM_CODE_BITWISE_NOT_INT64, "bitwise_not_int64", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "[int64]->[int64]", ""},
+    {RVM_CODE_BITWISE_AND_INT, "bitwise_and_int", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int,int]->[int]", ""},
+    {RVM_CODE_BITWISE_AND_INT64, "bitwise_and_int64", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int64,int64]->[int64]", ""},
+    {RVM_CODE_BITWISE_OR_INT, "bitwise_or_int", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int,int]->[int]", ""},
+    {RVM_CODE_BITWISE_OR_INT64, "bitwise_or_int64", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int64,int64]->[int64]", ""},
+    {RVM_CODE_BITWISE_XOR_INT, "bitwise_xor_int", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int,int]->[int]", ""},
+    {RVM_CODE_BITWISE_XOR_INT64, "bitwise_xor_int64", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int64,int64]->[int64]", ""},
+    {RVM_CODE_BITWISE_LSH_INT, "bitwise_lsh_int", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int,int]->[int]", ""},
+    {RVM_CODE_BITWISE_LSH_INT64, "bitwise_lsh_int64", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int64,int]->[int64]", ""},
+    {RVM_CODE_BITWISE_RSH_INT, "bitwise_rsh_int", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int,int]->[int]", ""},
+    {RVM_CODE_BITWISE_RSH_INT64, "bitwise_rsh_int64", OPCODE_OPERAND_TYPE_0BYTE, "-1", -1, "", "[int64,int]->[int64]", ""},
+
+
     // jump
     {RVM_CODE_JUMP, "jump", OPCODE_OPERAND_TYPE_2BYTE_As, "0", 0, "", "", ""},
     {RVM_CODE_JUMP_IF_FALSE, "jump_if_false", OPCODE_OPERAND_TYPE_2BYTE_As, "-1", -1, "", "", ""},

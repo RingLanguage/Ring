@@ -183,6 +183,13 @@ int yylex();
 %token TOKEN_ASSIGN
 %token TOKEN_NUM_SIGN
 
+%token TOKEN_BIT_NOT
+%token TOKEN_BIT_AND
+%token TOKEN_BIT_OR
+%token TOKEN_BIT_XOR
+%token TOKEN_BIT_LSHIFT
+%token TOKEN_BIT_RSHIFT
+
 %token INT_LITERAL
 %token INT64_LITERAL
 %token DOUBLE_LITERAL
@@ -213,6 +220,10 @@ int yylex();
 %type <m_expression> logical_expression_or
 %type <m_expression> logical_expression_and
 %type <m_expression> relational_expression
+%type <m_expression> bitwise_expression_or
+%type <m_expression> bitwise_expression_xor
+%type <m_expression> bitwise_expression_and
+%type <m_expression> bitwise_expression_shift
 %type <m_expression> equality_expression
 %type <m_expression> maybe_empty_expression
 %type <m_expression> left_value_expression_list
@@ -1093,29 +1104,78 @@ equality_expression
         ;
 
 relational_expression
-    : expression_arithmetic_operation_additive
+    : bitwise_expression_or
     {
         debug_bison_info_with_green("[RULE::relational_expression]\t ");
     }
-    | relational_expression TOKEN_GT expression_arithmetic_operation_additive
+    | relational_expression TOKEN_GT bitwise_expression_or
     {
         debug_bison_info_with_green("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_GT, $1, $3);
     }
-    | relational_expression TOKEN_GE expression_arithmetic_operation_additive
+    | relational_expression TOKEN_GE bitwise_expression_or
     {
         debug_bison_info_with_green("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_GE, $1, $3);
     }
-    | relational_expression TOKEN_LT expression_arithmetic_operation_additive
+    | relational_expression TOKEN_LT bitwise_expression_or
     {
         debug_bison_info_with_green("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_LT, $1, $3);
     }
-    | relational_expression TOKEN_LE expression_arithmetic_operation_additive
+    | relational_expression TOKEN_LE bitwise_expression_or
     {
         debug_bison_info_with_green("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_LE, $1, $3);
+    }
+    ;
+
+bitwise_expression_or
+    : bitwise_expression_xor
+    {
+    }
+    | bitwise_expression_or TOKEN_BIT_XOR bitwise_expression_xor
+    {
+        debug_bison_info_with_green("[RULE::bitwise_expression_or]\t ");
+        $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_XOR, $1, $3);
+    }
+    ;
+
+bitwise_expression_xor
+    : bitwise_expression_and
+    {
+    }
+    | bitwise_expression_xor TOKEN_BIT_OR bitwise_expression_and
+    {
+        debug_bison_info_with_green("[RULE::bitwise_expression_xor]\t ");
+        $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_XOR, $1, $3);
+    }
+    ;
+
+bitwise_expression_and
+    : bitwise_expression_shift
+    {
+    }
+    | bitwise_expression_and TOKEN_BIT_AND bitwise_expression_shift
+    {
+        debug_bison_info_with_green("[RULE::bitwise_expression_and]\t ");
+        $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_AND, $1, $3);
+    }
+    ;
+
+bitwise_expression_shift
+    : expression_arithmetic_operation_additive
+    {
+    }
+    | bitwise_expression_shift TOKEN_BIT_LSHIFT expression_arithmetic_operation_additive
+    {
+        debug_bison_info_with_green("[RULE::bitwise_expression_shift]\t ");
+        $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_LSH, $1, $3);
+    }
+    | bitwise_expression_shift TOKEN_BIT_RSHIFT expression_arithmetic_operation_additive
+    {
+        debug_bison_info_with_green("[RULE::bitwise_expression_shift]\t ");
+        $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_RSH, $1, $3);
     }
     ;
 
@@ -1168,6 +1228,11 @@ unitary_expression
     {
         debug_bison_info_with_green("[RULE::unitary_expression:TOKEN_SUB]\t ");
         $$ = create_expression_unitary(EXPRESSION_TYPE_ARITHMETIC_UNITARY_MINUS, $2);
+    }
+    | TOKEN_BIT_NOT unitary_expression
+    {
+        debug_bison_info_with_green("[RULE::unitary_expression:TOKEN_BIT_NOT]\t ");
+        $$ = create_expression_unitary(EXPRESSION_TYPE_BITWISE_UNITARY_NOT, $2);
     }
     | postfix_expression
     | slice_literal_expression

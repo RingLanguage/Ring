@@ -397,6 +397,17 @@ BEGIN:
         fix_binary_relational_expression(expression, expression->type, expression->u.binary_expression, block, func);
         break;
 
+    case EXPRESSION_TYPE_BITWISE_UNITARY_NOT:
+        fix_bitwise_unitary_not_expression(expression, expression->u.unitary_expression, block, func);
+        break;
+    case EXPRESSION_TYPE_BITWISE_AND:
+    case EXPRESSION_TYPE_BITWISE_OR:
+    case EXPRESSION_TYPE_BITWISE_XOR:
+    case EXPRESSION_TYPE_BITWISE_LSH:
+    case EXPRESSION_TYPE_BITWISE_RSH:
+        fix_bitwise_binary_expression(expression, expression->type, expression->u.binary_expression, block, func);
+        break;
+
 
     case EXPRESSION_TYPE_ARITHMETIC_UNITARY_MINUS:
         fix_unitary_minus_expression(expression, expression->u.unitary_expression, block, func);
@@ -1310,6 +1321,7 @@ void fix_binary_concat_expression(Expression*       expression,
     fix_expression(left, block, func);
     fix_expression(right, block, func);
 
+    // 上一层函数一定判断数组了，这里不用判断
     TypeSpecifier* left_type  = left->convert_type[0];
     TypeSpecifier* right_type = right->convert_type[0];
 
@@ -1507,6 +1519,7 @@ void fix_binary_math_expression(Expression*       expression,
     }
 
 
+    // TODO: 这里浪费空间了
     if (expression->convert_type == nullptr) {
         TypeSpecifier* convert_type = (TypeSpecifier*)mem_alloc(get_front_mem_pool(), sizeof(TypeSpecifier));
         convert_type->kind          = RING_BASIC_TYPE_UNKNOW;
@@ -1516,13 +1529,9 @@ void fix_binary_math_expression(Expression*       expression,
 
     if (left_type->kind == RING_BASIC_TYPE_INT) {
         expression->convert_type[0]->kind = RING_BASIC_TYPE_INT;
-    }
-
-    if (left_type->kind == RING_BASIC_TYPE_INT64) {
+    } else if (left_type->kind == RING_BASIC_TYPE_INT64) {
         expression->convert_type[0]->kind = RING_BASIC_TYPE_INT64;
-    }
-
-    if (left_type->kind == RING_BASIC_TYPE_DOUBLE) {
+    } else if (left_type->kind == RING_BASIC_TYPE_DOUBLE) {
         expression->convert_type[0]->kind = RING_BASIC_TYPE_DOUBLE;
     }
 
@@ -1875,6 +1884,176 @@ void fix_binary_relational_expression(Expression*       expression,
     }
 }
 
+void fix_bitwise_binary_expression(Expression*       expression,
+                                   ExpressionType    expression_type,
+                                   BinaryExpression* binary_expression,
+                                   Block* block, FunctionTuple* func) {
+
+    assert(expression != nullptr);
+    assert(binary_expression != nullptr);
+
+    Expression* left  = binary_expression->left_expression;
+    Expression* right = binary_expression->right_expression;
+
+    std::string oper  = formate_operator(expression_type);
+
+    fix_expression(left, block, func);
+    fix_expression(right, block, func);
+
+    // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
+    if (left->convert_type_size != 1
+        || left->convert_type == nullptr
+        || !TYPE_IS_INT32OR64(left->convert_type[0])) {
+
+        std::string type = format_type_specifier(left->convert_type_size, left->convert_type);
+
+        DEFINE_ERROR_REPORT_STR;
+
+        compile_err_buf = sprintf_string(
+            "operator `%s` only be used in int/int64, but provided type(%s); E:%d.",
+            oper.c_str(),
+            type.c_str(),
+            ERROR_OPER_INVALID_USE);
+
+        ErrorReportContext context = {
+            .package                 = nullptr,
+            .package_unit            = get_package_unit(),
+            .source_file_name        = get_package_unit()->current_file_name,
+            .line_content            = package_unit_get_line_content(left->line_number),
+            .line_number             = left->line_number,
+            .column_number           = package_unit_get_column_number(),
+            .error_message           = std::string(compile_err_buf),
+            .advice                  = std::string(compile_adv_buf),
+            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+            .ring_compiler_file      = (char*)__FILE__,
+            .ring_compiler_file_line = __LINE__,
+        };
+        ring_compile_error_report(&context);
+    }
+
+    // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
+    if (right->convert_type_size != 1
+        || right->convert_type == nullptr
+        || !TYPE_IS_INT32OR64(right->convert_type[0])) {
+
+        std::string type = format_type_specifier(right->convert_type_size, right->convert_type);
+
+        DEFINE_ERROR_REPORT_STR;
+
+        compile_err_buf = sprintf_string(
+            "operator `%s` only be used in int/int64, but provided type(%s); E:%d.",
+            oper.c_str(),
+            type.c_str(),
+            ERROR_OPER_INVALID_USE);
+
+        ErrorReportContext context = {
+            .package                 = nullptr,
+            .package_unit            = get_package_unit(),
+            .source_file_name        = get_package_unit()->current_file_name,
+            .line_content            = package_unit_get_line_content(right->line_number),
+            .line_number             = right->line_number,
+            .column_number           = package_unit_get_column_number(),
+            .error_message           = std::string(compile_err_buf),
+            .advice                  = std::string(compile_adv_buf),
+            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+            .ring_compiler_file      = (char*)__FILE__,
+            .ring_compiler_file_line = __LINE__,
+        };
+        ring_compile_error_report(&context);
+    }
+
+    if (expression_type == EXPRESSION_TYPE_BITWISE_AND
+        || expression_type == EXPRESSION_TYPE_BITWISE_OR
+        || expression_type == EXPRESSION_TYPE_BITWISE_XOR) {
+        // 两个操作数类型必须相等
+        // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
+        if (!comp_type_specifier(left->convert_type[0], right->convert_type[0])) {
+            DEFINE_ERROR_REPORT_STR;
+
+            compile_err_buf = sprintf_string(
+                "operator `%s` only be used in same type, but provided type(%s, %s); E:%d.",
+                oper.c_str(),
+                format_type_specifier(left->convert_type_size, left->convert_type).c_str(),
+                format_type_specifier(right->convert_type_size, right->convert_type).c_str(),
+                ERROR_OPER_INVALID_USE);
+
+            ErrorReportContext context = {
+                .package                 = nullptr,
+                .package_unit            = get_package_unit(),
+                .source_file_name        = get_package_unit()->current_file_name,
+                .line_content            = package_unit_get_line_content(left->line_number),
+                .line_number             = left->line_number,
+                .column_number           = package_unit_get_column_number(),
+                .error_message           = std::string(compile_err_buf),
+                .advice                  = std::string(compile_adv_buf),
+                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+                .ring_compiler_file      = (char*)__FILE__,
+                .ring_compiler_file_line = __LINE__,
+            };
+            ring_compile_error_report(&context);
+        }
+
+    } else if (expression_type == EXPRESSION_TYPE_BITWISE_LSH
+               || expression_type == EXPRESSION_TYPE_BITWISE_RSH) {
+
+        // 被位移操作数必须为int/int64
+        // 位移的数量也必须为int/int64
+    }
+
+    // 以left为准
+    EXPRESSION_CLEAR_CONVERT_TYPE(expression);
+    EXPRESSION_ADD_CONVERT_TYPE(expression, left->convert_type[0]);
+
+    if (global_ring_command_arg.optimize_level > 0) {
+        crop_binary_match_expression(expression, binary_expression, block, func);
+    }
+}
+
+void fix_bitwise_unitary_not_expression(Expression* expression,
+                                        Expression* unitary_expression,
+                                        Block* block, FunctionTuple* func) {
+
+
+    fix_expression(unitary_expression, block, func);
+
+    // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
+    if (unitary_expression->convert_type_size != 1
+        || unitary_expression->convert_type == nullptr
+        || !TYPE_IS_INT32OR64(unitary_expression->convert_type[0])) {
+
+        std::string type = format_type_specifier(unitary_expression->convert_type_size, unitary_expression->convert_type);
+
+        DEFINE_ERROR_REPORT_STR;
+
+        compile_err_buf = sprintf_string(
+            "operator `~` only be used in int/int64, but provided type(%s); E:%d.",
+            type.c_str(),
+            ERROR_OPER_INVALID_USE);
+
+        ErrorReportContext context = {
+            .package                 = nullptr,
+            .package_unit            = get_package_unit(),
+            .source_file_name        = get_package_unit()->current_file_name,
+            .line_content            = package_unit_get_line_content(unitary_expression->line_number),
+            .line_number             = unitary_expression->line_number,
+            .column_number           = package_unit_get_column_number(),
+            .error_message           = std::string(compile_err_buf),
+            .advice                  = std::string(compile_adv_buf),
+            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+            .ring_compiler_file      = (char*)__FILE__,
+            .ring_compiler_file_line = __LINE__,
+        };
+        ring_compile_error_report(&context);
+    }
+
+
+    if (global_ring_command_arg.optimize_level > 0) {
+        crop_unitary_expression(expression, unitary_expression, block, func);
+    }
+
+    EXPRESSION_CLEAR_CONVERT_TYPE(expression);
+    EXPRESSION_ADD_CONVERT_TYPE(expression, unitary_expression->convert_type[0]);
+}
 
 void fix_unitary_minus_expression(Expression* expression,
                                   Expression* unitary_expression,

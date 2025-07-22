@@ -114,6 +114,13 @@ extern "C" int yywrap(){
 <INITIAL>"="            { package_unit_update_line_content(yytext); return TOKEN_ASSIGN;         }
 <INITIAL>"#"            { package_unit_update_line_content(yytext); return TOKEN_NUM_SIGN;       }
 
+<INITIAL>"~"            { package_unit_update_line_content(yytext); return TOKEN_BIT_NOT;        }
+<INITIAL>"&"            { package_unit_update_line_content(yytext); return TOKEN_BIT_AND;        }
+<INITIAL>"|"            { package_unit_update_line_content(yytext); return TOKEN_BIT_OR;         }
+<INITIAL>"^"            { package_unit_update_line_content(yytext); return TOKEN_BIT_XOR;        }
+<INITIAL>"<<"           { package_unit_update_line_content(yytext); return TOKEN_BIT_LSHIFT;     }
+<INITIAL>">>"           { package_unit_update_line_content(yytext); return TOKEN_BIT_RSHIFT;     }
+
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {
     debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),identifier(%s)",
         package_unit_get_line_number(), 

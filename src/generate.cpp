@@ -1213,6 +1213,17 @@ void generate_vmcode_from_expression(Package_Executer* executer,
         generate_vmcode_from_relational_expression(executer, expression->type, expression->u.binary_expression, opcode_buffer);
         break;
 
+    case EXPRESSION_TYPE_BITWISE_UNITARY_NOT:
+        generate_vmcode_from_bitwise_unitary_not_expression(executer, expression->u.unitary_expression, opcode_buffer, RVM_CODE_LOGICAL_NOT);
+        break;
+    case EXPRESSION_TYPE_BITWISE_AND:
+    case EXPRESSION_TYPE_BITWISE_OR:
+    case EXPRESSION_TYPE_BITWISE_XOR:
+    case EXPRESSION_TYPE_BITWISE_LSH:
+    case EXPRESSION_TYPE_BITWISE_RSH:
+        generate_vmcode_from_bitwise_binary_expression(executer, expression->type, expression->u.binary_expression, opcode_buffer);
+        break;
+
     case EXPRESSION_TYPE_ASSIGN:
         generate_vmcode_from_assign_expression(executer, expression->u.assign_expression, opcode_buffer);
         break;
@@ -1604,6 +1615,41 @@ void generate_vmcode_from_binary_expression(Package_Executer* executer,
     generate_vmcode(executer, opcode_buffer, opcode, 0, binary_expression->line_number);
 }
 
+void generate_vmcode_from_bitwise_binary_expression(Package_Executer* executer,
+                                                    ExpressionType    expression_type,
+                                                    BinaryExpression* binary_expression,
+                                                    RVM_OpcodeBuffer* opcode_buffer) {
+
+    if (binary_expression == nullptr) {
+        return;
+    }
+
+    Expression* left  = binary_expression->left_expression;
+    Expression* right = binary_expression->right_expression;
+    assert(left->convert_type != nullptr);
+    assert(right->convert_type != nullptr);
+    TypeSpecifier* left_type = left->convert_type[0];
+    RVM_Opcode     opcode    = RVM_CODE_UNKNOW;
+
+    switch (expression_type) {
+    case EXPRESSION_TYPE_BITWISE_AND: opcode = RVM_CODE_BITWISE_AND_INT; break;
+    case EXPRESSION_TYPE_BITWISE_OR: opcode = RVM_CODE_BITWISE_OR_INT; break;
+    case EXPRESSION_TYPE_BITWISE_XOR: opcode = RVM_CODE_BITWISE_XOR_INT; break;
+    case EXPRESSION_TYPE_BITWISE_LSH: opcode = RVM_CODE_BITWISE_LSH_INT; break;
+    case EXPRESSION_TYPE_BITWISE_RSH: opcode = RVM_CODE_BITWISE_RSH_INT; break;
+    default: break;
+    }
+
+    if (TYPE_IS_INT64(left_type)) {
+        opcode = RVM_Opcode(opcode + 1);
+    }
+
+    generate_vmcode_from_expression(executer, left, opcode_buffer);
+    generate_vmcode_from_expression(executer, right, opcode_buffer);
+
+    generate_vmcode(executer, opcode_buffer, opcode, 0, binary_expression->line_number);
+}
+
 void generate_vmcode_from_relational_expression(Package_Executer* executer,
                                                 ExpressionType    expression_type,
                                                 BinaryExpression* expression,
@@ -1705,6 +1751,28 @@ void generate_vmcode_from_increase_decrease_expression(Package_Executer* execute
 
 
     generate_pop_to_leftvalue(executer, unitary_expression, opcode_buffer);
+}
+
+void generate_vmcode_from_bitwise_unitary_not_expression(Package_Executer* executer,
+                                                         Expression*       expression,
+                                                         RVM_OpcodeBuffer* opcode_buffer,
+                                                         RVM_Opcode        opcode) {
+
+    if (expression == nullptr) {
+        return;
+    }
+
+    generate_vmcode_from_expression(executer, expression, opcode_buffer);
+
+    TypeSpecifier* type_specifier = expression->convert_type[0];
+
+    switch (type_specifier->kind) {
+    case RING_BASIC_TYPE_INT: opcode = RVM_CODE_BITWISE_NOT_INT; break;
+    case RING_BASIC_TYPE_INT64: opcode = RVM_CODE_BITWISE_NOT_INT64; break;
+    default: break;
+    }
+
+    generate_vmcode(executer, opcode_buffer, opcode, 0, expression->line_number);
 }
 
 void generate_vmcode_from_unitary_minus_expression(Package_Executer* executer,

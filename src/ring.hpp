@@ -579,6 +579,10 @@ struct TypeSpecifier {
      && ((type_specifier)->u.array_t->sub != nullptr)  \
      && ((type_specifier)->u.array_t->sub->kind == RING_BASIC_TYPE_STRING))
 
+#define TYPE_IS_INT32OR64(type)            \
+    (((type)->kind == RING_BASIC_TYPE_INT) \
+     || ((type)->kind == RING_BASIC_TYPE_INT64))
+
 #define TYPE_IS_NUM(type)                       \
     (((type)->kind == RING_BASIC_TYPE_INT)      \
      || ((type)->kind == RING_BASIC_TYPE_INT64) \
@@ -1250,6 +1254,20 @@ typedef enum {
     RVM_CODE_RELATIONAL_LE_DOUBLE,
     RVM_CODE_RELATIONAL_LE_STRING,
 
+    // bitwise
+    RVM_CODE_BITWISE_NOT_INT,
+    RVM_CODE_BITWISE_NOT_INT64,
+    RVM_CODE_BITWISE_AND_INT,
+    RVM_CODE_BITWISE_AND_INT64,
+    RVM_CODE_BITWISE_OR_INT,
+    RVM_CODE_BITWISE_OR_INT64,
+    RVM_CODE_BITWISE_XOR_INT,
+    RVM_CODE_BITWISE_XOR_INT64,
+    RVM_CODE_BITWISE_LSH_INT,
+    RVM_CODE_BITWISE_LSH_INT64,
+    RVM_CODE_BITWISE_RSH_INT,
+    RVM_CODE_BITWISE_RSH_INT64,
+
     // jump
     RVM_CODE_JUMP,
     RVM_CODE_JUMP_IF_FALSE,
@@ -1491,6 +1509,13 @@ typedef enum {
     EXPRESSION_TYPE_RELATIONAL_GE,
     EXPRESSION_TYPE_RELATIONAL_LT,
     EXPRESSION_TYPE_RELATIONAL_LE,
+
+    EXPRESSION_TYPE_BITWISE_UNITARY_NOT, // 一元操作符
+    EXPRESSION_TYPE_BITWISE_AND,         // 二元 位与
+    EXPRESSION_TYPE_BITWISE_OR,          // 二元 位或
+    EXPRESSION_TYPE_BITWISE_XOR,         // 二元 位异或
+    EXPRESSION_TYPE_BITWISE_LSH,         // 二元 位左移
+    EXPRESSION_TYPE_BITWISE_RSH,         // 二元 位右移
 
     EXPRESSION_TYPE_ARITHMETIC_UNITARY_MINUS, // 一元操作符 负号
     EXPRESSION_TYPE_LOGICAL_UNITARY_NOT,      // 一元操作符 逻辑 非 not
@@ -3389,6 +3414,13 @@ void                        fix_binary_relational_expression(Expression*       e
                                                              Block* block, FunctionTuple* func);
 
 
+void                        fix_bitwise_binary_expression(Expression*       expression,
+                                                          ExpressionType    expression_type,
+                                                          BinaryExpression* binary_expression,
+                                                          Block* block, FunctionTuple* func);
+void                        fix_bitwise_unitary_not_expression(Expression* expression,
+                                                               Expression* unitary_expression,
+                                                               Block* block, FunctionTuple* func);
 void                        fix_unitary_minus_expression(Expression* expression,
                                                          Expression* unitary_expression,
                                                          Block* block, FunctionTuple* func);
@@ -3498,6 +3530,9 @@ void crop_binary_concat_expression(Expression*       expression,
 void crop_binary_match_expression(Expression*       expression,
                                   BinaryExpression* binary_expression,
                                   Block* block, FunctionTuple* func);
+void crop_bitwise_binary_match_expression(Expression*       expression,
+                                          BinaryExpression* binary_expression,
+                                          Block* block, FunctionTuple* func);
 void crop_unitary_expression(Expression* expression,
                              Expression* unitary_expression,
                              Block* block, FunctionTuple* func);
@@ -3561,10 +3596,18 @@ void              generate_vmcode_from_binary_expression(Package_Executer* execu
                                                          ExpressionType    expression_type,
                                                          BinaryExpression* binary_expression,
                                                          RVM_OpcodeBuffer* opcode_buffer);
+void              generate_vmcode_from_bitwise_binary_expression(Package_Executer* executer,
+                                                                 ExpressionType    expression_type,
+                                                                 BinaryExpression* binary_expression,
+                                                                 RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_relational_expression(Package_Executer* executer,
                                                              ExpressionType    expression_type,
                                                              BinaryExpression* expression,
                                                              RVM_OpcodeBuffer* opcode_buffer);
+void              generate_vmcode_from_bitwise_unitary_not_expression(Package_Executer* executer,
+                                                                      Expression*       expression,
+                                                                      RVM_OpcodeBuffer* opcode_buffer,
+                                                                      RVM_Opcode        opcode);
 void              generate_vmcode_from_unitary_minus_expression(Package_Executer* executer, Expression* expression, RVM_OpcodeBuffer* opcode_buffer, RVM_Opcode opcode);
 void              generate_vmcode_from_unitary_not_expression(Package_Executer* executer, Expression* expression, RVM_OpcodeBuffer* opcode_buffer, RVM_Opcode opcode);
 void              generate_vmcode_from_increase_decrease_expression(Package_Executer* executer, Expression* expression, RVM_OpcodeBuffer* opcode_buffer);
