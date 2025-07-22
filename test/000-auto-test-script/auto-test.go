@@ -49,6 +49,7 @@ var (
 		"001-basic-type",
 
 		"002-operator",
+		"002-operator/bitwise",
 		"002-operator/minus",
 		"002-operator/string",
 
