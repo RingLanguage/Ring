@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -205,7 +206,7 @@ func main() {
 
 	for loop := 0; loop < TEST_LOOP_NUM; loop++ {
 		for _, testCase := range allTestCases {
-			go func(testCase RingTestCase) {
+			go func(loop int, testCase RingTestCase) {
 				defer func() {
 					wg.Done()
 					<-maxConcurrentChannel
@@ -216,8 +217,8 @@ func main() {
 				maxConcurrentChannel <- struct{}{}
 
 				testResult := autoTestAction(ctx, testCase, displayMode)
-				testCaseResultMap.Store(testCase.FileName, testResult)
-			}(testCase)
+				testCaseResultMap.Store(testCase.FileName+"#"+strconv.Itoa(loop), testResult)
+			}(loop, testCase)
 		}
 	}
 
