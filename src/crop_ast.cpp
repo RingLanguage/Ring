@@ -360,9 +360,9 @@ void crop_binary_match_expression(Expression*       expression,
     }
 }
 
-void crop_bitwise_binary_match_expression(Expression*       expression,
-                                          BinaryExpression* binary_expression,
-                                          Block* block, FunctionTuple* func) {
+void crop_binary_bitwise_expression(Expression*       expression,
+                                    BinaryExpression* binary_expression,
+                                    Block* block, FunctionTuple* func) {
 
     Expression* left  = binary_expression->left_expression;
     Expression* right = binary_expression->right_expression;

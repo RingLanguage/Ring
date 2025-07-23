@@ -3530,9 +3530,9 @@ void crop_binary_concat_expression(Expression*       expression,
 void crop_binary_match_expression(Expression*       expression,
                                   BinaryExpression* binary_expression,
                                   Block* block, FunctionTuple* func);
-void crop_bitwise_binary_match_expression(Expression*       expression,
-                                          BinaryExpression* binary_expression,
-                                          Block* block, FunctionTuple* func);
+void crop_binary_bitwise_expression(Expression*       expression,
+                                    BinaryExpression* binary_expression,
+                                    Block* block, FunctionTuple* func);
 void crop_unitary_expression(Expression* expression,
                              Expression* unitary_expression,
                              Block* block, FunctionTuple* func);

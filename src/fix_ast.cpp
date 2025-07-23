@@ -2005,7 +2005,7 @@ void fix_bitwise_binary_expression(Expression*       expression,
     EXPRESSION_ADD_CONVERT_TYPE(expression, left->convert_type[0]);
 
     if (global_ring_command_arg.optimize_level > 0) {
-        crop_binary_match_expression(expression, binary_expression, block, func);
+        crop_binary_bitwise_expression(expression, binary_expression, block, func);
     }
 }
 
