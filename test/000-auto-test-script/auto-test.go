@@ -158,6 +158,8 @@ var (
 	TEST_PATH                     = "./test"
 
 	SHELL_COMMAND_TIMEOUT = 10 * time.Second // shell 命令超时时间
+
+	SHELL_CONCURRENT_NUM = 50 // 最大并发数
 )
 
 const (
@@ -174,8 +176,7 @@ const (
 func main() {
 	var wg sync.WaitGroup
 
-	const maxConcurrent = 50                                   // 最大并发数
-	maxConcurrentChannel := make(chan struct{}, maxConcurrent) // 创建信号量通道
+	maxConcurrentChannel := make(chan struct{}, SHELL_CONCURRENT_NUM) // 创建信号量通道
 
 	var testCaseResultMap sync.Map
 
@@ -228,11 +229,14 @@ func main() {
 	var failedResults []*RingTestResult
 	testCaseResultMap.Range(func(key, value interface{}) bool {
 		testResult := value.(*RingTestResult)
-		if testResult.Status == Status_Failed {
+		switch testResult.Status {
+		case Status_Failed:
 			failNum++
 			failedResults = append(failedResults, testResult)
-		} else if testResult.Status == Status_Pass {
+		case Status_Pass:
 			succNum++
+		default:
+			notTestNum++
 		}
 		return true
 	})
