@@ -63,6 +63,7 @@ var (
 		"006-variable",
 		"007-array",
 		"008-class",
+		"009-enum",
 		"010-main-entry",
 		"011-global-variable",
 		"012-local-variable",

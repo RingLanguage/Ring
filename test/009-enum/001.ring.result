@@ -1,0 +1,60 @@
+
+test_bool ------------
+true
+false
+debug_assert PASS
+debug_assert PASS
+
+test_int ------------
+-2147483648
+-2147483648
+-2147483648
+-2147483648
+2147483647
+2147483647
+2147483647
+2147483647
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+
+test_int64 ------------
+-9223372036854775808
+-9223372036854775808
+-9223372036854775808
+-9223372036854775808
+9223372036854775807
+9223372036854775807
+9223372036854775807
+9223372036854775807
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+
+test_double ------------
+3.141593
+2.718282
+debug_assert PASS
+debug_assert PASS
+
+test_string ------------
+macos
+Ring
+ring-v0.3.0-beta
+ring.wiki
+GeneralSandman
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
