@@ -23,6 +23,7 @@ typedef struct Ring_VirtualMachine          Ring_VirtualMachine;
 typedef struct RingCoroutine                RingCoroutine;
 typedef struct GarbageCollector             GarbageCollector;
 typedef struct ImportPackageInfo            ImportPackageInfo;
+typedef struct RingContext                  RingContext;
 typedef struct CompilerEntry                CompilerEntry;
 typedef struct ExecuterEntry                ExecuterEntry;
 typedef struct Package_Executer             Package_Executer;
@@ -360,6 +361,22 @@ struct ImportPackageInfo {
      */
 };
 
+typedef enum : unsigned char {
+    OPTIMIZE_LEVEL_NONE = 0,
+    OPTIMIZE_LEVEL_1, // 开启常量折叠，简单的死代码消除
+} OPTIMIZE_LEVEL;
+
+struct RingContext {
+    Package*       package;
+    PackageUnit*   package_unit;
+    FunctionTuple* func;
+    Block*         block;
+    Statement*     statement;
+    Expression*    expression;
+
+    unsigned int   optimize_level;
+};
+
 struct CompilerEntry {
     // std::unordered_map<std::string, Package*> package_map;
     std::vector<Package*> package_list;
@@ -486,7 +503,7 @@ struct PackageUnit {
 
     std::vector<ClassDefinition*>   class_definition_list;
     std::vector<Function*>          function_list;
-    std::vector<EnumDeclaration*>   enum_declaration_list;
+    std::vector<EnumDeclaration*>   enum_declaration_list; // TODO: 删除
     std::vector<TypeAlias*>         type_alias_list;
     // TODO: 删除 class_definition_list ，统一通过 type_alias_list 来代替
 
@@ -549,11 +566,19 @@ struct Ring_DeriveType_Func {
 };
 
 
+// TODO: 应该分成这几种类型
+// typedef 定义的类型别名，需要递归查找
+// typedef 定义的类定义
+// teypdef 定义的函数别名
+// typedef 定义的枚举类型
 struct TypeAlias {
-    unsigned int   line_number;
+    unsigned int     line_number;
 
-    char*          identifier;
-    TypeSpecifier* type_specifier;
+    char*            identifier;
+    TypeSpecifier*   type_specifier;
+
+    bool             is_enum;
+    EnumDeclaration* enum_declaration;
 };
 
 // Only used by front-end of compiler.
@@ -587,6 +612,13 @@ struct TypeSpecifier {
     (((type)->kind == RING_BASIC_TYPE_INT)      \
      || ((type)->kind == RING_BASIC_TYPE_INT64) \
      || ((type)->kind == RING_BASIC_TYPE_DOUBLE))
+
+#define TYPE_IS_BASIC(type)                      \
+    (((type)->kind == RING_BASIC_TYPE_BOOL)      \
+     || ((type)->kind == RING_BASIC_TYPE_INT)    \
+     || ((type)->kind == RING_BASIC_TYPE_INT64)  \
+     || ((type)->kind == RING_BASIC_TYPE_DOUBLE) \
+     || ((type)->kind == RING_BASIC_TYPE_STRING))
 
 #define TYPE_IS_BOOL(type) \
     (((type)->kind == RING_BASIC_TYPE_BOOL))
@@ -1539,15 +1571,9 @@ typedef enum {
 
 } ExpressionType;
 
-typedef enum {
-    VARIABLE_TYPE_UNKNOW = 0,
-    VARIABLE_TYPE_BOOL,
-    VARIABLE_TYPE_INT,
-    VARIABLE_TYPE_DOUBLE,
-    VARIABLE_TYPE_STRING,
-    VARIABLE_TYPE_ARRAY,
-    VARIABLE_TYPE_CLASS,
-} VariableType;
+#define EXPR_IS_BASIC_LITERAL(type) \
+    ((type) >= EXPRESSION_TYPE_LITERAL_BOOL && (type) <= EXPRESSION_TYPE_LITERAL_STRING)
+
 
 typedef enum {
     FUNCTION_TYPE_UNKNOW = 0,
@@ -1610,8 +1636,8 @@ struct EnumItemDeclaration {
     unsigned int         line_number;
 
     unsigned int         index_of_enum; // UPDATED_BY_FIX_AST
-    TypeSpecifier*       type_specifier;
     char*                identifier;
+    Expression*          value_expr; // 可能是一个表达式, 也可能是一个常量, 编译期间会进行求值
 
     EnumItemDeclaration* next;
 };
@@ -1781,19 +1807,25 @@ typedef enum {
     IDENTIFIER_EXPRESSION_TYPE_UNKNOW,
     IDENTIFIER_EXPRESSION_TYPE_VARIABLE,
     IDENTIFIER_EXPRESSION_TYPE_FUNC,
+    IDENTIFIER_EXPRESSION_TYPE_ENUM_ITEM,
 } IdentifierExpressionType;
 
 struct IdentifierExpression {
-    unsigned int             line_number;
-    unsigned int             row_number;
+    unsigned int line_number;
+    unsigned int row_number;
 
-    char*                    package_posit;
+    char*        path_segment;
+    // path_segment 代表 a::b
+    // a 可以代表一个package
+    // b 可以表示一个enum
+    // 后续可以是一个空字符串
 
     IdentifierExpressionType type;
     char*                    identifier;
     union {
-        Variable* variable;
-        Function* function;
+        Variable*            variable;
+        Function*            function;
+        EnumItemDeclaration* enum_item;
     } u;
 };
 
@@ -2825,6 +2857,10 @@ typedef enum {
     ERROR_FUNCTION_MISS_BLOCK                   = 300014, // 函数缺少代码块
     ERROR_NATIVE_FUNCTION_PROVIDE_BLOCK         = 300015, // native 函数禁止提供代码块
 
+    ERROR_NOT_FOUND_ENUM                        = 300020, // 找不到 enum
+    ERROR_NOT_SUPPORT_ENUM_TYPE                 = 300021, // 不支持的 enum 类型
+    ERROR_NOT_SUPPORT_ENUM_VALUE                = 300022, // 不支持的 enum 值
+
     // 优化AST错误
     ERROR_CODE_OPTIMIZATION_AST_ERROR,
 
@@ -3281,6 +3317,7 @@ TypeAlias*                    add_type_alias_class(char*            class_identi
 TypeAlias*                    add_type_alias_func(Parameter*          parameter_list,
                                                   FunctionReturnList* return_list,
                                                   Identifier*         identifier);
+TypeAlias*                    add_type_alias_enum(Identifier* identifier, EnumDeclaration* enum_declaration);
 
 Ring_DeriveType_Func*         create_derive_type_func(Parameter*          parameter_list,
                                                       FunctionReturnList* return_list);
@@ -3296,12 +3333,12 @@ Parameter*                    parameter_list_add_statement(Parameter* head, Para
 Package*                      create_package_info(Identifier* identifier);
 void                          import_package_list_add_item(char* package_name, char* rename);
 
-EnumDeclaration*              start_enum_declaration(TypeSpecifier* type_specifier, char* class_identifier);
+EnumDeclaration*              start_enum_declaration(TypeSpecifier* type_specifier, Identifier* identifier);
 EnumDeclaration*              finish_enum_declaration(EnumDeclaration*     enum_decl,
                                                       EnumItemDeclaration* enum_item_decl);
 EnumItemDeclaration*          enum_item_declaration_list_add_item(EnumItemDeclaration* list,
                                                                   EnumItemDeclaration* decl);
-EnumItemDeclaration*          create_enum_item_declaration(char* identifier);
+EnumItemDeclaration*          create_enum_item_declaration(char* identifier, Expression* value_expr);
 
 ClassDefinition*              start_class_definition(char* class_identifier);
 ClassDefinition*              finish_class_definition(ClassDefinition*        class_def,
@@ -3375,8 +3412,11 @@ void                        fix_function_definition(Function* func);
 void                        fix_function_block(Function* func);
 void                        fix_statement_list(Statement* statement_list, Block* block, FunctionTuple* func);
 void                        fix_statement(Statement* statement, Block* block, FunctionTuple* func);
-void                        fix_expression(Expression* expression, Block* block, FunctionTuple* func);
+void                        fix_expression(Expression* expression,
+                                           Block* block, FunctionTuple* func,
+                                           RingContext ctx);
 void                        add_local_declaration(VarDecl* declaration, Block* block, FunctionTuple* func);
+void                        fix_enum_declaration(EnumDeclaration* declaration, Package* curr_package, RingContext ctx);
 void                        fix_type_specfier(TypeSpecifier* type_specifier, Package* curr_package);
 void                        fix_block(Block* block, FunctionTuple* func);
 void                        fix_if_statement(IfStatement* if_statement, Block* block, FunctionTuple* func);
@@ -3395,7 +3435,8 @@ void                        fix_return_statement(ReturnStatement* return_stateme
 void                        fix_defer_statement(DeferStatement* defer_statement, Block* block, FunctionTuple* func);
 void                        fix_identifier_expression(Expression*           expression,
                                                       IdentifierExpression* identifier_expression,
-                                                      Block*                block);
+                                                      Block*                block,
+                                                      RingContext           ctx);
 void                        fix_assign_expression(AssignExpression* expression, Block* block, FunctionTuple* func);
 void                        fix_binary_concat_expression(Expression*       expression,
                                                          BinaryExpression* binary_expression,
@@ -3403,30 +3444,37 @@ void                        fix_binary_concat_expression(Expression*       expre
 void                        fix_binary_math_expression(Expression*       expression,
                                                        ExpressionType    expression_type,
                                                        BinaryExpression* binary_expression,
-                                                       Block* block, FunctionTuple* func);
+                                                       Block* block, FunctionTuple* func,
+                                                       RingContext ctx);
 void                        fix_binary_logical_expression(Expression*       expression,
                                                           ExpressionType    expression_type,
                                                           BinaryExpression* binary_expression,
-                                                          Block* block, FunctionTuple* func);
+                                                          Block* block, FunctionTuple* func,
+                                                          RingContext ctx);
 void                        fix_binary_relational_expression(Expression*       expression,
                                                              ExpressionType    expression_type,
                                                              BinaryExpression* binary_expression,
-                                                             Block* block, FunctionTuple* func);
+                                                             Block* block, FunctionTuple* func,
+                                                             RingContext ctx);
 
 
 void                        fix_bitwise_binary_expression(Expression*       expression,
                                                           ExpressionType    expression_type,
                                                           BinaryExpression* binary_expression,
-                                                          Block* block, FunctionTuple* func);
+                                                          Block* block, FunctionTuple* func,
+                                                          RingContext ctx);
 void                        fix_bitwise_unitary_not_expression(Expression* expression,
                                                                Expression* unitary_expression,
-                                                               Block* block, FunctionTuple* func);
+                                                               Block* block, FunctionTuple* func,
+                                                               RingContext ctx);
 void                        fix_unitary_minus_expression(Expression* expression,
                                                          Expression* unitary_expression,
-                                                         Block* block, FunctionTuple* func);
+                                                         Block* block, FunctionTuple* func,
+                                                         RingContext ctx);
 void                        fix_unitary_not_expression(Expression* expression,
                                                        Expression* unitary_expression,
-                                                       Block* block, FunctionTuple* func);
+                                                       Block* block, FunctionTuple* func,
+                                                       RingContext ctx);
 void                        fix_unitary_increase_decrease_expression(Expression* expression,
                                                                      Expression* unitary_expression,
                                                                      Block* block, FunctionTuple* func);
@@ -3485,10 +3533,16 @@ void                        fix_iife_expression(Expression*                   ex
 void                        add_parameter_to_declaration(Parameter* parameter, Block* block);
 
 
+EnumDeclaration*            resolve_enum_decl(char*    enum_identifier,
+                                              Block*   block,
+                                              Package* current_package);
+EnumItemDeclaration*        resolve_enum_item(EnumDeclaration* enum_decl, char* enum_item_identifier);
+
 Package*                    resolve_package(char*        package_posit,
                                             unsigned int line_number,
                                             Block*       block,
-                                            Package*     current_package);
+                                            Package*     current_package,
+                                            RingContext  ctx);
 Variable*                   resolve_variable(Package* package, char* identifier, Block* block);
 Variable*                   resolve_variable_global(Package* package, char* identifier, Block* block);
 Variable*                   resolve_variable_recur(Package* package, char* identifier, Block* block);

@@ -512,9 +512,14 @@ attribute
     ;
 
 enum_declaration
-    : TOKEN_ENUM type_specifier IDENTIFIER TOKEN_LC { $<m_enum_declaration>$ = start_enum_declaration($2, $3); } enum_item_declaration_list TOKEN_RC
+    : TOKEN_TYPEDEF identifier TOKEN_ASSIGN TOKEN_ENUM type_specifier 
+    TOKEN_LC 
+    { $<m_enum_declaration>$ = start_enum_declaration($5, $2); } 
+    enum_item_declaration_list 
+    TOKEN_RC
     {
-        $<m_enum_declaration>$ = finish_enum_declaration($<m_enum_declaration>5, $6);
+        $<m_enum_declaration>$ = finish_enum_declaration($<m_enum_declaration>7, $8);
+        $<m_type_alias_def>$ = add_type_alias_enum($2, $<m_enum_declaration>7);
     }
     ;
 
@@ -532,7 +537,7 @@ enum_item_declaration_list
 enum_item_declaration
     : IDENTIFIER TOKEN_ASSIGN expression TOKEN_SEMICOLON
     {
-        $$ = create_enum_item_declaration($1);
+        $$ = create_enum_item_declaration($1, $3);
     }
     ;
 

@@ -57,7 +57,7 @@ Expression* expression_add_package_posit(Expression* expression, char* package_p
     // 将 package_posit 注入到最底层的 Expression
     switch (expression->type) {
     case EXPRESSION_TYPE_IDENTIFIER:
-        expression->u.identifier_expression->package_posit = package_posit;
+        expression->u.identifier_expression->path_segment = package_posit;
         break;
     case EXPRESSION_TYPE_FUNCTION_CALL:
         expression->u.function_call_expression->package_posit = package_posit;
@@ -75,7 +75,7 @@ Expression* create_expression_identifier(char* identifier) {
 
     IdentifierExpression* identifier_expression = (IdentifierExpression*)mem_alloc(get_front_mem_pool(), sizeof(IdentifierExpression));
     identifier_expression->line_number          = package_unit_get_line_number();
-    identifier_expression->package_posit        = nullptr;
+    identifier_expression->path_segment         = nullptr;
     identifier_expression->type                 = IDENTIFIER_EXPRESSION_TYPE_UNKNOW;
     identifier_expression->identifier           = identifier;
     identifier_expression->u.variable           = nullptr;
@@ -491,7 +491,7 @@ FunctionCallExpression* create_function_call_expression(Expression*   func_expr,
     char* func_identifier = nullptr;
 
     if (func_expr->type == EXPRESSION_TYPE_IDENTIFIER) {
-        package_posit   = func_expr->u.identifier_expression->package_posit;
+        package_posit   = func_expr->u.identifier_expression->path_segment;
         func_identifier = func_expr->u.identifier_expression->identifier;
     }
 
@@ -1315,6 +1315,8 @@ TypeAlias* add_type_alias_class(char*            class_identifier,
     type_alias->line_number           = package_unit_get_line_number();
     type_alias->identifier            = class_identifier;
     type_alias->type_specifier        = type_specifier;
+    type_alias->is_enum               = false;
+    type_alias->enum_declaration      = nullptr;
 
     package_unit_add_type_alias(type_alias);
 
@@ -1403,6 +1405,21 @@ TypeAlias* add_type_alias_func(Parameter*          parameter_list,
     type_alias->line_number              = package_unit_get_line_number();
     type_alias->identifier               = identifier->name;
     type_alias->type_specifier           = type_specifier;
+    type_alias->is_enum                  = false;
+    type_alias->enum_declaration         = nullptr;
+
+    package_unit_add_type_alias(type_alias);
+
+    return type_alias;
+}
+
+TypeAlias* add_type_alias_enum(Identifier* identifier, EnumDeclaration* enum_declaration) {
+    TypeAlias* type_alias        = (TypeAlias*)mem_alloc(get_front_mem_pool(), sizeof(TypeAlias));
+    type_alias->line_number      = package_unit_get_line_number();
+    type_alias->identifier       = identifier->name;
+    type_alias->type_specifier   = enum_declaration->type_specifier;
+    type_alias->is_enum          = true;
+    type_alias->enum_declaration = enum_declaration;
 
     package_unit_add_type_alias(type_alias);
 
@@ -1636,7 +1653,7 @@ void import_package_list_add_item(char* package_name, char* rename) {
     get_package_unit()->import_package_list.push_back(import_package_info);
 }
 
-EnumDeclaration* start_enum_declaration(TypeSpecifier* type_specifier, char* identifier) {
+EnumDeclaration* start_enum_declaration(TypeSpecifier* type_specifier, Identifier* identifier) {
     debug_ast_info_with_yellow("\t");
 
     EnumDeclaration* enum_decl   = (EnumDeclaration*)mem_alloc(get_front_mem_pool(), sizeof(EnumDeclaration));
@@ -1645,11 +1662,13 @@ EnumDeclaration* start_enum_declaration(TypeSpecifier* type_specifier, char* ide
     enum_decl->end_line_number   = package_unit_get_line_number();
     enum_decl->enum_index        = 0; // UPDATED_BY_FIX_AST
     enum_decl->type_specifier    = type_specifier;
-    enum_decl->identifier        = identifier;
+    enum_decl->identifier        = identifier->name;
     enum_decl->enum_item_size    = 0;
     enum_decl->enum_item_list    = nullptr;
 
 
+    // TODO: 删除 enum_declaration_list ，统一通过 type_alias_list 来代替
+    // add_type_alias_enum
     package_unit_add_enum_definition(enum_decl);
 
     return enum_decl;
@@ -1694,16 +1713,14 @@ EnumItemDeclaration* enum_item_declaration_list_add_item(EnumItemDeclaration* li
     return list;
 }
 
-EnumItemDeclaration* create_enum_item_declaration(char* identifier) {
+EnumItemDeclaration* create_enum_item_declaration(char* identifier, Expression* value_expr) {
     debug_ast_info_with_yellow("\t");
-
-    // TODO: 继续实现
 
     EnumItemDeclaration* enum_item_decl = (EnumItemDeclaration*)mem_alloc(get_front_mem_pool(), sizeof(EnumItemDeclaration));
     enum_item_decl->line_number         = package_unit_get_line_number();
     enum_item_decl->index_of_enum       = 0; // UPDATED_BY_FIX_AST
-    enum_item_decl->type_specifier      = nullptr;
     enum_item_decl->identifier          = identifier;
+    enum_item_decl->value_expr          = value_expr;
     enum_item_decl->next                = nullptr;
 
     return enum_item_decl;

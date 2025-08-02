@@ -1856,6 +1856,11 @@ void generate_vmcode_from_identifier_expression(Package_Executer*     executer,
 
     } break;
 
+    case IDENTIFIER_EXPRESSION_TYPE_ENUM_ITEM: {
+        EnumItemDeclaration* enum_item = identifier_expression->u.enum_item;
+        generate_vmcode_from_expression(executer, enum_item->value_expr, opcode_buffer);
+    } break;
+
 
     default:
         break;

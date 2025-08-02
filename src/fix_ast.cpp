@@ -68,6 +68,22 @@ extern Ring_Command_Arg global_ring_command_arg;
 // 这里修正是有依赖关系的，需要重构，根据依赖图需要重新设计
 void ring_compiler_fix_ast(Package* package) {
 
+    // 一个package 创建一个 context
+    RingContext ctx = RingContext{
+        .package        = package,
+
+        .optimize_level = global_ring_command_arg.optimize_level,
+    };
+
+    // step-0. fix enum
+    for (TypeAlias* type_alias : package->type_alias_list) {
+        fix_type_specfier(type_alias->type_specifier, package);
+
+        if (type_alias->is_enum) {
+            fix_enum_declaration(type_alias->enum_declaration, package, ctx);
+        }
+    }
+
 
     // step-1. fix class list
     unsigned int class_index = 0;
@@ -266,7 +282,7 @@ void fix_statement_list(Statement* statement_list, Block* block, FunctionTuple* 
 void fix_statement(Statement* statement, Block* block, FunctionTuple* func) {
     switch (statement->type) {
     case STATEMENT_TYPE_EXPRESSION:
-        fix_expression(statement->u.expression, block, func);
+        fix_expression(statement->u.expression, block, func, RingContext{});
         break;
     case STATEMENT_TYPE_VAR_DECL:
         add_local_declaration(statement->u.var_decl_statement, block, func);
@@ -312,7 +328,8 @@ void fix_statement(Statement* statement, Block* block, FunctionTuple* func) {
 
 // fix_expression 会根据 next 指针递归向下遍历
 void fix_expression(Expression* expression,
-                    Block* block, FunctionTuple* func) {
+                    Block* block, FunctionTuple* func,
+                    RingContext ctx) {
 
 BEGIN:
     if (expression == nullptr) {
@@ -345,7 +362,7 @@ BEGIN:
         break;
 
     case EXPRESSION_TYPE_IDENTIFIER:
-        fix_identifier_expression(expression, expression->u.identifier_expression, block);
+        fix_identifier_expression(expression, expression->u.identifier_expression, block, ctx);
         break;
 
     case EXPRESSION_TYPE_FUNCTION_CALL:
@@ -382,11 +399,11 @@ BEGIN:
     case EXPRESSION_TYPE_ARITHMETIC_MUL:
     case EXPRESSION_TYPE_ARITHMETIC_DIV:
     case EXPRESSION_TYPE_ARITHMETIC_MOD:
-        fix_binary_math_expression(expression, expression->type, expression->u.binary_expression, block, func);
+        fix_binary_math_expression(expression, expression->type, expression->u.binary_expression, block, func, ctx);
         break;
     case EXPRESSION_TYPE_LOGICAL_AND:
     case EXPRESSION_TYPE_LOGICAL_OR:
-        fix_binary_logical_expression(expression, expression->type, expression->u.binary_expression, block, func);
+        fix_binary_logical_expression(expression, expression->type, expression->u.binary_expression, block, func, ctx);
         break;
     case EXPRESSION_TYPE_RELATIONAL_EQ:
     case EXPRESSION_TYPE_RELATIONAL_NE:
@@ -394,26 +411,26 @@ BEGIN:
     case EXPRESSION_TYPE_RELATIONAL_GE:
     case EXPRESSION_TYPE_RELATIONAL_LT:
     case EXPRESSION_TYPE_RELATIONAL_LE:
-        fix_binary_relational_expression(expression, expression->type, expression->u.binary_expression, block, func);
+        fix_binary_relational_expression(expression, expression->type, expression->u.binary_expression, block, func, ctx);
         break;
 
     case EXPRESSION_TYPE_BITWISE_UNITARY_NOT:
-        fix_bitwise_unitary_not_expression(expression, expression->u.unitary_expression, block, func);
+        fix_bitwise_unitary_not_expression(expression, expression->u.unitary_expression, block, func, ctx);
         break;
     case EXPRESSION_TYPE_BITWISE_AND:
     case EXPRESSION_TYPE_BITWISE_OR:
     case EXPRESSION_TYPE_BITWISE_XOR:
     case EXPRESSION_TYPE_BITWISE_LSH:
     case EXPRESSION_TYPE_BITWISE_RSH:
-        fix_bitwise_binary_expression(expression, expression->type, expression->u.binary_expression, block, func);
+        fix_bitwise_binary_expression(expression, expression->type, expression->u.binary_expression, block, func, ctx);
         break;
 
 
     case EXPRESSION_TYPE_ARITHMETIC_UNITARY_MINUS:
-        fix_unitary_minus_expression(expression, expression->u.unitary_expression, block, func);
+        fix_unitary_minus_expression(expression, expression->u.unitary_expression, block, func, ctx);
         break;
     case EXPRESSION_TYPE_LOGICAL_UNITARY_NOT:
-        fix_unitary_not_expression(expression, expression->u.unitary_expression, block, func);
+        fix_unitary_not_expression(expression, expression->u.unitary_expression, block, func, ctx);
         break;
     case EXPRESSION_TYPE_UNITARY_INCREASE:
     case EXPRESSION_TYPE_UNITARY_DECREASE:
@@ -447,7 +464,7 @@ BEGIN:
         break;
 
     case EXPRESSION_TYPE_CAST:
-        fix_expression(expression->u.cast_expression->operand, block, func);
+        fix_expression(expression->u.cast_expression->operand, block, func, ctx);
         break;
 
     default: break;
@@ -506,6 +523,71 @@ void add_local_declaration(VarDecl* declaration, Block* block, FunctionTuple* fu
     }
 }
 
+void fix_enum_declaration(EnumDeclaration* declaration, Package* curr_package, RingContext ctx) {
+    ctx.optimize_level = OPTIMIZE_LEVEL_1; // 强制开启优化
+
+    // 必须是基础类型
+    // Ring-Compiler-Error-Report ERROR_NOT_SUPPORT_ENUM_VALUE
+    if (!TYPE_IS_BASIC(declaration->type_specifier)) {
+        DEFINE_ERROR_REPORT_STR;
+
+        compile_err_buf = sprintf_string(
+            "enum `%s` only support basic type bool/int/int64/double/string; E:%d.",
+            declaration->identifier,
+            ERROR_MISS_CLASS_DEFINITION);
+
+
+        ErrorReportContext context = {
+            .package                 = nullptr,
+            .package_unit            = get_package_unit(),
+            .source_file_name        = get_package_unit()->current_file_name,
+            .line_content            = package_unit_get_line_content(declaration->start_line_number),
+            .line_number             = declaration->start_line_number,
+            .column_number           = package_unit_get_column_number(),
+            .error_message           = std::string(compile_err_buf),
+            .advice                  = std::string(compile_adv_buf),
+            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+            .ring_compiler_file      = (char*)__FILE__,
+            .ring_compiler_file_line = __LINE__,
+        };
+        ring_compile_error_report(&context);
+    }
+
+    EnumItemDeclaration* pos   = declaration->enum_item_list;
+    unsigned int         index = 0;
+    for (; pos != nullptr; pos = pos->next, index++) {
+        pos->index_of_enum = index;
+
+        fix_expression(pos->value_expr, nullptr, nullptr, ctx);
+
+        // Ring-Compiler-Error-Report ERROR_NOT_SUPPORT_ENUM_VALUE
+        if (!EXPR_IS_BASIC_LITERAL(pos->value_expr->type)) {
+            DEFINE_ERROR_REPORT_STR;
+
+            compile_err_buf = sprintf_string(
+                "enum `%s` invalid:only basic literal is allowed as enum value; E:%d.",
+                pos->identifier,
+                ERROR_MISS_CLASS_DEFINITION);
+
+
+            ErrorReportContext context = {
+                .package                 = nullptr,
+                .package_unit            = get_package_unit(),
+                .source_file_name        = get_package_unit()->current_file_name,
+                .line_content            = package_unit_get_line_content(pos->line_number),
+                .line_number             = pos->line_number,
+                .column_number           = package_unit_get_column_number(),
+                .error_message           = std::string(compile_err_buf),
+                .advice                  = std::string(compile_adv_buf),
+                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+                .ring_compiler_file      = (char*)__FILE__,
+                .ring_compiler_file_line = __LINE__,
+            };
+            ring_compile_error_report(&context);
+        }
+    }
+}
+
 // curr_package 为定义/使用 TypeSpecifier 所在的Package
 void fix_type_specfier(TypeSpecifier* type_specifier, Package* curr_package) {
     if (type_specifier == nullptr) {
@@ -523,7 +605,7 @@ void fix_type_specfier(TypeSpecifier* type_specifier, Package* curr_package) {
         assert(type_specifier->identifier != nullptr);
 
         // step-2. 是个函数别名
-        Package* package = resolve_package(type_specifier->package_posit, type_specifier->line_number, nullptr, curr_package);
+        Package* package = resolve_package(type_specifier->package_posit, type_specifier->line_number, nullptr, curr_package, RingContext{});
         type_alias       = search_type_alias(package, type_specifier->identifier);
         if (type_alias != nullptr) {
             // shallow copy
@@ -599,7 +681,7 @@ void fix_block(Block* block, FunctionTuple* func) {
 
 void fix_if_statement(IfStatement* if_statement, Block* block, FunctionTuple* func) {
 
-    fix_expression(if_statement->condition_expression, block, func);
+    fix_expression(if_statement->condition_expression, block, func, RingContext{});
 
     if (global_ring_command_arg.optimize_level > 0) {
         crop_if_statement(if_statement, block, func);
@@ -610,7 +692,7 @@ void fix_if_statement(IfStatement* if_statement, Block* block, FunctionTuple* fu
 
     ElseIfStatement* pos = if_statement->elseif_list;
     for (; pos; pos = pos->next) {
-        fix_expression(pos->condition_expression, block, func);
+        fix_expression(pos->condition_expression, block, func, RingContext{});
         fix_block(pos->elseif_block, func);
     }
 }
@@ -623,9 +705,9 @@ void fix_for_statement(ForStatement* for_statement, Block* block, FunctionTuple*
     if (for_statement->type == FOR_STATEMENT_TYPE_TERNARY) {
         ForTernaryStatement* ternary_statement = for_statement->u.ternary_statement;
 
-        fix_expression(ternary_statement->init_expression, block, func);
-        fix_expression(ternary_statement->condition_expression, block, func);
-        fix_expression(ternary_statement->post_expression, block, func);
+        fix_expression(ternary_statement->init_expression, block, func, RingContext{});
+        fix_expression(ternary_statement->condition_expression, block, func, RingContext{});
+        fix_expression(ternary_statement->post_expression, block, func, RingContext{});
     } else if (for_statement->type == FOR_STATEMENT_TYPE_RANGE) {
         fix_for_range_statement(for_statement->u.range_statement, block, func);
     }
@@ -645,7 +727,7 @@ void fix_for_range_statement(ForRangeStatement* for_range_statement,
     Expression*      left       = for_range_statement->left;
     RangeExpression* range_expr = for_range_statement->range_expr;
 
-    fix_expression(left, block, func);
+    fix_expression(left, block, func, RingContext{});
     fix_range_expression(range_expr, block, func);
 
     std::vector<TypeSpecifier*> left_types  = get_type_specifier_from_expression_list(left);
@@ -728,10 +810,10 @@ void fix_range_expression(RangeExpression* range_expression,
 
     // TODO: 需要继续拆分
     if (range_expression->type == RANGE_EXPRESSION_TYPE_STEP) {
-        fix_expression(range_expression->u.sub_step_range_expr->start_expr, block, func);
-        fix_expression(range_expression->u.sub_step_range_expr->end_expr, block, func);
+        fix_expression(range_expression->u.sub_step_range_expr->start_expr, block, func, RingContext{});
+        fix_expression(range_expression->u.sub_step_range_expr->end_expr, block, func, RingContext{});
         if (range_expression->u.sub_step_range_expr->step_expr != nullptr) {
-            fix_expression(range_expression->u.sub_step_range_expr->step_expr, block, func);
+            fix_expression(range_expression->u.sub_step_range_expr->step_expr, block, func, RingContext{});
         }
 
         // 判断类型
@@ -764,7 +846,7 @@ void fix_range_expression(RangeExpression* range_expression,
 
         // TODO:
     } else if (range_expression->type == RANGE_EXPRESSION_TYPE_LINEAR) {
-        fix_expression(range_expression->u.sub_linear_range_expr->collection_expr, block, func);
+        fix_expression(range_expression->u.sub_linear_range_expr->collection_expr, block, func, RingContext{});
 
         // TODO: 还需要判断 size
         // range_expression->u.sub_linear_range_expr->collection_expr->convert_type_size
@@ -828,10 +910,10 @@ void fix_dofor_statement(DoForStatement* dofor_statement, Block* block, Function
         return;
     }
 
-    fix_expression(dofor_statement->init_expression, block, func);
+    fix_expression(dofor_statement->init_expression, block, func, RingContext{});
     fix_block(dofor_statement->block, func);
-    fix_expression(dofor_statement->condition_expression, block, func);
-    fix_expression(dofor_statement->post_expression, block, func);
+    fix_expression(dofor_statement->condition_expression, block, func, RingContext{});
+    fix_expression(dofor_statement->post_expression, block, func, RingContext{});
 }
 
 void fix_break_statement(BreakStatement* break_statement, Block* block, FunctionTuple* func) {
@@ -947,7 +1029,7 @@ void fix_return_statement(ReturnStatement* return_statement, Block* block, Funct
             has_call = true;
         }
 
-        fix_expression(pos, block, func);
+        fix_expression(pos, block, func, RingContext{});
 
         // 函数调用有可能有多个返回值
         for (unsigned int i = 0; i < pos->convert_type_size; i++) {
@@ -1073,16 +1155,69 @@ void fix_defer_statement(DeferStatement* defer_statement, Block* block, Function
 
 void fix_identifier_expression(Expression*           expression,
                                IdentifierExpression* identifier_expression,
-                               Block*                block) {
+                               Block*                block,
+                               RingContext           ctx) {
 
     assert(identifier_expression != nullptr);
 
     // 一个identifier 有可能是 一个变量，也有可能是函数
-    Variable*      variable       = nullptr;
-    Function*      function       = nullptr;
-    TypeSpecifier* type_specifier = nullptr;
+    Variable*        variable         = nullptr;
+    Function*        function         = nullptr;
+    TypeSpecifier*   type_specifier   = nullptr;
 
-    Package*       package        = resolve_package(identifier_expression->package_posit, identifier_expression->line_number, block, nullptr);
+    EnumDeclaration* enum_declaration = nullptr;
+    enum_declaration                  = resolve_enum_decl(identifier_expression->path_segment, block, nullptr);
+    if (enum_declaration != nullptr) {
+        EnumItemDeclaration* enum_item = resolve_enum_item(enum_declaration, identifier_expression->identifier);
+        // Ring-Compiler-Error-Report ERROR_NOT_FOUND_ENUM
+        if (enum_item == nullptr) {
+            DEFINE_ERROR_REPORT_STR;
+
+            compile_err_buf = sprintf_string(
+                "not found `%s` in enum `%s`; E:%d.",
+                identifier_expression->identifier,
+                identifier_expression->path_segment,
+                ERROR_NOT_FOUND_ENUM);
+
+
+            ErrorReportContext context = {
+                .package                 = nullptr,
+                .package_unit            = get_package_unit(),
+                .source_file_name        = get_package_unit()->current_file_name,
+                .line_content            = package_unit_get_line_content(identifier_expression->line_number),
+                .line_number             = identifier_expression->line_number,
+                .column_number           = package_unit_get_column_number(),
+                .error_message           = std::string(compile_err_buf),
+                .advice                  = std::string(compile_adv_buf),
+                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+                .ring_compiler_file      = (char*)__FILE__,
+                .ring_compiler_file_line = __LINE__,
+            };
+            ring_compile_error_report(&context);
+            return;
+        }
+
+        assert(enum_item->value_expr->type == EXPRESSION_TYPE_LITERAL_BOOL
+               || enum_item->value_expr->type == EXPRESSION_TYPE_LITERAL_INT
+               || enum_item->value_expr->type == EXPRESSION_TYPE_LITERAL_INT64
+               || enum_item->value_expr->type == EXPRESSION_TYPE_LITERAL_DOUBLE
+               || enum_item->value_expr->type == EXPRESSION_TYPE_LITERAL_STRING);
+        // TODO: error-report 必须在编译期间确定
+        // TODO: -O1 优化 常量折叠
+
+        identifier_expression->type        = IDENTIFIER_EXPRESSION_TYPE_ENUM_ITEM;
+        identifier_expression->u.enum_item = enum_item;
+
+        type_specifier                     = enum_declaration->type_specifier;
+
+        EXPRESSION_CLEAR_CONVERT_TYPE(expression);
+        EXPRESSION_ADD_CONVERT_TYPE(expression, type_specifier);
+
+        return;
+    }
+
+    Package* package = nullptr;
+    package          = resolve_package(identifier_expression->path_segment, identifier_expression->line_number, block, nullptr, ctx);
     //
     variable = resolve_variable(package, identifier_expression->identifier, block);
     if (variable != nullptr) {
@@ -1160,7 +1295,7 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
     // TODO: 后续修改为 get_type_specifier_from_expression_list
     for (Expression* pos = expression->left; pos; pos = pos->next, left_expr_num++) {
         // FIXME: 如果 pos->next != nullptr, 会重复修正，耗时增加
-        fix_expression(pos, block, func);
+        fix_expression(pos, block, func, RingContext{});
         left_convert_type.push_back(pos->convert_type[0]);
     }
     assert(left_expr_num == left_convert_type.size());
@@ -1181,7 +1316,7 @@ void fix_assign_expression(AssignExpression* expression, Block* block, FunctionT
         }
 
         // FIXME: 如果 pos->next != nullptr, 会重复修正，耗时增加
-        fix_expression(pos, block, func);
+        fix_expression(pos, block, func, RingContext{});
 
         for (unsigned int i = 0; i < pos->convert_type_size; i++) {
             right_convert_type.push_back(pos->convert_type[i]);
@@ -1318,8 +1453,8 @@ void fix_binary_concat_expression(Expression*       expression,
     Expression* left  = binary_expression->left_expression;
     Expression* right = binary_expression->right_expression;
 
-    fix_expression(left, block, func);
-    fix_expression(right, block, func);
+    fix_expression(left, block, func, RingContext{});
+    fix_expression(right, block, func, RingContext{});
 
     // 上一层函数一定判断数组了，这里不用判断
     TypeSpecifier* left_type  = left->convert_type[0];
@@ -1362,7 +1497,8 @@ void fix_binary_concat_expression(Expression*       expression,
 void fix_binary_math_expression(Expression*       expression,
                                 ExpressionType    expression_type,
                                 BinaryExpression* binary_expression,
-                                Block* block, FunctionTuple* func) {
+                                Block* block, FunctionTuple* func,
+                                RingContext ctx) {
 
     assert(expression != nullptr);
     assert(binary_expression != nullptr);
@@ -1372,8 +1508,8 @@ void fix_binary_math_expression(Expression*       expression,
 
     std::string oper  = formate_operator(expression_type);
 
-    fix_expression(left, block, func);
-    fix_expression(right, block, func);
+    fix_expression(left, block, func, RingContext{});
+    fix_expression(right, block, func, RingContext{});
 
     // 检查两边操作数的合法性
     if (left->convert_type_size != 1
@@ -1535,7 +1671,7 @@ void fix_binary_math_expression(Expression*       expression,
         expression->convert_type[0]->kind = RING_BASIC_TYPE_DOUBLE;
     }
 
-    if (global_ring_command_arg.optimize_level > 0) {
+    if (ctx.optimize_level > 0) {
         crop_binary_match_expression(expression, binary_expression, block, func);
     }
 }
@@ -1543,7 +1679,8 @@ void fix_binary_math_expression(Expression*       expression,
 void fix_binary_logical_expression(Expression*       expression,
                                    ExpressionType    expression_type,
                                    BinaryExpression* binary_expression,
-                                   Block* block, FunctionTuple* func) {
+                                   Block* block, FunctionTuple* func,
+                                   RingContext ctx) {
 
     assert(expression != nullptr);
     assert(binary_expression != nullptr);
@@ -1553,8 +1690,8 @@ void fix_binary_logical_expression(Expression*       expression,
 
     std::string oper  = formate_operator(expression_type);
 
-    fix_expression(left, block, func);
-    fix_expression(right, block, func);
+    fix_expression(left, block, func, RingContext{});
+    fix_expression(right, block, func, RingContext{});
 
     // 检查两边操作数的合法性
     if (left->convert_type_size != 1
@@ -1664,7 +1801,7 @@ void fix_binary_logical_expression(Expression*       expression,
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, &bool_type_specifier);
 
-    if (global_ring_command_arg.optimize_level > 0) {
+    if (ctx.optimize_level > 0) {
         crop_binary_logical_expression(expression, expression_type, binary_expression, block, func);
     }
 }
@@ -1672,7 +1809,8 @@ void fix_binary_logical_expression(Expression*       expression,
 void fix_binary_relational_expression(Expression*       expression,
                                       ExpressionType    expression_type,
                                       BinaryExpression* binary_expression,
-                                      Block* block, FunctionTuple* func) {
+                                      Block* block, FunctionTuple* func,
+                                      RingContext ctx) {
 
     assert(expression != nullptr);
     assert(binary_expression != nullptr);
@@ -1688,8 +1826,8 @@ void fix_binary_relational_expression(Expression*       expression,
 
     std::string oper  = formate_operator(expression_type);
 
-    fix_expression(left, block, func);
-    fix_expression(right, block, func);
+    fix_expression(left, block, func, RingContext{});
+    fix_expression(right, block, func, RingContext{});
 
     // 检查两边操作数的合法性
     if (left->convert_type_size != 1
@@ -1879,7 +2017,7 @@ void fix_binary_relational_expression(Expression*       expression,
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, &bool_type_specifier);
 
-    if (global_ring_command_arg.optimize_level > 0) {
+    if (ctx.optimize_level > 0) {
         crop_binary_relational_expression(expression, expression_type, binary_expression, block, func);
     }
 }
@@ -1887,7 +2025,8 @@ void fix_binary_relational_expression(Expression*       expression,
 void fix_bitwise_binary_expression(Expression*       expression,
                                    ExpressionType    expression_type,
                                    BinaryExpression* binary_expression,
-                                   Block* block, FunctionTuple* func) {
+                                   Block* block, FunctionTuple* func,
+                                   RingContext ctx) {
 
     assert(expression != nullptr);
     assert(binary_expression != nullptr);
@@ -1897,8 +2036,8 @@ void fix_bitwise_binary_expression(Expression*       expression,
 
     std::string oper  = formate_operator(expression_type);
 
-    fix_expression(left, block, func);
-    fix_expression(right, block, func);
+    fix_expression(left, block, func, RingContext{});
+    fix_expression(right, block, func, RingContext{});
 
     // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
     if (left->convert_type_size != 1
@@ -2004,17 +2143,18 @@ void fix_bitwise_binary_expression(Expression*       expression,
     EXPRESSION_CLEAR_CONVERT_TYPE(expression);
     EXPRESSION_ADD_CONVERT_TYPE(expression, left->convert_type[0]);
 
-    if (global_ring_command_arg.optimize_level > 0) {
+    if (ctx.optimize_level > 0) {
         crop_binary_bitwise_expression(expression, binary_expression, block, func);
     }
 }
 
 void fix_bitwise_unitary_not_expression(Expression* expression,
                                         Expression* unitary_expression,
-                                        Block* block, FunctionTuple* func) {
+                                        Block* block, FunctionTuple* func,
+                                        RingContext ctx) {
 
 
-    fix_expression(unitary_expression, block, func);
+    fix_expression(unitary_expression, block, func, RingContext{});
 
     // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
     if (unitary_expression->convert_type_size != 1
@@ -2047,7 +2187,7 @@ void fix_bitwise_unitary_not_expression(Expression* expression,
     }
 
 
-    if (global_ring_command_arg.optimize_level > 0) {
+    if (ctx.optimize_level > 0) {
         crop_unitary_expression(expression, unitary_expression, block, func);
     }
 
@@ -2057,9 +2197,10 @@ void fix_bitwise_unitary_not_expression(Expression* expression,
 
 void fix_unitary_minus_expression(Expression* expression,
                                   Expression* unitary_expression,
-                                  Block* block, FunctionTuple* func) {
+                                  Block* block, FunctionTuple* func,
+                                  RingContext ctx) {
 
-    fix_expression(unitary_expression, block, func);
+    fix_expression(unitary_expression, block, func, RingContext{});
 
     // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
     if (unitary_expression->convert_type_size != 1
@@ -2092,7 +2233,7 @@ void fix_unitary_minus_expression(Expression* expression,
     }
 
 
-    if (global_ring_command_arg.optimize_level > 0) {
+    if (ctx.optimize_level > 0) {
         crop_unitary_expression(expression, unitary_expression, block, func);
     }
 
@@ -2102,9 +2243,10 @@ void fix_unitary_minus_expression(Expression* expression,
 
 void fix_unitary_not_expression(Expression* expression,
                                 Expression* unitary_expression,
-                                Block* block, FunctionTuple* func) {
+                                Block* block, FunctionTuple* func,
+                                RingContext ctx) {
 
-    fix_expression(unitary_expression, block, func);
+    fix_expression(unitary_expression, block, func, RingContext{});
 
     // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
     if (unitary_expression->convert_type_size != 1
@@ -2136,7 +2278,7 @@ void fix_unitary_not_expression(Expression* expression,
         ring_compile_error_report(&context);
     }
 
-    if (global_ring_command_arg.optimize_level > 0) {
+    if (ctx.optimize_level > 0) {
         crop_unitary_expression(expression, unitary_expression, block, func);
     }
 
@@ -2149,7 +2291,7 @@ void fix_unitary_increase_decrease_expression(Expression* expression,
                                               Expression* unitary_expression,
                                               Block* block, FunctionTuple* func) {
 
-    fix_expression(unitary_expression, block, func);
+    fix_expression(unitary_expression, block, func, RingContext{});
 
     // Ring-Compiler-Error-Report ERROR_OPER_INVALID_USE
     if (unitary_expression->convert_type_size != 1
@@ -2217,7 +2359,7 @@ void fix_function_call_expression(Expression*             expression,
     for (ArgumentList* pos = function_call_expression->argument_list;
          pos != nullptr;
          pos = pos->next) {
-        fix_expression(pos->expression, block, func);
+        fix_expression(pos->expression, block, func, RingContext{});
     }
 
     Variable*   variable  = nullptr;
@@ -2225,7 +2367,7 @@ void fix_function_call_expression(Expression*             expression,
 
     Expression* func_expr = function_call_expression->func_expr;
     if (func_expr != nullptr && func_expr->type != EXPRESSION_TYPE_IDENTIFIER) {
-        fix_expression(func_expr, block, func);
+        fix_expression(func_expr, block, func, RingContext{});
 
         // func_expr 的返回值必须是一个函数
         assert(func_expr->convert_type_size == 1);
@@ -2246,7 +2388,7 @@ void fix_function_call_expression(Expression*             expression,
 
 
     // 1. 判断是否为closure
-    Package* package = resolve_package(nullptr, 0, block, nullptr);
+    Package* package = resolve_package(nullptr, 0, block, nullptr, RingContext{});
     variable         = resolve_variable(package,
                                         function_call_expression->func_identifier,
                                         block);
@@ -2289,7 +2431,7 @@ void fix_function_call_expression(Expression*             expression,
 
     // 3. 搜素剩下的函数
     // 如果还不能搜索到，就需要报错了
-    package  = resolve_package(function_call_expression->package_posit, function_call_expression->line_number, block, nullptr);
+    package  = resolve_package(function_call_expression->package_posit, function_call_expression->line_number, block, nullptr, RingContext{});
     function = search_function(package,
                                function_call_expression->func_identifier);
     // Ring-Compiler-Error-Report ERROR_UNDEFINITE_FUNCTION
@@ -2349,7 +2491,7 @@ void fix_member_call_expression(Expression*           expression,
     for (ArgumentList* pos = member_call_expression->argument_list;
          pos != nullptr;
          pos = pos->next) {
-        fix_expression(pos->expression, block, func);
+        fix_expression(pos->expression, block, func, RingContext{});
     }
 
     char*            member_identifier = member_call_expression->member_identifier;
@@ -2359,7 +2501,7 @@ void fix_member_call_expression(Expression*           expression,
     Expression*      object_expression = member_call_expression->object_expression;
 
     // fix object expression
-    fix_expression(object_expression, block, func);
+    fix_expression(object_expression, block, func, RingContext{});
 
     // find class definition by object.
     class_definition = object_expression->convert_type[0]->u.class_t->class_definition;
@@ -2520,11 +2662,11 @@ void fix_array_index_expression(Expression*           expression,
 
     assert(array_index_expression != nullptr);
 
-    char*     package_posit    = array_index_expression->array_expression->u.identifier_expression->package_posit;
+    char*     package_posit    = array_index_expression->array_expression->u.identifier_expression->path_segment;
     char*     array_identifier = array_index_expression->array_expression->u.identifier_expression->identifier;
     Variable* variable         = nullptr;
 
-    Package*  package          = resolve_package(package_posit, array_index_expression->line_number, block, nullptr);
+    Package*  package          = resolve_package(package_posit, array_index_expression->line_number, block, nullptr, RingContext{});
     variable                   = resolve_variable(package,
                                                   array_identifier,
                                                   block);
@@ -2591,7 +2733,7 @@ void fix_array_index_expression(Expression*           expression,
            && sub_type_specifier->kind != RING_BASIC_TYPE_ARRAY
            && sub_type_specifier->kind != RING_BASIC_TYPE_ANY);
 
-    fix_expression(array_index_expression->array_expression, block, func);
+    fix_expression(array_index_expression->array_expression, block, func, RingContext{});
 
     fix_dimension_expression(array_index_expression->index_expression, block, func);
 
@@ -2671,7 +2813,7 @@ void fix_slice_expression(Expression*      expression,
     char*     array_identifier = slice_expression->operand->u.identifier_expression->identifier;
     Variable* variable         = nullptr;
 
-    Package*  package          = resolve_package(package_posit, slice_expression->line_number, block, nullptr);
+    Package*  package          = resolve_package(package_posit, slice_expression->line_number, block, nullptr, RingContext{});
     variable                   = resolve_variable(package,
                                                   array_identifier,
                                                   block);
@@ -2725,9 +2867,9 @@ void fix_slice_expression(Expression*      expression,
         ring_compile_error_report(&context);
     }
 
-    fix_expression(slice_expression->operand, block, func);
-    fix_expression(slice_expression->sub_slice->start_expr, block, func);
-    fix_expression(slice_expression->sub_slice->end_expr, block, func);
+    fix_expression(slice_expression->operand, block, func, RingContext{});
+    fix_expression(slice_expression->sub_slice->start_expr, block, func, RingContext{});
+    fix_expression(slice_expression->sub_slice->end_expr, block, func, RingContext{});
 
     if (type_specifier->kind == RING_BASIC_TYPE_ARRAY) {
         slice_expression->slice_operand_type = SLICE_OPERAND_TYPE_ARRAY;
@@ -2764,7 +2906,7 @@ void fix_dimension_expression(DimensionExpression* dimension_expression,
 
     SubDimensionExpression* pos = dimension_expression->dimension_list;
     for (; pos != nullptr; pos = pos->next) {
-        fix_expression(pos->num_expression, block, func);
+        fix_expression(pos->num_expression, block, func, RingContext{});
     }
 }
 
@@ -2790,7 +2932,7 @@ void fix_array_literal_expression(Expression*             expression,
          pos != nullptr;
          pos = pos->next) {
 
-        fix_expression(pos, block, func);
+        fix_expression(pos, block, func, RingContext{});
 
         // Ring-Compiler-Error-Report ERROR_ARRAY_LITERAL_INVALID_ITEM
         if (pos->convert_type_size != 1
@@ -2954,7 +3096,7 @@ void fix_class_object_literal_expression(Expression*                   expressio
 
 
         // fix init_expression
-        fix_expression(pos->init_expression, block, func);
+        fix_expression(pos->init_expression, block, func, RingContext{});
 
 
         // 3. 查看类型是否匹配，有点类似于 assign的类型检查
@@ -3038,7 +3180,7 @@ void fix_field_member_expression(Expression*       expression,
 
 
     // 0. fix object expression
-    fix_expression(object_expression, block, func);
+    fix_expression(object_expression, block, func, RingContext{});
 
     // 1. find class definition by object.
     class_definition = object_expression->convert_type[0]->u.class_t->class_definition;
@@ -3160,9 +3302,9 @@ void fix_ternary_condition_expression(Expression*        expression,
     Expression* true_expression      = ternary_expression->true_expression;
     Expression* false_expression     = ternary_expression->false_expression;
 
-    fix_expression(condition_expression, block, func);
-    fix_expression(true_expression, block, func);
-    fix_expression(false_expression, block, func);
+    fix_expression(condition_expression, block, func, RingContext{});
+    fix_expression(true_expression, block, func, RingContext{});
+    fix_expression(false_expression, block, func, RingContext{});
 
     // Ring-Compiler-Error-Report ERROR_INVALID_TERNARY_EXPR_CONDITION
     if (condition_expression->convert_type_size != 1
@@ -3379,7 +3521,7 @@ void fix_iife_expression(Expression*                   expression,
     for (ArgumentList* pos = iife->argument_list;
          pos != nullptr;
          pos = pos->next) {
-        fix_expression(pos->expression, block, func);
+        fix_expression(pos->expression, block, func, RingContext{});
     }
 
     AnonymousFunc* anonymous_func = iife->anonymous_func;
@@ -3463,11 +3605,48 @@ void add_parameter_to_declaration(Parameter* parameter, Block* block) {
     }
 }
 
+// TODO: 目前只能使用当前package 的enum
+// block current_package 二者选其一
+EnumDeclaration* resolve_enum_decl(char*    enum_identifier,
+                                   Block*   block,
+                                   Package* current_package_) {
+
+    Package* current_package = nullptr;
+    if (block != nullptr) {
+        current_package = block->package_unit->parent_package;
+    } else if (current_package_ != nullptr) {
+        current_package = current_package_;
+    } else {
+        // TODO: error-report
+        return nullptr;
+    }
+
+    for (TypeAlias* pos : current_package->type_alias_list) {
+        if (pos->is_enum && str_eq(pos->identifier, enum_identifier)) {
+            return pos->enum_declaration;
+        }
+    }
+
+
+    return nullptr;
+}
+
+EnumItemDeclaration* resolve_enum_item(EnumDeclaration* enum_decl, char* enum_item_identifier) {
+    EnumItemDeclaration* pos = nullptr;
+    for (pos = enum_decl->enum_item_list; pos != nullptr; pos = pos->next) {
+        if (str_eq(pos->identifier, enum_item_identifier)) {
+            return pos;
+        }
+    }
+    return nullptr;
+}
+
 // block current_package 二者选其一
 Package* resolve_package(char*        package_posit,
                          unsigned int line_number,
                          Block*       block,
-                         Package*     current_package) {
+                         Package*     current_package,
+                         RingContext  ctx) {
 
     Package* package = nullptr;
 
@@ -3480,6 +3659,8 @@ Package* resolve_package(char*        package_posit,
             return block->package_unit->parent_package;
         } else if (current_package != nullptr) {
             return current_package;
+        } else if (ctx.package != nullptr) {
+            return ctx.package;
         }
         // else 不合法的情况
     }
