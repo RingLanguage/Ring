@@ -67,7 +67,7 @@ fn main() {
 
 
     fmt::println_string("\ntest cast 7 value------------------------");
-    for int64_value = range global_int64_array_0 {
+    for _, int64_value = range global_int64_array_0 {
         debug::assert(int64_value  == 123L);
     }
 }

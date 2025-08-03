@@ -23,7 +23,7 @@ fn test_for_range_break() {
 	var bool value_bool;
 
 	// 不合法的 for-range 使用
-	for value_bool = range test() {
+	for _, value_bool = range test() {
 		fmt::printf("value = {}\n", value);
 	}
 
@@ -36,7 +36,7 @@ fn test_for_range_continue() {
 	var int index;
 	var int value;
 
-	for value = range local_int_array_0 {
+	for _, value = range local_int_array_0 {
 		if value == 5 {
 			continue;
 		}

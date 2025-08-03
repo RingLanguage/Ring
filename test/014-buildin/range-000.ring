@@ -29,14 +29,14 @@ fn test_range_bool() {
 		bool[] {true,  false},
 	};
 
-	for array_tmp = range bool_array_2 {
+	for _, array_tmp = range bool_array_2 {
 		fmt::printf("value = {}\n", array_tmp);
 	}
 
-	for bool_tmp = range bool_array_2[0] {
+	for _, bool_tmp = range bool_array_2[0] {
 		fmt::printf("value = {}\n", bool_tmp);
 	}
-	for bool_tmp = range bool_array_2[1] {
+	for _, bool_tmp = range bool_array_2[1] {
 		fmt::printf("value = {}\n", bool_tmp);
 	}
 }
@@ -46,7 +46,7 @@ fn test_range_bool_array_literal() {
 	
 	var bool bool_tmp;
 
-	for bool_tmp = range bool[]{false, true, false, true} {
+	for _, bool_tmp = range bool[]{false, true, false, true} {
 		fmt::printf("value = {}\n", bool_tmp);
 	}
 }
@@ -93,14 +93,14 @@ fn test_range_class() {
 		},
 	};
 
-	for array_tmp = range local_class_array_0 {
+	for _, array_tmp = range local_class_array_0 {
 		fmt::printf("value = {}\n", array_tmp);
 	}
 
-	for class_tmp = range local_class_array_0[0] {
+	for _, class_tmp = range local_class_array_0[0] {
 		fmt::printf("value = {}\n", class_tmp);
 	}
-	for class_tmp = range local_class_array_0[1] {
+	for _, class_tmp = range local_class_array_0[1] {
 		fmt::printf("value = {}\n", class_tmp);
 	}
 
@@ -120,7 +120,7 @@ fn test_range_class_field() {
 
 	var int int_tmp;
 
-	for int_tmp = range local_class_value_0.IntArray {
+	for _, int_tmp = range local_class_value_0.IntArray {
 		fmt::printf("value = {}\n", int_tmp);
 	}
 }

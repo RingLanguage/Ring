@@ -18,7 +18,7 @@ fn main(var string[] args) {
 	fmt::println(args);
 
 	var string arg;
-	for arg = range args {
+	for _, arg = range args {
 		fmt::println(arg);
 	}
 }

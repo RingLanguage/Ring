@@ -34,7 +34,7 @@ fn main() {
 
 	// pass
 	fmt::printf("\ntest range closure array-------\n");
-	for local_value_func = range local_array_func {
+	for _, local_value_func = range local_array_func {
 		local_value_func();
 	}
 }
