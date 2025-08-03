@@ -25,6 +25,12 @@
  * 直接使用 全局 TypeSpecifier, 不使用 mem_alloc
  * 因为对于基础类型的 TypeSpecifier, 不会对TypeSpecifier进行修改, 全局变量可满足要求
  */
+TypeSpecifier any_type_specifier = TypeSpecifier{
+    .line_number = 0,
+    .identifier  = nullptr,
+    .kind        = RING_BASIC_TYPE_ANY,
+    .u           = {.array_t = nullptr},
+};
 TypeSpecifier bool_type_specifier = TypeSpecifier{
     .line_number = 0,
     .identifier  = nullptr,
@@ -363,6 +369,10 @@ BEGIN:
 
     case EXPRESSION_TYPE_IDENTIFIER:
         fix_identifier_expression(expression, expression->u.identifier_expression, block, ctx);
+        break;
+
+    case EXPRESSION_TYPE_BLANK_IDENTIFIER:
+        fix_blank_identifier_expression(expression, block, ctx);
         break;
 
     case EXPRESSION_TYPE_FUNCTION_CALL:
@@ -735,13 +745,7 @@ void fix_for_range_statement(ForRangeStatement* for_range_statement,
 
     // 赋值操作 left/operand 数量不匹配
     // Ring-Compiler-Error-Report ERROR_ASSIGNMENT_MISMATCH_NUM
-    if (for_range_statement->range_expr->type == RANGE_EXPRESSION_TYPE_LINEAR
-        && left_types.size() == 1 && right_types.size() == 2) {
-        // TODO: 兼容逻辑，后续处理掉
-        // 对于历史的语法做一下
-        // for value = range array{}
-        // 不然会报错
-    } else if (left_types.size() != right_types.size()) {
+    if (left_types.size() != right_types.size()) {
         DEFINE_ERROR_REPORT_STR;
 
         compile_err_buf = sprintf_string(
@@ -766,36 +770,32 @@ void fix_for_range_statement(ForRangeStatement* for_range_statement,
         ring_compile_error_report(&context);
     }
 
-    if (left_types.size() == right_types.size()) {
-        // TODO: 兼容逻辑，后续处理掉
+    for (unsigned int i = 0; i < left_types.size(); i++) {
+        // 深度比较两个类型是否匹配
+        // Ring-Compiler-Error-Report ERROR_RANGE_ASSIGN_MISSMATCH_TYPE
+        if (!comp_type_specifier(left_types[i], right_types[i])) {
+            DEFINE_ERROR_REPORT_STR;
 
-        for (unsigned int i = 0; i < left_types.size(); i++) {
-            // 深度比较两个类型是否匹配
-            // Ring-Compiler-Error-Report ERROR_RANGE_ASSIGN_MISSMATCH_TYPE
-            if (!comp_type_specifier(left_types[i], right_types[i])) {
-                DEFINE_ERROR_REPORT_STR;
+            compile_err_buf = sprintf_string(
+                "range mismatch: range return (%s) but assign to (%s); E:%d.",
+                format_type_specifier(right_types).c_str(),
+                format_type_specifier(left_types).c_str(),
+                ERROR_RANGE_ASSIGN_MISSMATCH_TYPE);
 
-                compile_err_buf = sprintf_string(
-                    "range mismatch: range return (%s) but assign to (%s); E:%d.",
-                    format_type_specifier(right_types).c_str(),
-                    format_type_specifier(left_types).c_str(),
-                    ERROR_RANGE_ASSIGN_MISSMATCH_TYPE);
-
-                ErrorReportContext context = {
-                    .package                 = nullptr,
-                    .package_unit            = get_package_unit(),
-                    .source_file_name        = get_package_unit()->current_file_name,
-                    .line_content            = package_unit_get_line_content(left->line_number),
-                    .line_number             = left->line_number,
-                    .column_number           = package_unit_get_column_number(),
-                    .error_message           = std::string(compile_err_buf),
-                    .advice                  = std::string(compile_adv_buf),
-                    .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
-                    .ring_compiler_file      = (char*)__FILE__,
-                    .ring_compiler_file_line = __LINE__,
-                };
-                ring_compile_error_report(&context);
-            }
+            ErrorReportContext context = {
+                .package                 = nullptr,
+                .package_unit            = get_package_unit(),
+                .source_file_name        = get_package_unit()->current_file_name,
+                .line_content            = package_unit_get_line_content(left->line_number),
+                .line_number             = left->line_number,
+                .column_number           = package_unit_get_column_number(),
+                .error_message           = std::string(compile_err_buf),
+                .advice                  = std::string(compile_adv_buf),
+                .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
+                .ring_compiler_file      = (char*)__FILE__,
+                .ring_compiler_file_line = __LINE__,
+            };
+            ring_compile_error_report(&context);
         }
     }
 }
@@ -1272,6 +1272,15 @@ void fix_identifier_expression(Expression*           expression,
         ring_compile_error_report(&context);
     }
 }
+
+void fix_blank_identifier_expression(Expression* expression,
+                                     Block*      block,
+                                     RingContext ctx) {
+
+    EXPRESSION_CLEAR_CONVERT_TYPE(expression);
+    EXPRESSION_ADD_CONVERT_TYPE(expression, &any_type_specifier);
+}
+
 
 /*
  * fix_assign_expression 主要对 assignment 语句进行语义检查和AST的修正

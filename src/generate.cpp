@@ -1404,6 +1404,8 @@ void generate_pop_to_leftvalue(Package_Executer* executer,
     } else if (expression->type == EXPRESSION_TYPE_ARRAY_INDEX) {
         // 给数组元素赋值
         generate_pop_to_leftvalue_array_index(executer, expression->u.array_index_expression, opcode_buffer);
+    } else if (expression->type == EXPRESSION_TYPE_BLANK_IDENTIFIER) {
+        generate_vmcode(executer, opcode_buffer, RVM_CODE_POP, 1, expression->line_number);
     } else {
         ring_error_report("not support assign to left-value\n");
     }

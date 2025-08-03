@@ -73,6 +73,18 @@ Expression* create_expression_identifier(char* identifier) {
     debug_ast_info_with_yellow("identifier:%s", identifier);
     // 有可能是个匿名函数, 也有可能是个变量
 
+    Expression* expression = nullptr;
+
+    // 占位标识符
+    if (str_eq(identifier, "_")) {
+        expression               = (Expression*)mem_alloc(get_front_mem_pool(), sizeof(Expression));
+        expression->line_number  = package_unit_get_line_number();
+        expression->convert_type = nullptr; // UPDATED_BY_FIX_AST
+        expression->type         = EXPRESSION_TYPE_BLANK_IDENTIFIER;
+        expression->next         = nullptr;
+        return expression;
+    }
+
     IdentifierExpression* identifier_expression = (IdentifierExpression*)mem_alloc(get_front_mem_pool(), sizeof(IdentifierExpression));
     identifier_expression->line_number          = package_unit_get_line_number();
     identifier_expression->path_segment         = nullptr;
@@ -80,7 +92,7 @@ Expression* create_expression_identifier(char* identifier) {
     identifier_expression->identifier           = identifier;
     identifier_expression->u.variable           = nullptr;
 
-    Expression* expression                      = (Expression*)mem_alloc(get_front_mem_pool(), sizeof(Expression));
+    expression                                  = (Expression*)mem_alloc(get_front_mem_pool(), sizeof(Expression));
     expression->line_number                     = package_unit_get_line_number();
     expression->convert_type                    = nullptr; // UPDATED_BY_FIX_AST
     expression->type                            = EXPRESSION_TYPE_IDENTIFIER;

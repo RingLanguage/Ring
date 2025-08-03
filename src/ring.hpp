@@ -1522,6 +1522,7 @@ typedef enum {
     EXPRESSION_TYPE_LITERAL_STRING,
     EXPRESSION_TYPE_VARIABLE,
     EXPRESSION_TYPE_IDENTIFIER,
+    EXPRESSION_TYPE_BLANK_IDENTIFIER, // 空占位标记符  _, a = func() 这种情况
     EXPRESSION_TYPE_FUNCTION_CALL,
     EXPRESSION_TYPE_MEMBER_CALL,
     EXPRESSION_TYPE_ASSIGN,
@@ -3437,6 +3438,9 @@ void                        fix_identifier_expression(Expression*           expr
                                                       IdentifierExpression* identifier_expression,
                                                       Block*                block,
                                                       RingContext           ctx);
+void                        fix_blank_identifier_expression(Expression* expression,
+                                                            Block*      block,
+                                                            RingContext ctx);
 void                        fix_assign_expression(AssignExpression* expression, Block* block, FunctionTuple* func);
 void                        fix_binary_concat_expression(Expression*       expression,
                                                          BinaryExpression* binary_expression,
