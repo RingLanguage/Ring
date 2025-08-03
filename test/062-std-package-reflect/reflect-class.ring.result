@@ -1,0 +1,31 @@
+[Bool Int Int64 Double String]
+bool
+int
+int64
+double
+string
+
+true
+123
+1234567890123456789
+3.141592
+Hello, Ring!
+
+{Bool:true Int:123 Int64:1234567890123456789 Double:3.141592 String:Hello, Ring!}
+
+test_access_class-------------
+Index=0 Name=Bool Type=bool Value=true
+Index=1 Name=Int Type=int Value=123
+Index=2 Name=Int64 Type=int64 Value=1234567890123456789
+Index=3 Name=Double Type=double Value=3.141592
+Index=4 Name=String Type=string Value=Hello, Ring!
+-------------------------------
+{Bool:false Int:456 Int64:9876543210 Double:6.283185 String:Hello, Ring! Again!}
+
+test_access_class-------------
+Index=0 Name=Bool Type=bool Value=false
+Index=1 Name=Int Type=int Value=456
+Index=2 Name=Int64 Type=int64 Value=9876543210
+Index=3 Name=Double Type=double Value=6.283185
+Index=4 Name=String Type=string Value=Hello, Ring! Again!
+-------------------------------
