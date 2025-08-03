@@ -16,8 +16,8 @@ $test(int...)    <./test/004-derive-function/function-021.ring:12,17>
  ├──2       4       range_has_next                25                                    
  ├──3       7       range_get_next_2                                                    
  ├──4       8       pop_stack_int                 1                   14                
- ├──5       11      pop                           1                   15                
- ├──6       13      push_stack_int                1                                     
+ ├──5       11      pop                           1                                     
+ ├──6       13      push_stack_int                1                   15                
  ├──7       16      invoke_func_native            2, 6, 1                               
  ├──8       22      jump                          4                                     
  ├──9       25      range_finish                                                        
