@@ -3971,13 +3971,25 @@ void       std_lib_encoding_json_encode(Ring_VirtualMachine* rvm,
 void       std_lib_encoding_json_encode_indent(Ring_VirtualMachine* rvm,
                                                unsigned int arg_size, RVM_Value* args,
                                                unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_encoding_json_decode(Ring_VirtualMachine* rvm,
+                                        unsigned int arg_size, RVM_Value* args,
+                                        unsigned int* return_size, RVM_Value** return_list);
 
 void       std_lib_reflect_typeof(Ring_VirtualMachine* rvm,
                                   unsigned int arg_size, RVM_Value* args,
                                   unsigned int* return_size, RVM_Value** return_list);
-void       std_lib_encoding_json_decode(Ring_VirtualMachine* rvm,
-                                        unsigned int arg_size, RVM_Value* args,
-                                        unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_reflect_get_obj_fields(Ring_VirtualMachine* rvm,
+                                          unsigned int arg_size, RVM_Value* args,
+                                          unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_reflect_get_obj_field_type(Ring_VirtualMachine* rvm,
+                                              unsigned int arg_size, RVM_Value* args,
+                                              unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_reflect_get_obj_field_value(Ring_VirtualMachine* rvm,
+                                               unsigned int arg_size, RVM_Value* args,
+                                               unsigned int* return_size, RVM_Value** return_list);
+void       std_lib_reflect_set_obj_field_value(Ring_VirtualMachine* rvm,
+                                               unsigned int arg_size, RVM_Value* args,
+                                               unsigned int* return_size, RVM_Value** return_list);
 
 void       std_lib_runtime_heap_size(Ring_VirtualMachine* rvm,
                                      unsigned int arg_size, RVM_Value* args,

@@ -134,6 +134,10 @@ std::vector<StdPackageInfo> Std_Lib_List = {
         RING_PACKAGE_STD_PATH_REFLECT,
         std::vector<StdPackageNativeFunction>{
             {(char*)"typeof", std_lib_reflect_typeof, 0, 1},
+            {(char*)"get_obj_fields", std_lib_reflect_get_obj_fields, 1, 1},
+            {(char*)"get_obj_field_type", std_lib_reflect_get_obj_field_type, 2, 1},
+            {(char*)"get_obj_field_value", std_lib_reflect_get_obj_field_value, 2, 1},
+            {(char*)"set_obj_field_value", std_lib_reflect_set_obj_field_value, 3, 0},
         },
     },
 
@@ -1135,6 +1139,135 @@ void std_lib_reflect_typeof(Ring_VirtualMachine* rvm,
     RETURN_LIST_SET_STRING(*return_list, 0, rvm_gc_new_rvm_string(rvm, str.c_str()));
 }
 
+/*
+ * Package: reflect
+ * Function: get_obj_fields
+ * Type: @native
+ */
+void std_lib_reflect_get_obj_fields(Ring_VirtualMachine* rvm,
+                                    unsigned int arg_size, RVM_Value* args,
+                                    unsigned int* return_size, RVM_Value** return_list) {
+
+    assert(arg_size == 1);
+    assert(args[0].type == RVM_VALUE_TYPE_CLASS_OB);
+
+    RVM_ClassDefinition* class_def        = args[0].u.class_ob_value->class_def;
+
+    unsigned int         dimension        = 1;
+    unsigned int         dimension_list[] = {class_def->field_size};
+    RVM_Array*           array            = rvm_new_array(rvm,
+                                                          dimension, dimension_list, dimension,
+                                                          RVM_ARRAY_STRING, RING_BASIC_TYPE_STRING, nullptr);
+    for (unsigned int i = 0; i < class_def->field_size; i++) {
+        RVM_String* str = rvm_gc_new_rvm_string(rvm, class_def->field_list[i].identifier);
+        // this is shallow copy
+        array->u.string_array[i] = str;
+    }
+
+    // set return value list
+    *return_size = 1;
+    *return_list = new_native_return_list(*return_size);
+    RETURN_LIST_SET_ARRAY(*return_list, 0, array);
+}
+
+/*
+ * Package: reflect
+ * Function: get_obj_field_type
+ * Type: @native
+ */
+void std_lib_reflect_get_obj_field_type(Ring_VirtualMachine* rvm,
+                                        unsigned int arg_size, RVM_Value* args,
+                                        unsigned int* return_size, RVM_Value** return_list) {
+
+    assert(arg_size == 2);
+    assert(args[0].type == RVM_VALUE_TYPE_CLASS_OB);
+    assert(args[1].type == RVM_VALUE_TYPE_STRING);
+
+    RVM_ClassDefinition* class_def  = args[0].u.class_ob_value->class_def;
+    RVM_ClassObject*     class_ob   = args[0].u.class_ob_value;
+    RVM_String*          find_field = args[1].u.string_value;
+
+    std::string          str        = "";
+    for (unsigned int i = 0; i < class_def->field_size; i++) {
+        if (strlen(class_def->field_list[i].identifier) == find_field->length
+            && str_eq_n(class_def->field_list[i].identifier, find_field->data, find_field->length)) {
+
+            str = format_rvm_type(rvm, &class_ob->field_list[i]);
+            break;
+        }
+    }
+
+    // set return value list
+    *return_size = 1;
+    *return_list = new_native_return_list(*return_size);
+    RETURN_LIST_SET_STRING(*return_list, 0, rvm_gc_new_rvm_string(rvm, str.c_str()));
+}
+
+/*
+ * Package: reflect
+ * Function: get_obj_field_value
+ * Type: @native
+ */
+void std_lib_reflect_get_obj_field_value(Ring_VirtualMachine* rvm,
+                                         unsigned int arg_size, RVM_Value* args,
+                                         unsigned int* return_size, RVM_Value** return_list) {
+
+    assert(arg_size == 2);
+    assert(args[0].type == RVM_VALUE_TYPE_CLASS_OB);
+    assert(args[1].type == RVM_VALUE_TYPE_STRING);
+
+    RVM_ClassDefinition* class_def  = args[0].u.class_ob_value->class_def;
+    RVM_ClassObject*     class_ob   = args[0].u.class_ob_value;
+    RVM_String*          find_field = args[1].u.string_value;
+
+    std::string          str        = "";
+    for (unsigned int i = 0; i < class_def->field_size; i++) {
+        if (strlen(class_def->field_list[i].identifier) == find_field->length
+            && str_eq_n(class_def->field_list[i].identifier, find_field->data, find_field->length)) {
+
+            str = fmt_any(&class_ob->field_list[i]);
+            break;
+        }
+    }
+
+    // set return value list
+    *return_size = 1;
+    *return_list = new_native_return_list(*return_size);
+    RETURN_LIST_SET_STRING(*return_list, 0, rvm_gc_new_rvm_string(rvm, str.c_str()));
+}
+
+/*
+ * Package: reflect
+ * Function: set_obj_field_value
+ * Type: @native
+ */
+void std_lib_reflect_set_obj_field_value(Ring_VirtualMachine* rvm,
+                                         unsigned int arg_size, RVM_Value* args,
+                                         unsigned int* return_size, RVM_Value** return_list) {
+
+    assert(arg_size == 3);
+    assert(args[0].type == RVM_VALUE_TYPE_CLASS_OB);
+    assert(args[1].type == RVM_VALUE_TYPE_STRING);
+
+    RVM_ClassDefinition* class_def  = args[0].u.class_ob_value->class_def;
+    RVM_ClassObject*     class_ob   = args[0].u.class_ob_value;
+    RVM_String*          find_field = args[1].u.string_value;
+
+    std::string          str        = "";
+    for (unsigned int i = 0; i < class_def->field_size; i++) {
+        if (strlen(class_def->field_list[i].identifier) == find_field->length
+            && str_eq_n(class_def->field_list[i].identifier, find_field->data, find_field->length)) {
+
+            // TODO: 类型必须要一致
+            class_ob->field_list[i] = args[2];
+            break;
+        }
+    }
+
+    // set return value list
+    *return_size = 0;
+    *return_list = new_native_return_list(*return_size);
+}
 
 /*
  * Package: runtime
