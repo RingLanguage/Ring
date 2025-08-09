@@ -325,7 +325,7 @@ return bool[]{};
 目前
 
 ```
-typedef fn(var int a, var int b) -> (int) FuncType;
+typedef fn(int a, int b) -> (int) FuncType;
 ```
 
 应该简化成更舒服的写法：
@@ -346,7 +346,7 @@ typedef fn(bool, bool) -> (string) FuncType;
 fn main() {
 	var FuncType local_func_var;
 
-	local_func_var = fn(var bool a, var int b) -> (string) {
+	local_func_var = fn(bool a, int b) -> (string) {
 		fmt::println("invoke a closure 1");
 		return fmt::sprintf("ring {} {}", a, b);
 	};
@@ -373,7 +373,7 @@ fn main() {
 
 
 ```
-fn join(var string[] a, var string sep) -> (string) {
+fn join(string[] a, string sep) -> (string) {
 	var string result;
 
 	var int i = 0;
@@ -399,7 +399,7 @@ fn join(var string[] a, var string sep) -> (string) {
 ### M. Fix: 编译报错，变量定义重复 ✅
 
 ```
-fn (var int a) {
+fn (int a) {
     var int a;
 }
 ```
@@ -409,7 +409,7 @@ fn (var int a) {
 
 ```
 
-fn test(var int[] array) {
+fn test(int[] array) {
 
 }
 
@@ -493,7 +493,7 @@ typedef class Job {
 	var int b;
 }
 
-fn test3(var Job[] a) {
+fn test3(Job[] a) {
 
 }
 ```
@@ -816,7 +816,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 如果入口函数支持可变参数，也能很好的支持：
 
 ```
-fn func_(var int... array_value) {
+fn func_(int... array_value) {
     fmt::printf("len(array_value)      = {}\n", len(array_value));
     fmt::printf("capacity(array_value) = {}\n", capacity(array_value));
 }
@@ -1615,7 +1615,7 @@ int main(int argc, char** argv) {
 ring main 的函数原型
 
 ```ring
-fn main(var string[] args) -> (int) {
+fn main(string[] args) -> (int) {
     return 0;
 }
 ```
@@ -1647,7 +1647,7 @@ fn main() -> (int) {
 4. 合法的main函数定义
 
 ```
-fn main(var string[] args) {
+fn main(string[] args) {
 }
 ```
 
@@ -1987,11 +1987,11 @@ b.2; // 访问 tuple中的元素
 typedef tuple Student = (bool,int,int64,double,string);
 
 
-fn test0(var (bool,int,int64,double,string) a) -> ((bool,int,int64,double,string)) {
+fn test0((bool,int,int64,double,string) a) -> ((bool,int,int64,double,string)) {
 
 }
 
-fn test1(var Student a) -> (Student) {
+fn test1(Student a) -> (Student) {
 
 }
 
@@ -2736,10 +2736,10 @@ fmt::println() 参数为string的时候,行为不太正确, 需要通过 length�
 
 ```
 @native
-fn println(var any... any_value);
+fn println(any... any_value);
 
 @native
-fn printf(var string format, var any... any_value);
+fn printf(string format, any... any_value);
 ```
 
 
@@ -2784,7 +2784,7 @@ a, b, c = true, 1, "aa";
 
 这样是可允许的, 也是因为 func_return_2_value() 返回值作为一个整体, 可以继续展开:
 ```
-    fn func_pass_2_value(var bool bool_value, var int int_value) {
+    fn func_pass_2_value(bool bool_value, int int_value) {
     
     }
 
@@ -2794,7 +2794,7 @@ a, b, c = true, 1, "aa";
 
 这样是不可允许的, 因为 func_return_2_value() 后边还有别的表达式, 不能继续展开:
 ```
-    fn func_pass_3_value(var bool bool_value, var int int_value, var string string_value) {
+    fn func_pass_3_value(bool bool_value, int int_value, string string_value) {
     
     }
 
@@ -4776,7 +4776,7 @@ var Job job_0(); // 这里就是去调用 constructor函数
 ### bug 1
 
 ```
-    fn test(var any any_value) {
+    fn test(any any_value) {
         fmt::println_string(reflect::typeof(any_value));
     }
 
@@ -4786,7 +4786,7 @@ var Job job_0(); // 这里就是去调用 constructor函数
 ### bug 2
     
 ```
-fn test(var int... int_value) {
+fn test(int... int_value) {
 }
 
 
@@ -4802,7 +4802,7 @@ fn main() {
 ### reflect 构想 通过函数名字获取函数类型 
 
 ```
-fn test(var bool bool_value, var int int_value)->(string) {
+fn test(bool bool_value, int int_value)->(string) {
 
 }
 

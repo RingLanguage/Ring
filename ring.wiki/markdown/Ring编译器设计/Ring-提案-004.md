@@ -97,19 +97,19 @@ global {
 
 
 @native
-fn open(var string path) -> (File);
+fn open(string path) -> (File);
 
 @native
-fn read_all(var File file) -> (string);
+fn read_all(File file) -> (string);
 
 @native
-fn write(var File file, var string buffer);
+fn write(File file, string buffer);
 
 @native
-fn seek(var File fild, long offset, int whence);
+fn seek(File fild, long offset, int whence);
 
 @native
-fn close(var File file);
+fn close(File file);
 
 typedef class File {
 	@native-c-field
