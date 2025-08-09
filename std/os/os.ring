@@ -17,16 +17,16 @@ global {
 
 // build-in
 @native
-fn exit(var int int_value);
+fn exit(int int_value);
 
 @native
-fn remove(var string name);
+fn remove(string name);
 
 @native
-fn getenv(var string name) -> (string);
+fn getenv(string name) -> (string);
 
 @native
-fn setenv(var string name, var string value);
+fn setenv(string name, string value);
 
 // return OS Name and Architecture
 // e.g. "linux", "x86_64"

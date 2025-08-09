@@ -17,26 +17,26 @@ global {
 
 
 @native
-fn exist(var string path) -> (bool);
+fn exist(string path) -> (bool);
 
 @native
-fn open(var string path) -> (int);
+fn open(string path) -> (int);
 
 @native
-fn create(var string path) -> (int);
+fn create(string path) -> (int);
 
 @native
-fn seek(var int fd, var int64 offset, var int whence);
+fn seek(int fd, int64 offset, int whence);
 
 @native
-fn read_all(var int fd) -> (string);
+fn read_all(int fd) -> (string);
 
 @native
-fn write(var int fd, var string buffer);
+fn write(int fd, string buffer);
 
 @native
-fn close(var int fd) -> (int);
+fn close(int fd) -> (int);
 
 @native
-fn remove(var string path);
+fn remove(string path);
 

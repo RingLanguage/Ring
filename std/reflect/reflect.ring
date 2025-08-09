@@ -12,16 +12,16 @@ import {
 }
 
 @native
-fn typeof(var any any_value) -> (string);
+fn typeof(any any_value) -> (string);
 
 @native
-fn get_obj_fields(var any class_obj) -> (string[]);
+fn get_obj_fields(any class_obj) -> (string[]);
 
 @native
-fn get_obj_field_type(var any class_obj, var string field_name) -> (string);
+fn get_obj_field_type(any class_obj, string field_name) -> (string);
 
 @native
-fn get_obj_field_value(var any class_obj, var string field_name) -> (any);
+fn get_obj_field_value(any class_obj, string field_name) -> (any);
 
 @native
-fn set_obj_field_value(var any class_obj, var string field_name, var any value);
+fn set_obj_field_value(any class_obj, string field_name, any value);

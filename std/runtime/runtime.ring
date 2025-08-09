@@ -21,4 +21,4 @@ fn print_call_stack();
 
 // return (pc, file, func_name, line)
 @native
-fn call_info(var int skip) -> (int64, string, string, int);
+fn call_info(int skip) -> (int64, string, string, int);

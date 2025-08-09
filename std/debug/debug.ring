@@ -11,10 +11,10 @@ import {
 }
 
 @native
-fn assert(var bool bool_value);
+fn assert(bool bool_value);
 
 @native
-fn var_dump(var any... any_value);
+fn var_dump(any... any_value);
 
 
 // 这是一个专门的测试函数，不能作为标准的package 发布

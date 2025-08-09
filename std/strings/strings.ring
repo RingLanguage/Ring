@@ -12,7 +12,7 @@ import {
 
 // join concatenates the elements of its first argument to create a single string. The separator
 // string sep is placed between elements in the resulting string.
-fn join(var string[] elems, var string sep) -> (string) {
+fn join(string[] elems, string sep) -> (string) {
 	var string result;
 
 	var int i = 0;
@@ -28,7 +28,7 @@ fn join(var string[] elems, var string sep) -> (string) {
 }
 
 // has_prefix reports whether the string s begins with prefix.
-fn has_prefix(var string s, var string prefix) -> (bool) {
+fn has_prefix(string s, string prefix) -> (bool) {
 	if len(s) < len(prefix) {
 		return false;
 	}
@@ -36,7 +36,7 @@ fn has_prefix(var string s, var string prefix) -> (bool) {
 }
 
 // has_suffix reports whether the string s ends with suffix.
-fn has_suffix(var string s, var string suffix) -> (bool) {
+fn has_suffix(string s, string suffix) -> (bool) {
 	if len(s) < len(suffix) {
 		return false;
 	}
@@ -45,7 +45,7 @@ fn has_suffix(var string s, var string suffix) -> (bool) {
 
 // trim_prefix returns s without the provided leading prefix string.
 // If s doesn't start with prefix, s is returned unchanged.
-fn trim_prefix(var string s, var string prefix) -> (string) {
+fn trim_prefix(string s, string prefix) -> (string) {
 	if has_prefix(s, prefix) {
 		return s[len(prefix):];
 	}
@@ -54,7 +54,7 @@ fn trim_prefix(var string s, var string prefix) -> (string) {
 
 // trim_suffix returns s without the provided trailing suffix string.
 // If s doesn't end with suffix, s is returned unchanged.
-fn trim_suffix(var string s, var string suffix) -> (string) {
+fn trim_suffix(string s, string suffix) -> (string) {
 	if has_suffix(s, suffix) {
 		return s[:len(s)-len(suffix)];
 	}

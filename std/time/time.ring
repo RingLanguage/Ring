@@ -18,4 +18,4 @@ fn time() -> (int64);
 
 // 参数为 ns
 @native
-fn sleep(var int64 ns);
+fn sleep(int64 ns);

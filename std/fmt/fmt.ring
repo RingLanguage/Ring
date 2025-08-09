@@ -12,28 +12,28 @@ import {
 }
 
 @native
-fn println_bool(var bool bool_value);
+fn println_bool(bool bool_value);
 
 @native
-fn println_int(var int int_value);
+fn println_int(int int_value);
 
 @native
-fn println_int64(var int64 int64_value);
+fn println_int64(int64 int64_value);
 
 @native
-fn println_double(var double double_value);
+fn println_double(double double_value);
 
 @native
-fn println_string(var string string_value);
+fn println_string(string string_value);
 
 @native
-fn println_pointer(var any any_value);
+fn println_pointer(any any_value);
 
 @native
-fn println(var any... any_value);
+fn println(any... any_value);
 
 @native
-fn printf(var string format, var any... any_value);
+fn printf(string format, any... any_value);
 
 @native
-fn sprintf(var string format, var any... any_value) -> (string);
+fn sprintf(string format, any... any_value) -> (string);
