@@ -2072,10 +2072,10 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_PC += 1;
             break;
         case RVM_CODE_BITWISE_LSH_INT64:
-            if (STACK_GET_INT_OR_INT64_OFFSET(-1) >= 32) {
+            if (STACK_GET_INT_OR_INT64_OFFSET(-1) >= 64) {
                 int64_value = 0;
             } else {
-                int64_value = (STACK_GET_INT64_OFFSET(-2)) << (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x1F);
+                int64_value = (STACK_GET_INT64_OFFSET(-2)) << (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x3F);
             }
             STACK_SET_INT64_OFFSET(-2, int64_value);
 
@@ -2094,10 +2094,10 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             VM_CUR_CO_PC += 1;
             break;
         case RVM_CODE_BITWISE_RSH_INT64:
-            if (STACK_GET_INT_OR_INT64_OFFSET(-1) >= 32) {
+            if (STACK_GET_INT_OR_INT64_OFFSET(-1) >= 64) {
                 int64_value = 0;
             } else {
-                int64_value = (STACK_GET_INT64_OFFSET(-2)) >> (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x1F);
+                int64_value = (STACK_GET_INT64_OFFSET(-2)) >> (STACK_GET_INT_OR_INT64_OFFSET(-1) & 0x3F);
             }
             STACK_SET_INT64_OFFSET(-2, int64_value);
 
