@@ -1152,8 +1152,8 @@ bitwise_expression_xor
     }
     | bitwise_expression_xor TOKEN_BIT_OR bitwise_expression_and
     {
-        debug_bison_info_with_green("[RULE::bitwise_expression_xor]\t ");
-        $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_XOR, $1, $3);
+        debug_bison_info_with_green("[RULE::bitwise_expression_or]\t ");
+        $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_OR, $1, $3);
     }
     ;
 
