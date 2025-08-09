@@ -42,6 +42,7 @@ fn test_bitwise_and() {
 fn test_bitwise_or() {
 	fmt::printf("---------------- test_bitwise_or ---------------\n");
 
+	fmt::println(2|2);
 	fmt::println(0b1010|0b0101);
 	fmt::println(0x0F|0xF0);
 }

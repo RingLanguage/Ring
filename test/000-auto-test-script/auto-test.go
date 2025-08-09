@@ -52,6 +52,7 @@ var (
 		"002-operator",
 		"002-operator/bitwise",
 		"002-operator/minus",
+		"002-operator/parentheses",
 		"002-operator/string",
 
 		"003-native-function",
