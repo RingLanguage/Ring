@@ -803,15 +803,15 @@ parameter_list
     }
     ;
 parameter
-    : TOKEN_VAR type_specifier IDENTIFIER
+    : type_specifier IDENTIFIER
     {
         debug_bison_info_with_green("[RULE::parameter]\t ");
-        $$ = create_parameter($2, $3, false);
+        $$ = create_parameter($1, $2, false);
     }
-    | TOKEN_VAR type_specifier TOKEN_3DOT IDENTIFIER
+    | type_specifier TOKEN_3DOT IDENTIFIER
     {
         debug_bison_info_with_green("[RULE::parameter:TOKEN_3DOT]\t ");
-        $$ = create_parameter($2, $4, true);
+        $$ = create_parameter($1, $3, true);
     }
     ;
 
