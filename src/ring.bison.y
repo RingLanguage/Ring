@@ -1276,6 +1276,11 @@ primary_expression
     | member_expression
     | basic_value_literal_expression
     | primary_new_creation
+    | TOKEN_LP expression TOKEN_RP
+    {
+        debug_bison_info_with_green("[RULE::primary_expression:parentheses operator]\t ");
+        $$ = $2;
+    }
     ;
 
 primary_new_creation
