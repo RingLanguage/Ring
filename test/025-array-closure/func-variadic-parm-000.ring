@@ -64,7 +64,7 @@ fn main() {
 }
 
 
-fn func_variadic_parameter(var FuncType... func_array_value) {
+fn func_variadic_parameter(FuncType... func_array_value) {
     fmt::printf("len(func_array_value)      = {}\n", len(func_array_value));
     fmt::printf("cap(func_array_value) = {}\n", cap(func_array_value));
 

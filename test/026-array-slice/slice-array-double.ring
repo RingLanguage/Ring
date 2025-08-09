@@ -14,7 +14,7 @@ fn test_slice_double_array() {
     // 测试不同长度数组的切片
     test_double_slices(local_double_array_2);
 }
-fn test_double_slices(var double[] arr) {
+fn test_double_slices(double[] arr) {
     var int len = len(arr);
 	var int start = 0;
 	var int end = 0;

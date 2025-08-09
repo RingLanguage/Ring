@@ -51,7 +51,7 @@ fn main() {
 }
 
 // 浅度copy 内部修改会影响原来的值
-fn test(var Job job) {
+fn test(Job job) {
     // fmt::println_pointer(job);
     fmt::println_string("\n------test case 2\n");
 

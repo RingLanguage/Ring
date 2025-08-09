@@ -39,35 +39,35 @@ fn main() {
 
 
 
-fn pass_1_double(var double a) {
+fn pass_1_double(double a) {
 	fmt::println(a);
 }
 
-fn pass_2_double(var double a, var double b) {
+fn pass_2_double(double a, double b) {
 	fmt::println(a, b);
 }
 
-fn pass_3_double(var double a, var double b, var double c) {
+fn pass_3_double(double a, double b, double c) {
     fmt::println(a, b, c);
 }
 
-fn pass_4_double(var double a, var double b, var double c, var double d) {
+fn pass_4_double(double a, double b, double c, double d) {
     fmt::println(a, b, c, d);
 }
 
-fn pass_5_double(var double a, var double b, var double c, var double d, var double e) {
+fn pass_5_double(double a, double b, double c, double d, double e) {
     fmt::println(a, b, c, d, e);
 }
 
-fn pass_6_double(var double a, var double b, var double c, var double d, var double e, var double f) {
+fn pass_6_double(double a, double b, double c, double d, double e, double f) {
     fmt::println(a, b, c, d, e, f);
 }
 
-fn pass_7_double(var double a, var double b, var double c, var double d, var double e, var double f, var double g) {
+fn pass_7_double(double a, double b, double c, double d, double e, double f, double g) {
     fmt::println(a, b, c, d, e, f, g);
 }
 
-fn pass_8_double(var double a, var double b, var double c, var double d, var double e, var double f, var double g, var double h) {
+fn pass_8_double(double a, double b, double c, double d, double e, double f, double g, double h) {
     fmt::println(a, b, c, d, e, f, g, h);
 }
 

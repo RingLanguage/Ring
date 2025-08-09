@@ -39,35 +39,35 @@ fn main() {
 
 
 
-fn pass_1_string(var string a) {
+fn pass_1_string(string a) {
 	fmt::println(a);
 }
 
-fn pass_2_string(var string a, var string b) {
+fn pass_2_string(string a, string b) {
 	fmt::println(a, b);
 }
 
-fn pass_3_string(var string a, var string b, var string c) {
+fn pass_3_string(string a, string b, string c) {
     fmt::println(a, b, c);
 }
 
-fn pass_4_string(var string a, var string b, var string c, var string d) {
+fn pass_4_string(string a, string b, string c, string d) {
     fmt::println(a, b, c, d);
 }
 
-fn pass_5_string(var string a, var string b, var string c, var string d, var string e) {
+fn pass_5_string(string a, string b, string c, string d, string e) {
     fmt::println(a, b, c, d, e);
 }
 
-fn pass_6_string(var string a, var string b, var string c, var string d, var string e, var string f) {
+fn pass_6_string(string a, string b, string c, string d, string e, string f) {
     fmt::println(a, b, c, d, e, f);
 }
 
-fn pass_7_string(var string a, var string b, var string c, var string d, var string e, var string f, var string g) {
+fn pass_7_string(string a, string b, string c, string d, string e, string f, string g) {
     fmt::println(a, b, c, d, e, f, g);
 }
 
-fn pass_8_string(var string a, var string b, var string c, var string d, var string e, var string f, var string g, var string h) {
+fn pass_8_string(string a, string b, string c, string d, string e, string f, string g, string h) {
     fmt::println(a, b, c, d, e, f, g, h);
 }
 

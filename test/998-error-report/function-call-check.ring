@@ -14,13 +14,13 @@ import {
 }
 
 
-fn test(var bool a) {
+fn test(bool a) {
 
 }
 
 typedef Job = class {
 	var int a;
-	fn PrintInfo(var int a, var bool b) {
+	fn PrintInfo(int a, bool b) {
 	}
 }
 
@@ -44,13 +44,13 @@ fn test_call() {
 
 
 	// var FuncType func_type_var;
-	// func_type_var = fn()(var int a, var bool b) {
+	// func_type_var = fn()(int a, bool b) {
 	// 	fmt::println("func_type_var", a, b);
 	// };
 	// func_type_var(false, false);
 
 
-	// fn (var int a) {
+	// fn (int a) {
 	// 	fmt::println("anonymous a=", a);
 	// }(1);
 }
@@ -66,12 +66,12 @@ fn test_launch() {
 
 
 	// var FuncType func_type_var;
-	// func_type_var = fn()(var int a, var bool b) {
+	// func_type_var = fn()(int a, bool b) {
 	// 	fmt::println("func_type_var", a, b);
     // };
 	// launch func_type_var(1, false);
 
-	launch fn(var string a) {
+	launch fn(string a) {
 
 	}("");
 }

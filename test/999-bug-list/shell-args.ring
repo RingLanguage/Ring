@@ -12,7 +12,7 @@ import {
 	debug;
 }
 
-fn main(var string[] args) {
+fn main(string[] args) {
 
     fmt::println(len(args));
 	fmt::println(args);

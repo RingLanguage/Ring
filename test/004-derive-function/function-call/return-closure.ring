@@ -60,7 +60,7 @@ fn test1() {
 }
 fn return_closure_1() -> (FuncTypeInt2Void) {
 	fmt::printf("return_closure_1 build closure:FuncTypeInt2Void\n");
-	return fn(var int int_param) {
+	return fn(int int_param) {
 		fmt::printf("return_closure_1 closure block receive int_param={}\n", int_param);
 	};
 }
@@ -85,7 +85,7 @@ fn test2() {
 }
 fn return_closure_2() -> (FuncTypeInt2String) {
 	fmt::printf("return_closure_2 build closure:FuncTypeInt2String\n");
-	return fn(var int int_param) -> (string) {
+	return fn(int int_param) -> (string) {
 		fmt::printf("return_closure_2 closure block receive int_param={}\n", int_param);
 		return to_string(int_param);
 	};
@@ -113,9 +113,9 @@ fn test3() {
 	fmt::printf("test3 local_string_var =`{}`\n", local_string_var);
 
 }
-fn return_closure_3(var double double_param) -> (FuncTypeInt2String) {
+fn return_closure_3(double double_param) -> (FuncTypeInt2String) {
 	fmt::printf("return_closure_3 build closure:FuncTypeInt2String\n");
-	return fn(var int int_param) -> (string) {
+	return fn(int int_param) -> (string) {
 		fmt::printf("return_closure_3 free_value double_param={}\n", double_param);
 		fmt::printf("return_closure_3 receive int_param={}\n", int_param);
 		return fmt::sprintf("double_param ={}, int_param={}", double_param, int_param);

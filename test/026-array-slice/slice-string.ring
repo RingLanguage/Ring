@@ -19,7 +19,7 @@ fn test_slic_string() {
 
 }
 
-fn test_string_slices(var string string_value) {
+fn test_string_slices(string string_value) {
     var int len = len(string_value);
 	var int start = 0;
 	var int end = 0;

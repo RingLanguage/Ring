@@ -29,7 +29,7 @@ fn main() {
 	
 }
 
-fn pass_closure(var Functype_0 func_0, var Functype_1 func_1) {
+fn pass_closure(Functype_0 func_0, Functype_1 func_1) {
 	fmt::println("pass_closure::begin");
 	func_0();
 

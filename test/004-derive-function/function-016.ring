@@ -11,12 +11,12 @@ import {
 
 
 
-fn add_one(var int parameter_1) -> (int) {
+fn add_one(int parameter_1) -> (int) {
 	return parameter_1 + 1;
 }
 
 
-fn add(var int parameter_1, var int parameter_2) -> (int) {
+fn add(int parameter_1, int parameter_2) -> (int) {
 	return parameter_1 + parameter_2;
 }
 

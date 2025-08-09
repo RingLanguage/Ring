@@ -19,7 +19,7 @@ typedef Job = class {
 }
 
 /*
-fn Job::Init(var bool _Running, var int _JobID, var double _Score) {
+fn Job::Init(bool _Running, int _JobID, double _Score) {
     self.Running = _Running;
     self.JobID   = _JobID;
     self.Score   = _Score;

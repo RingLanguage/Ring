@@ -20,7 +20,7 @@ typedef Job1 = class {
     var double  Double;
     var string  String;
 
-	fn job_action1(var bool bool_value_0, var bool bool_value_1) {
+	fn job_action1(bool bool_value_0, bool bool_value_1) {
 		fmt::printf("            self:{}\n", self);
 
 		fmt::printf("            Job1::job_action1 bool_value_0:  {}\n", bool_value_0);

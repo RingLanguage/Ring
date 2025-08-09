@@ -14,7 +14,7 @@ fn test_slice_int_array() {
     // 测试不同长度数组的切片
     test_int_slices(local_int_array_2);
 }
-fn test_int_slices(var int[] arr) {
+fn test_int_slices(int[] arr) {
     var int len = len(arr);
 	var int start = 0;
 	var int end = 0;

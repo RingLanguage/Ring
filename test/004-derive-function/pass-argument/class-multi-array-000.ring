@@ -83,19 +83,19 @@ fn main() {
 
 
 
-fn pass_1_job1_array_1(var Job1[] a) {
+fn pass_1_job1_array_1(Job1[] a) {
 	fmt::println(a);
 }
 
-fn pass_1_job1_array_2(var Job1[,] a) {
+fn pass_1_job1_array_2(Job1[,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_job1_array_3(var Job1[,,] a) {
+fn pass_1_job1_array_3(Job1[,,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_job1_array_4(var Job1[,,,] a) {
+fn pass_1_job1_array_4(Job1[,,,] a) {
 	fmt::println(a);
 }
 

@@ -21,7 +21,7 @@ fn main() {
 	
 }
 
-fn func_accept_double_array(var double[] double_array) {
+fn func_accept_double_array(double[] double_array) {
 	fmt::println_double(double_array[0]);
 	fmt::println_double(double_array[1]);
 	fmt::println_double(double_array[2]);

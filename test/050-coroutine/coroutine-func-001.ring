@@ -13,7 +13,7 @@ import {
 }
 
 
-fn job_action_0(var bool bool_arg) {
+fn job_action_0(bool bool_arg) {
 	fmt::printf("            job_action_0::begin\n");
 	fmt::printf("            job_action_0::bool_arg: {}\n", bool_arg);
 	yield();

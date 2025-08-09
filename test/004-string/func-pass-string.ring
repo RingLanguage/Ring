@@ -22,6 +22,6 @@ fn main() {
     pass_to_string("1234567890");
 }
 
-fn pass_to_string(var string string_value) {
+fn pass_to_string(string string_value) {
     fmt::printf("string_value={}\n", string_value);
 }

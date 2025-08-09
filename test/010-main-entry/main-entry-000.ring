@@ -11,7 +11,7 @@ import {
     debug;
 }
 
-fn test(var int int_value_1, var int int_value_2) -> (int,int,int,int) {
+fn test(int int_value_1, int int_value_2) -> (int,int,int,int) {
 	var int int_value_3;
 	var int int_value_4;
 

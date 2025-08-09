@@ -12,7 +12,7 @@ typedef Job = class {
 	var string StringField;
 	var FuncType FuncField;
 
-	fn MethodField(var bool bool_value) -> (bool) {
+	fn MethodField(bool bool_value) -> (bool) {
 		fmt::printf("Hello1 from Job::MethodField, self.StringField={}, bool_value={}\n", self.StringField, bool_value);
 		return bool_value;
 	}
@@ -25,7 +25,7 @@ fn main() {
 
 	var Job local_job_value_0 = Job {
 		StringField: "Hello2",
-		FuncField: fn(var string string_value) -> (string) {
+		FuncField: fn(string string_value) -> (string) {
 			fmt::printf("Hello2 from FuncField, string_value={}\n", string_value);
 			return string_value;
 		}

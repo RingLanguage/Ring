@@ -43,11 +43,11 @@ fn test1() {
 
 	var FuncTypeInt2Void[] local_array_func;
 
-    push(local_array_func, fn(var int int_value){
+    push(local_array_func, fn(int int_value){
         fmt::printf("FuncTypeInt2Void local_array_func item 0, int_value: {}\n", int_value);
         // runtime::print_call_stack(); // 这里会打印closure指针，暂时不测试，目前是正确的
 	});
-	push(local_array_func, fn(var int int_value){
+	push(local_array_func, fn(int int_value){
         fmt::printf("FuncTypeInt2Void local_array_func item 1, int_value: {}\n", int_value);
         // runtime::print_call_stack(); // 这里会打印closure指针，暂时不测试，目前是正确的
 	});

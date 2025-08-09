@@ -21,7 +21,7 @@ fn main() {
 	
 }
 
-fn func_accept_int_array(var int[] int_array) {
+fn func_accept_int_array(int[] int_array) {
 	fmt::println_int(int_array[0]);
 	fmt::println_int(int_array[1]);
 	fmt::println_int(int_array[2]);

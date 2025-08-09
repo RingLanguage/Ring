@@ -16,10 +16,10 @@ typedef Job = class {
 }
 
 
-fn func_return_0(var bool bool_value, var int int_value, var double double_value, var string string_value) {
+fn func_return_0(bool bool_value, int int_value, double double_value, string string_value) {
 }
 
-fn test1(var string format, var any... any_value) {
+fn test1(string format, any... any_value) {
 
 }
 

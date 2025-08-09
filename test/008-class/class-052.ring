@@ -67,19 +67,19 @@ typedef Job4 = class {
 }
 
 
-fn copyJob1(var Job1 job) -> (Job1) {
+fn copyJob1(Job1 job) -> (Job1) {
     return job;
 }
 
-fn copyJob2(var Job1 job) -> (Job2) {
+fn copyJob2(Job1 job) -> (Job2) {
     return job;
 }
 
-fn copyJob3(var Job1 job) -> (Job3) {
+fn copyJob3(Job1 job) -> (Job3) {
     return job;
 }
 
-fn copyJob4(var Job1 job) -> (Job4) {
+fn copyJob4(Job1 job) -> (Job4) {
     return job;
 }
 

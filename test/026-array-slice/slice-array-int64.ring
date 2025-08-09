@@ -14,7 +14,7 @@ fn test_slice_int64_array() {
     // 测试不同长度数组的切片
     test_int64_slices(local_int64_array_2);
 }
-fn test_int64_slices(var int64[] arr) {
+fn test_int64_slices(int64[] arr) {
     var int len = len(arr);
 	var int start = 0;
 	var int end = 0;

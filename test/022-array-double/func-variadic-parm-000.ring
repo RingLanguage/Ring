@@ -25,7 +25,7 @@ fn main() {
 }
 
 
-fn func_variadic_parameter(var double... array_value) {
+fn func_variadic_parameter(double... array_value) {
     fmt::printf("len(array_value)      = {}\n", len(array_value));
     fmt::printf("cap(array_value) = {}\n", cap(array_value));
 

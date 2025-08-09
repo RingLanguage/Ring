@@ -22,22 +22,22 @@ fn test0() {
 	test1(false);
 }
 
-fn test1(var bool bool_value) {
+fn test1(bool bool_value) {
 	fmt::println("fn test1()");
 	test2(1);
 }
 
-fn test2(var int int_value) {
+fn test2(int int_value) {
 	fmt::println("fn test2()");
 	test3(1.2);
 }
 
-fn test3(var double double_value) {
+fn test3(double double_value) {
 	fmt::println("fn test3()");
 	test4("a");
 }
 
-fn test4(var string string_value) {
+fn test4(string string_value) {
 	fmt::println("fn test4()");
 	runtime::print_call_stack();
 }

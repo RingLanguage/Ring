@@ -21,7 +21,7 @@ fn main() {
 }
 
 
-fn fibonacci(var int n) -> (int) {
+fn fibonacci(int n) -> (int) {
 	if n <= 0 {
 		return 0;
 	} else if n == 1 {

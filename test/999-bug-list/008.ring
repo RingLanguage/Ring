@@ -4,16 +4,16 @@
 // Date:    2023-04-11
 //
 
-fn println_bool(var bool bool_value);
-fn println_int(var int int_value);
-fn println_double(var double double_value);
-fn println_string(var string string_value);
-fn debug_assert(var bool bool_value);
-fn exit(var int int_value);
-fn print(var any value) -> (int);
-fn println(var any value) -> (int);
-fn printf(var string format, var any value)   -> (int);
-fn printfln(var string format, var any value) -> (int);
+fn println_bool(bool bool_value);
+fn println_int(int int_value);
+fn println_double(double double_value);
+fn println_string(string string_value);
+fn debug_assert(bool bool_value);
+fn exit(int int_value);
+fn print(any value) -> (int);
+fn println(any value) -> (int);
+fn printf(string format, any value)   -> (int);
+fn printfln(string format, any value) -> (int);
 
 // -----------------------------
 

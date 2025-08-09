@@ -21,7 +21,7 @@ typedef Job1 = class {
 }
 
 
-fn job_action_0(var bool bool_arg, var int int_arg, var int64 int64_arg, var double double_arg, var string string_arg, var Job1 job1_arg) {
+fn job_action_0(bool bool_arg, int int_arg, int64 int64_arg, double double_arg, string string_arg, Job1 job1_arg) {
 	fmt::printf("            job_action_0::begin\n");
 	fmt::printf("            job_action_0::bool_arg:   {}\n", bool_arg);
 	fmt::printf("            job_action_0::int_arg:    {}\n", int_arg);

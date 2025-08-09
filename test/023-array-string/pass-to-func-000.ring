@@ -21,7 +21,7 @@ fn main() {
 	
 }
 
-fn func_accept_string_array(var string[] string_array) {
+fn func_accept_string_array(string[] string_array) {
 	fmt::println_string(string_array[0]);
 	fmt::println_string(string_array[1]);
 	fmt::println_string(string_array[2]);

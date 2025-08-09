@@ -67,18 +67,18 @@ fn main() {
 
 
 
-fn pass_1_double_array_1(var double[] a) {
+fn pass_1_double_array_1(double[] a) {
 	fmt::println(a);
 }
 
-fn pass_1_double_array_2(var double[,] a) {
+fn pass_1_double_array_2(double[,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_double_array_3(var double[,,] a) {
+fn pass_1_double_array_3(double[,,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_double_array_4(var double[,,,] a) {
+fn pass_1_double_array_4(double[,,,] a) {
 	fmt::println(a);
 }

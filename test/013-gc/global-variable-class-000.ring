@@ -48,7 +48,7 @@ fn main() {
 
 }
 
-fn test(var Job job) {
+fn test(Job job) {
 
     fmt::println_bool(job.Running);
     fmt::println_int(job.JobID);

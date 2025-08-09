@@ -12,7 +12,7 @@ typedef Job = class {
     var int     JobID;
     var double  Score;
 
-    fn PrintInfo(var bool Running, var int JobID, var double Score) {
+    fn PrintInfo(bool Running, int JobID, double Score) {
         runtime::print_call_stack();
     }
 }
@@ -21,7 +21,7 @@ global {
     var Job job_0;
 }
 
-fn PrintInfo(var bool Running, var int JobID, var double Score) {
+fn PrintInfo(bool Running, int JobID, double Score) {
     runtime::print_call_stack();
 }
 

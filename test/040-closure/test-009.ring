@@ -23,23 +23,23 @@ fn main() {
 		fmt::println("closure block");
 	}();
 
-	fn(var bool bool_value) {
+	fn(bool bool_value) {
 		fmt::printf("closure bool_value: {}\n", bool_value);
 	}(true);
 
-	fn(var int int_value) {
+	fn(int int_value) {
 		fmt::printf("closure int_value: {}\n", int_value);
 	}(123);
 
-	fn(var int64 int64_value) {
+	fn(int64 int64_value) {
 		fmt::printf("closure int64_value: {}\n", int64_value);
 	}(456L);
 
-	fn(var double double_value) {
+	fn(double double_value) {
 		fmt::printf("closure double_value: {}\n", double_value);
 	}(3.1415);
 
-	fn(var string string_value) {
+	fn(string string_value) {
 		fmt::printf("closure string_value: {}\n", string_value);
 	}("ring-hello-world");
 

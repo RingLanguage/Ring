@@ -70,35 +70,35 @@ fn main() {
 
 
 
-fn pass_1_job1_array(var Job1[] a) {
+fn pass_1_job1_array(Job1[] a) {
 	fmt::println(a);
 }
 
-fn pass_2_job1_array(var Job1[] a, var Job1[] b) {
+fn pass_2_job1_array(Job1[] a, Job1[] b) {
 	fmt::println(a, b);
 }
 
-fn pass_3_job1_array(var Job1[] a, var Job1[] b, var Job1[] c) {
+fn pass_3_job1_array(Job1[] a, Job1[] b, Job1[] c) {
     fmt::println(a, b, c);
 }
 
-fn pass_4_job1_array(var Job1[] a, var Job1[] b, var Job1[] c, var Job1[] d) {
+fn pass_4_job1_array(Job1[] a, Job1[] b, Job1[] c, Job1[] d) {
     fmt::println(a, b, c, d);
 }
 
-fn pass_5_job1_array(var Job1[] a, var Job1[] b, var Job1[] c, var Job1[] d, var Job1[] e) {
+fn pass_5_job1_array(Job1[] a, Job1[] b, Job1[] c, Job1[] d, Job1[] e) {
     fmt::println(a, b, c, d, e);
 }
 
-fn pass_6_job1_array(var Job1[] a, var Job1[] b, var Job1[] c, var Job1[] d, var Job1[] e, var Job1[] f) {
+fn pass_6_job1_array(Job1[] a, Job1[] b, Job1[] c, Job1[] d, Job1[] e, Job1[] f) {
     fmt::println(a, b, c, d, e, f);
 }
 
-fn pass_7_job1_array(var Job1[] a, var Job1[] b, var Job1[] c, var Job1[] d, var Job1[] e, var Job1[] f, var Job1[] g) {
+fn pass_7_job1_array(Job1[] a, Job1[] b, Job1[] c, Job1[] d, Job1[] e, Job1[] f, Job1[] g) {
     fmt::println(a, b, c, d, e, f, g);
 }
 
-fn pass_8_job1_array(var Job1[] a, var Job1[] b, var Job1[] c, var Job1[] d, var Job1[] e, var Job1[] f, var Job1[] g, var Job1[] h) {
+fn pass_8_job1_array(Job1[] a, Job1[] b, Job1[] c, Job1[] d, Job1[] e, Job1[] f, Job1[] g, Job1[] h) {
     fmt::println(a, b, c, d, e, f, g, h);
 }
 

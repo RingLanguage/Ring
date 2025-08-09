@@ -16,7 +16,7 @@ global {
 	var bool bool_value = return_bool();
 }
 
-fn main(var string[] args) {
+fn main(string[] args) {
 	os::exit(-1);
 }
 

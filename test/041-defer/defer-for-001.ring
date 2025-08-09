@@ -40,7 +40,7 @@ fn test2() {
 	var int int_value = 0;
 
 	for int_value = 0; int_value < 10; int_value++ {
-		defer fn(var int int_value) {
+		defer fn(int int_value) {
 			fmt::printf("test1 defer int_value={}\n", int_value);
 		}(int_value);
 	}

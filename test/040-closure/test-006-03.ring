@@ -20,11 +20,11 @@ typedef Functype_2 = fn(int) -> (Functype_1);
 
 fn return_closure() -> (Functype_2) {
 	fmt::println("return_closure:: invoke level3");
-	return fn(var int  a) -> (Functype_1) {
+	return fn(int  a) -> (Functype_1) {
 		fmt::printf("return_closure:: invoke level2 int={}\n", a);
-		return fn(var int64 a) -> (Functype_0) {
+		return fn(int64 a) -> (Functype_0) {
 			fmt::printf("return_closure:: invoke level1 int64={}\n", a);
-			return fn(var double a) -> (string) {
+			return fn(double a) -> (string) {
 				fmt::printf("return_closure:: invoke level0 double={}\n", a);
 				return "hello ring compiler";
 			};

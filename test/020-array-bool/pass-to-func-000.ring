@@ -20,7 +20,7 @@ fn main() {
 	
 }
 
-fn func_accept_bool_array(var bool[] bool_array) {
+fn func_accept_bool_array(bool[] bool_array) {
 	fmt::println_bool(bool_array[0]);
 	fmt::println_bool(bool_array[1]);
 	fmt::println_bool(bool_array[2]);

@@ -16,7 +16,7 @@ global {
 }
 
 
-fn producer(var int64 consumer_co_id, var int produce_count) {
+fn producer(int64 consumer_co_id, int produce_count) {
 	var int i = 0;
 
 	fmt::printf("producer start work\n");
@@ -51,7 +51,7 @@ fn consumer_1() {
 	}
 }
 
-fn consumer_2(var string arg) {
+fn consumer_2(string arg) {
 
 	yield();
 

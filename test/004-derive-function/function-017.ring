@@ -8,7 +8,7 @@ import {
 
 
 
-fn test(var int int_value_1, var int int_value_2, var int int_value_3) -> (int) {
+fn test(int int_value_1, int int_value_2, int int_value_3) -> (int) {
     var int result = 0;
 
     result = result + int_value_1;

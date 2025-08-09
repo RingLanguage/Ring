@@ -55,18 +55,18 @@ fn main() {
 
 
 
-fn pass_1_bool_array_1(var bool[] a) {
+fn pass_1_bool_array_1(bool[] a) {
 	fmt::println(a);
 }
 
-fn pass_1_bool_array_2(var bool[,] a) {
+fn pass_1_bool_array_2(bool[,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_bool_array_3(var bool[,,] a) {
+fn pass_1_bool_array_3(bool[,,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_bool_array_4(var bool[,,,] a) {
+fn pass_1_bool_array_4(bool[,,,] a) {
 	fmt::println(a);
 }

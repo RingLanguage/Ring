@@ -28,7 +28,7 @@ fn test() {
 	var string local_string_value;
 
 
-	defer fn(var bool bool_value, var int int_value, var int64 int64_value, var string string_value) {
+	defer fn(bool bool_value, int int_value, int64 int64_value, string string_value) {
 		fmt::printf("---------- defer 1 ----------\n");
 		fmt::printf("defer bool_value={}\n", bool_value);
 		fmt::printf("defer int_value={}\n", int_value);
@@ -44,7 +44,7 @@ fn test() {
 	local_int64_value = 456L;
 	local_string_value = "hello world";
 
-	defer fn(var bool bool_value, var int int_value, var int64 int64_value, var string string_value) {
+	defer fn(bool bool_value, int int_value, int64 int64_value, string string_value) {
 		fmt::printf("---------- defer 2 ----------\n");
 		fmt::printf("defer bool_value={}\n", bool_value);
 		fmt::printf("defer int_value={}\n", int_value);

@@ -21,7 +21,7 @@ fn main() {
 	
 }
 
-fn func_accept_int64_array(var int64[] int64_array) {
+fn func_accept_int64_array(int64[] int64_array) {
 	fmt::println_int64(int64_array[0]);
 	fmt::println_int64(int64_array[1]);
 	fmt::println_int64(int64_array[2]);

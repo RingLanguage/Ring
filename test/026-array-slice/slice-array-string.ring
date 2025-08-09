@@ -14,7 +14,7 @@ fn test_slice_string_array() {
     // 测试不同长度数组的切片
     test_string_slices(local_string_array_2);
 }
-fn test_string_slices(var string[] arr) {
+fn test_string_slices(string[] arr) {
     var int len = len(arr);
 	var int start = 0;
 	var int end = 0;

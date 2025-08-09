@@ -38,9 +38,9 @@ fn main() {
 
 }
 
-fn get_logger(var string level, var string prefix) -> (FuncType1) {
+fn get_logger(string level, string prefix) -> (FuncType1) {
 
-	return fn(var string message) {
+	return fn(string message) {
 		fmt::printf("[{}]{} {}\n", level, prefix, message);
 	};
 }
@@ -59,7 +59,7 @@ fn test_log() {
 	
 }
 
-fn log(var string level, var string prefix, var string message) {
+fn log(string level, string prefix, string message) {
 	fmt::printf("[{}]{} {}\n", level, prefix, message);
 }
 

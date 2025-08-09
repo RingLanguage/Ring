@@ -17,7 +17,7 @@ global {
 }
 
 
-fn test_func(var Job1[,] local_job1_array_0) {
+fn test_func(Job1[,] local_job1_array_0) {
 
 	debug::assert(len(local_job1_array_0) == 2);
 	debug::assert(len(local_job1_array_0[0]) == 10);

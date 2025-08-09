@@ -72,7 +72,7 @@ fn main() {
 }
 
 
-fn sum(var int64... array_value) -> (int64) {
+fn sum(int64... array_value) -> (int64) {
     var int64 sum;
     var int64 int64_value;
 

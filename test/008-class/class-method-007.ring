@@ -12,7 +12,7 @@ typedef Job = class {
     var int     JobID;
     var double  Score;
 
-    fn PrintInfo(var bool Running, var int JobID, var double Score) {
+    fn PrintInfo(bool Running, int JobID, double Score) {
         fmt::println_string("invoke Job::PrintInfo");
         fmt::println_bool(self.Running);
         fmt::println_int(self.JobID);

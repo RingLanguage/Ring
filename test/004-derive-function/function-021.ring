@@ -9,7 +9,7 @@ import {
 
 
 
-fn test(var int... int_value_list) {
+fn test(int... int_value_list) {
     var int int_value;
     for _, int_value = range int_value_list {
         fmt::println(int_value);

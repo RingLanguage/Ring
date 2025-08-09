@@ -9,7 +9,7 @@ import {
 
 
 
-fn get_level_by_score(var int score) -> (int) {
+fn get_level_by_score(int score) -> (int) {
 	if 0<=score and score<10 {
 		fmt::println_string("level 0");
 	} else if 10<=score and score<20 {

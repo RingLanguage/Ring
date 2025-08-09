@@ -21,7 +21,7 @@ fn test_deep_copy_int() {
 	debug::assert(local_int_value_0 == 0);
 	fmt::printf("local_int_value_0 = {}\n", local_int_value_0);
 }
-fn test_fn_int_as_param(var int int_value) {
+fn test_fn_int_as_param(int int_value) {
 	int_value = 1;
 }
 
@@ -39,7 +39,7 @@ fn test_deep_copy_array() {
 }
 
 // 这里 shallow copy，传递的是指针，修改数组中的元素会修改原始数组中的元素
-fn test_fn_array_as_param(var int[] int_array) {
+fn test_fn_array_as_param(int[] int_array) {
 	int_array[0] = 1;
 	fmt::printf("test_fn_array_as_param int_array = {}\n", int_array);
 }
@@ -66,7 +66,7 @@ fn test_deep_copy_class() {
 
 }
 // 这里 shallow copy，传递的是指针，修改field 会影响外层的变量
-fn test_fn_class_as_param(var Job1 job1_value) {
+fn test_fn_class_as_param(Job1 job1_value) {
 	job1_value.Bool = true;
 	fmt::printf("test_fn_class_as_param job1_value = {}\n", job1_value);
 }

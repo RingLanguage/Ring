@@ -68,7 +68,7 @@ fn main() {
 
 }
 
-fn get_counter(var int64 begin, var int64 step) -> (FuncType1) {
+fn get_counter(int64 begin, int64 step) -> (FuncType1) {
 
 	var int64 level0_local_int_value_0 = begin;
 

@@ -8,11 +8,11 @@ import {
 
 
 
-fn increase_one(var int int_1) -> (int) {
+fn increase_one(int int_1) -> (int) {
     return int_1 + 1;
 }
 
-fn add_two(var int int_1, var int int_2) -> (int) {
+fn add_two(int int_1, int int_2) -> (int) {
     return int_1 + int_2;
 }
 

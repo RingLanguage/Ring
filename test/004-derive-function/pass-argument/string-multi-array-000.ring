@@ -55,18 +55,18 @@ fn main() {
 
 
 
-fn pass_1_string_array_1(var string[] a) {
+fn pass_1_string_array_1(string[] a) {
 	fmt::println(a);
 }
 
-fn pass_1_string_array_2(var string[,] a) {
+fn pass_1_string_array_2(string[,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_string_array_3(var string[,,] a) {
+fn pass_1_string_array_3(string[,,] a) {
 	fmt::println(a);
 }
 
-fn pass_1_string_array_4(var string[,,,] a) {
+fn pass_1_string_array_4(string[,,,] a) {
 	fmt::println(a);
 }

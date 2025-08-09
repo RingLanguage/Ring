@@ -68,7 +68,7 @@ fn return_int_array() -> (int[]) {
     return local_int_array_0;
 }
 
-fn pass_int_array_to_fun(var int[] array) {
+fn pass_int_array_to_fun(int[] array) {
   fmt::println_string("[function pass_int_array_to_fun]");
   debug::assert(array[0]  == 0);
   debug::assert(array[1]  == 1);

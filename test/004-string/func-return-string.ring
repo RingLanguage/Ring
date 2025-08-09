@@ -25,7 +25,7 @@ fn main() {
     fmt::println(pass_to_string(string_value));
 }
 
-fn pass_to_string(var string string_value) -> (string) {
+fn pass_to_string(string string_value) -> (string) {
     fmt::printf("string_value={}\n", string_value);
     return string_value;
 }

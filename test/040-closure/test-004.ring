@@ -25,7 +25,7 @@ fn main() {
 	pass_closure(tmp);
 }
 
-fn pass_closure(var FuncType func_var) {
+fn pass_closure(FuncType func_var) {
 	fmt::println("pass_closure::begin");
 	func_var();
 	fmt::println("pass_closure::end");

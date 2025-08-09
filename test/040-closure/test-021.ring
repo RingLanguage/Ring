@@ -26,7 +26,7 @@ fn test() {
 
 	var int local_int_value_0;
 
-	fn(var string string_var) {
+	fn(string string_var) {
 		fmt::printf("invoke a closure local_int_value_0={}\n", local_int_value_0);
 		fmt::printf("invoke a closure string_var={}\n", string_var);
 	}("hello world");
@@ -34,7 +34,7 @@ fn test() {
 
 	local_int_value_0 = 100;
 
-	fn(var string string_var) {
+	fn(string string_var) {
 		fmt::printf("invoke a closure local_int_value_0={}\n", local_int_value_0);
 		fmt::printf("invoke a closure string_var={}\n", string_var);
 	}("hello world");

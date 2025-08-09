@@ -14,7 +14,7 @@ fn test_slice_bool_array() {
     // 测试不同长度数组的切片
     test_bool_slices(local_bool_array_2);
 }
-fn test_bool_slices(var bool[] arr) {
+fn test_bool_slices(bool[] arr) {
     var int len = len(arr);
 	var int start = 0;
 	var int end = 0;

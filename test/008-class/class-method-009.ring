@@ -12,7 +12,7 @@ typedef Job = class {
     var int     JobID;
     var double  Score;
 
-    fn PrintInfo(var bool Running, var int JobID, var double Score) {
+    fn PrintInfo(bool Running, int JobID, double Score) {
         var bool   local_bool_value_0;
         var int    local_int_value_0;
         var double local_double_value_0;

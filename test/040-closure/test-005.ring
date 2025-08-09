@@ -32,7 +32,7 @@ fn main() {
 	
 }
 
-fn pass_closure(var FuncType func_var) -> (FuncType) {
+fn pass_closure(FuncType func_var) -> (FuncType) {
 	fmt::println("pass_closure::begin");
 	func_var();
 	fmt::println("pass_closure::end");

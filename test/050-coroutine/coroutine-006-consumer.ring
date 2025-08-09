@@ -16,7 +16,7 @@ global {
 }
 
 
-fn producer(var int64 next_job_co_id, var int produce_count) {
+fn producer(int64 next_job_co_id, int produce_count) {
 	var int i = 0;
 
 	fmt::printf("producer start work\n");
@@ -28,7 +28,7 @@ fn producer(var int64 next_job_co_id, var int produce_count) {
 }
 
 
-fn consumer_1(var int64 next_job_co_id) {
+fn consumer_1(int64 next_job_co_id) {
 	var int   consumer_1_count;
 	fmt::printf("consumer_1 start work\n");
 

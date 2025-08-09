@@ -75,7 +75,7 @@ fn main() {
 }
 
 
-fn test_access_class(var Job job) {
+fn test_access_class(Job job) {
 	fmt::println("\ntest_access_class-------------");
 
 	var int64 field_index;

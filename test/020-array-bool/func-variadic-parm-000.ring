@@ -25,7 +25,7 @@ fn main() {
 }
 
 
-fn func_variadic_parameter(var bool... array_value) {
+fn func_variadic_parameter(bool... array_value) {
     fmt::printf("len(array_value)      = {}\n", len(array_value));
     fmt::printf("cap(array_value) = {}\n", cap(array_value));
 

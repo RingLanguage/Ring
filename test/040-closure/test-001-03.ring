@@ -53,14 +53,14 @@ fn main() {
 	fmt::println("\nafter init closure===========\n");
 
 	local_func_var0 = fn() {};
-	local_func_var2 = fn(var int a, var int b) {};
-	local_func_var1 = fn(var int a) {};
-	local_func_var3 = fn(var int a, var int b, var int c) {};
+	local_func_var2 = fn(int a, int b) {};
+	local_func_var1 = fn(int a) {};
+	local_func_var3 = fn(int a, int b, int c) {};
 	local_func_var4 = fn() -> (int) {};
-	local_func_var5 = fn(var int a) -> (int) {};
-	local_func_var6 = fn(var int a, var int b) -> (int) {};
-	local_func_var7 = fn(var int a, var int b, var int c) -> (int) {};
-	local_func_var8 = fn(var bool a, var int b, var int64 c, var double d, var string e) -> (bool, int, int64, double, string) {};
+	local_func_var5 = fn(int a) -> (int) {};
+	local_func_var6 = fn(int a, int b) -> (int) {};
+	local_func_var7 = fn(int a, int b, int c) -> (int) {};
+	local_func_var8 = fn(bool a, int b, int64 c, double d, string e) -> (bool, int, int64, double, string) {};
 
 	fmt::println(reflect::typeof(local_func_var0));
 	fmt::println(reflect::typeof(local_func_var1));

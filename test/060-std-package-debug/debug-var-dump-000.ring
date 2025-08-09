@@ -42,7 +42,7 @@ fn main() {
 	var Task     local_task_value;
 	var FuncType local_func_value;
 
-	local_func_value = fn(var int a) -> (string) {
+	local_func_value = fn(int a) -> (string) {
 
 	};
 

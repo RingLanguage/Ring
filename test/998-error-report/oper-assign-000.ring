@@ -20,16 +20,16 @@ typedef Job = class {
 
 typedef FuncType = fn()->(string);
 
-fn test1(var Job a) {
+fn test1(Job a) {
 
 }
 
-fn test2(var FuncType func_var) {
+fn test2(FuncType func_var) {
 
 }
 
 // ring dump 报错
-// fn test3(var Job[] a) {
+// fn test3(Job[] a) {
 
 // }
 

@@ -19,7 +19,7 @@ typedef FuncType = fn(bool, bool) -> (string);
 fn main() {
 	var FuncType local_func_var;
 
-	local_func_var = fn(var bool a, var int b) -> (string) {
+	local_func_var = fn(bool a, int b) -> (string) {
 		fmt::println("invoke a closure 1");
 		return fmt::sprintf("ring {} {}", a, b);
 	};

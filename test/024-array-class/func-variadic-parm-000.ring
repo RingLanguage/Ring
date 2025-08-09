@@ -103,7 +103,7 @@ fn main() {
 }
 
 
-fn func_variadic_parameter(var Job... array_value) {
+fn func_variadic_parameter(Job... array_value) {
     fmt::printf("len(array_value)      = {}\n", len(array_value));
     fmt::printf("cap(array_value) = {}\n", cap(array_value));
 

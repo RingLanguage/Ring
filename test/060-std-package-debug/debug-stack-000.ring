@@ -15,6 +15,6 @@ fn main() {
 	test1(false);
 }
 
-fn test1(var bool bool_value) {
+fn test1(bool bool_value) {
   runtime::print_call_stack();
 }

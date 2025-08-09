@@ -58,7 +58,7 @@ fn main() {
 
 }
 
-fn func_variadic_parameter_dimension_1(var int... array_value) {
+fn func_variadic_parameter_dimension_1(int... array_value) {
     fmt::printf("func_variadic_parameter_dimension_1========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
@@ -66,7 +66,7 @@ fn func_variadic_parameter_dimension_1(var int... array_value) {
     fmt::printf("array_value           ={}\n", array_value);
 }
 
-fn func_variadic_parameter_dimension_2(var int[]... array_value) {
+fn func_variadic_parameter_dimension_2(int[]... array_value) {
     fmt::printf("func_variadic_parameter_dimension_2========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
@@ -74,7 +74,7 @@ fn func_variadic_parameter_dimension_2(var int[]... array_value) {
     fmt::printf("array_value           ={}\n", array_value);
 }
 
-fn func_variadic_parameter_dimension_3(var int[!2]... array_value) {
+fn func_variadic_parameter_dimension_3(int[!2]... array_value) {
     fmt::printf("func_variadic_parameter_dimension_3========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
@@ -82,7 +82,7 @@ fn func_variadic_parameter_dimension_3(var int[!2]... array_value) {
     fmt::printf("array_value           ={}\n", array_value);
 }
 
-fn func_variadic_parameter_dimension_4(var int[!3]... array_value) {
+fn func_variadic_parameter_dimension_4(int[!3]... array_value) {
     fmt::printf("func_variadic_parameter_dimension_4========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
@@ -90,7 +90,7 @@ fn func_variadic_parameter_dimension_4(var int[!3]... array_value) {
     fmt::printf("array_value           ={}\n", array_value); 
 }
 
-fn func_variadic_parameter_dimension_5(var int[!4]... array_value) {
+fn func_variadic_parameter_dimension_5(int[!4]... array_value) {
     fmt::printf("func_variadic_parameter_dimension_5========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
@@ -98,7 +98,7 @@ fn func_variadic_parameter_dimension_5(var int[!4]... array_value) {
     fmt::printf("array_value           ={}\n", array_value);
 }
 
-fn func_variadic_parameter_dimension_6(var int[!5]... array_value) {
+fn func_variadic_parameter_dimension_6(int[!5]... array_value) {
     fmt::printf("func_variadic_parameter_dimension_6========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
@@ -106,7 +106,7 @@ fn func_variadic_parameter_dimension_6(var int[!5]... array_value) {
     fmt::printf("array_value           ={}\n", array_value);
 }
 
-fn func_variadic_parameter_dimension_7(var int[!6]... array_value) {
+fn func_variadic_parameter_dimension_7(int[!6]... array_value) {
     fmt::printf("func_variadic_parameter_dimension_7========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
@@ -114,7 +114,7 @@ fn func_variadic_parameter_dimension_7(var int[!6]... array_value) {
     fmt::printf("array_value           ={}\n", array_value);
 }
 
-fn func_variadic_parameter_dimension_8(var int[!7]... array_value) {
+fn func_variadic_parameter_dimension_8(int[!7]... array_value) {
     fmt::printf("func_variadic_parameter_dimension_8========\n");
     fmt::printf("array_value  type     = {}\n", reflect::typeof(array_value));
     fmt::printf("len(array_value)      = {}\n", len(array_value));
