@@ -81,6 +81,13 @@ var (
 		"024-array-class",
 		"025-array-closure",
 		"026-array-slice",
+		"026-array-slice/000-bool",
+		"026-array-slice/001-int",
+		"026-array-slice/002-int64",
+		"026-array-slice/003-double",
+		"026-array-slice/004-string",
+		"026-array-slice/005-class",
+		"027-string-slice",
 
 		"030-if",
 		"031-for",
