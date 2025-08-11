@@ -88,6 +88,7 @@ var (
 		"026-array-slice/004-string",
 		"026-array-slice/005-class",
 		"026-array-slice/006-multi-dimen-array",
+		"026-array-slice/007-closure",
 		"027-string-slice",
 
 		"030-if",
