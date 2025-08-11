@@ -13,8 +13,8 @@ int yylex();
 
 %locations                       // 开启locations
 %glr-parser                      // 使用 GLR 解析
-%expect    4                     // legitimate 0 shift/reduce conflicts
-%expect-rr 5                     // legitimate 0 reduce/reduce conflicts
+%expect    3                     // legitimate 0 shift/reduce conflicts
+%expect-rr 4                     // legitimate 0 reduce/reduce conflicts
 
 // 在 array_literal_expression 的 class_type_specifier dimension_expression TOKEN_LC expression_list TOKEN_RC
 // 存在 reduce/reduce conflicts, 需要使用 %code_completion 进行处理
@@ -1568,30 +1568,30 @@ assign_expression
         debug_bison_info_with_green("[RULE::assign_expression]\t ");
         $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_ASSIGN, $1, $3);
     }
-    | IDENTIFIER TOKEN_ADD_ASSIGN right_value_expression
+    | left_value_expression_list TOKEN_ADD_ASSIGN right_value_expression
     {
         debug_bison_info_with_green("[RULE::assign_expression]\t ");
-        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN, create_expression_identifier($1), $3);
+        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN, $1, $3);
     }
-    | IDENTIFIER TOKEN_SUB_ASSIGN right_value_expression
+    | left_value_expression_list TOKEN_SUB_ASSIGN right_value_expression
     {
         debug_bison_info_with_green("[RULE::assign_expression]\t ");
-        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN, create_expression_identifier($1), $3);
+        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN, $1, $3);
     }
-    | IDENTIFIER TOKEN_MUL_ASSIGN right_value_expression
+    | left_value_expression_list TOKEN_MUL_ASSIGN right_value_expression
     {
         debug_bison_info_with_green("[RULE::assign_expression]\t ");
-        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN, create_expression_identifier($1), $3);
+        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN, $1, $3);
     }
-    | IDENTIFIER TOKEN_DIV_ASSIGN right_value_expression
+    | left_value_expression_list TOKEN_DIV_ASSIGN right_value_expression
     {
         debug_bison_info_with_green("[RULE::assign_expression]\t ");
-        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN, create_expression_identifier($1), $3);
+        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN, $1, $3);
     }
-    | IDENTIFIER TOKEN_MOD_ASSIGN right_value_expression
+    | left_value_expression_list TOKEN_MOD_ASSIGN right_value_expression
     {
         debug_bison_info_with_green("[RULE::assign_expression]\t ");
-        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN, create_expression_identifier($1), $3);
+        $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN, $1, $3);
     }
     ;
 
