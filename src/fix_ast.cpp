@@ -2379,8 +2379,49 @@ void fix_function_call_expression(Expression*             expression,
         fix_expression(func_expr, block, func, RingContext{});
 
         // func_expr 的返回值必须是一个函数
-        assert(func_expr->convert_type_size == 1);
-        assert(func_expr->convert_type[0]->kind == RING_BASIC_TYPE_FUNC);
+        if (func_expr->convert_type_size != 1) {
+            DEFINE_ERROR_REPORT_STR;
+
+            compile_err_buf            = sprintf_string("is not function type, is void; E:%d",
+                                                        ERROR_IDENTIFIER_IS_NOT_FUNCTION);
+
+            ErrorReportContext context = {
+                .package                 = nullptr,
+                .package_unit            = nullptr,
+                .source_file_name        = get_package_unit()->current_file_name,
+                .line_content            = package_unit_get_line_content(function_call_expression->line_number),
+                .line_number             = function_call_expression->line_number,
+                .column_number           = 0,
+                .error_message           = std::string(compile_err_buf),
+                .advice                  = std::string(compile_adv_buf),
+                .report_type             = ERROR_REPORT_TYPE_EXIT_NOW,
+                .ring_compiler_file      = (char*)__FILE__,
+                .ring_compiler_file_line = __LINE__,
+            };
+            ring_compile_error_report(&context);
+        }
+        if (func_expr->convert_type[0]->kind != RING_BASIC_TYPE_FUNC) {
+            DEFINE_ERROR_REPORT_STR;
+
+            compile_err_buf            = sprintf_string("is not function type, is `%s`; E:%d",
+                                                        format_type_specifier(func_expr->convert_type_size, func_expr->convert_type).c_str(),
+                                                        ERROR_IDENTIFIER_IS_NOT_FUNCTION);
+
+            ErrorReportContext context = {
+                .package                 = nullptr,
+                .package_unit            = nullptr,
+                .source_file_name        = get_package_unit()->current_file_name,
+                .line_content            = package_unit_get_line_content(function_call_expression->line_number),
+                .line_number             = function_call_expression->line_number,
+                .column_number           = 0,
+                .error_message           = std::string(compile_err_buf),
+                .advice                  = std::string(compile_adv_buf),
+                .report_type             = ERROR_REPORT_TYPE_EXIT_NOW,
+                .ring_compiler_file      = (char*)__FILE__,
+                .ring_compiler_file_line = __LINE__,
+            };
+            ring_compile_error_report(&context);
+        }
 
         // check 函数调用是否符合语义
         check_func_var_call(function_call_expression, func_expr->convert_type[0]);

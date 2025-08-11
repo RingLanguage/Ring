@@ -2852,6 +2852,7 @@ typedef enum {
     ERROR_RANGE_OPERAND_IS_NOT_ARRAY            = 300008, // range 操作数不是数组
     ERROR_RANGE_ASSIGN_MISSMATCH_TYPE           = 300009, // range 赋值时, 左值和右值的类型不匹配
 
+    ERROR_IDENTIFIER_IS_NOT_FUNCTION            = 300010, // 标识符不是函数
     ERROR_VAR_IS_NOT_ARRAY                      = 300011, // 变量不是数组
     ERROR_INVALID_BREAK_STATEMENT               = 300012, // break 语句不合法
     ERROR_INVALID_CONTINUE_STATEMENT            = 300013, // continue 语句不合法
