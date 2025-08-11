@@ -1,0 +1,50 @@
+package main
+
+import {
+	debug;
+	fmt;
+}
+
+global {
+
+}
+
+typedef Job = class {
+	var bool Bool;
+	var int Int;
+	var int64 Int64;
+	var double Double;
+	var string String;
+}
+
+fn main() {
+	var Job[] local_bool_array_0 = Job[]{
+		Job{Bool: false, Int: 0, Int64: 0L, Double: 0.0, String: "Job0"},
+		Job{Bool: true, Int: 1, Int64: 1L, Double: 1.1, String: "Job1"},
+		Job{Bool: false, Int: 2, Int64: 2L, Double: 2.2, String: "Job2"},
+		Job{Bool: true, Int: 3, Int64: 3L, Double: 3.3, String: "Job3"},
+		Job{Bool: false, Int: 4, Int64: 4L, Double: 4.4, String: "Job4"},
+	};
+
+	var int index;
+	var Job value;
+	
+	fmt::println_string("test case for-range --------------------");
+	for _, value = range local_bool_array_0 {
+		fmt::println(value);
+	}
+
+	fmt::println_string("\ntest case for --------------------");
+	for index = 0; index<len(local_bool_array_0); index++ {
+		fmt::println(local_bool_array_0[index]);
+	}
+
+	fmt::println_string("\ntest case for-range&for --------------------");
+	index = 0;
+	for _, value = range local_bool_array_0 {
+		index++;
+	}
+
+	fmt::println_string("\ntest case range-index --------------------");
+	debug::assert(index == len(local_bool_array_0));
+}

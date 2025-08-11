@@ -1,0 +1,16 @@
+test case for-range --------------------
+[true false false true false]
+[false true false true false]
+[true false true false true]
+[false true false true false]
+
+test case for --------------------
+[true false false true false]
+[false true false true false]
+[true false true false true]
+[false true false true false]
+
+test case for-range&for --------------------
+
+test case range-index --------------------
+debug_assert PASS

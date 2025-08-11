@@ -1,0 +1,76 @@
+test case for-range --------------------
+Function 0 executed
+Function 1 executed
+Function 2 executed
+Function 3 executed
+Function 4 executed
+Function 5 executed
+Function 6 executed
+Function 7 executed
+Function 8 executed
+Function 9 executed
+Function 10 executed
+Function 11 executed
+Function 12 executed
+Function 13 executed
+Function 14 executed
+Function 15 executed
+
+test case for --------------------
+Function 0 executed
+Function 1 executed
+Function 2 executed
+Function 3 executed
+Function 4 executed
+Function 5 executed
+Function 6 executed
+Function 7 executed
+Function 8 executed
+Function 9 executed
+Function 10 executed
+Function 11 executed
+Function 12 executed
+Function 13 executed
+Function 14 executed
+Function 15 executed
+
+test case for2 --------------------
+Function 0 executed
+Function 1 executed
+Function 2 executed
+Function 3 executed
+Function 4 executed
+Function 5 executed
+Function 6 executed
+Function 7 executed
+Function 8 executed
+Function 9 executed
+Function 10 executed
+Function 11 executed
+Function 12 executed
+Function 13 executed
+Function 14 executed
+Function 15 executed
+
+test case for3 --------------------
+Function 0 executed
+Function 1 executed
+Function 2 executed
+Function 3 executed
+Function 4 executed
+Function 5 executed
+Function 6 executed
+Function 7 executed
+Function 8 executed
+Function 9 executed
+Function 10 executed
+Function 11 executed
+Function 12 executed
+Function 13 executed
+Function 14 executed
+Function 15 executed
+
+test case for-range&for --------------------
+
+test case range-index --------------------
+debug_assert PASS

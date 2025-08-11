@@ -1,0 +1,16 @@
+test case for-range --------------------
+[{Bool:true Int:0 Int64:0 Double:0.000000 String:Job0} {Bool:false Int:1 Int64:1 Double:1.100000 String:Job1} {Bool:true Int:2 Int64:2 Double:2.200000 String:Job2} {Bool:false Int:3 Int64:3 Double:3.300000 String:Job3}]
+[{Bool:true Int:4 Int64:4 Double:4.400000 String:Job4} {Bool:false Int:5 Int64:5 Double:5.500000 String:Job5} {Bool:true Int:6 Int64:6 Double:6.600000 String:Job6} {Bool:false Int:7 Int64:7 Double:7.700000 String:Job7}]
+[{Bool:true Int:8 Int64:8 Double:8.800000 String:Job8} {Bool:false Int:9 Int64:9 Double:9.900000 String:Job9} {Bool:true Int:10 Int64:10 Double:10.100000 String:Job10} {Bool:false Int:11 Int64:11 Double:11.110000 String:Job11}]
+[{Bool:true Int:12 Int64:12 Double:12.120000 String:Job12} {Bool:false Int:13 Int64:13 Double:13.130000 String:Job13} {Bool:true Int:14 Int64:14 Double:14.140000 String:Job14} {Bool:false Int:15 Int64:15 Double:15.150000 String:Job15}]
+
+test case for --------------------
+[{Bool:true Int:0 Int64:0 Double:0.000000 String:Job0} {Bool:false Int:1 Int64:1 Double:1.100000 String:Job1} {Bool:true Int:2 Int64:2 Double:2.200000 String:Job2} {Bool:false Int:3 Int64:3 Double:3.300000 String:Job3}]
+[{Bool:true Int:4 Int64:4 Double:4.400000 String:Job4} {Bool:false Int:5 Int64:5 Double:5.500000 String:Job5} {Bool:true Int:6 Int64:6 Double:6.600000 String:Job6} {Bool:false Int:7 Int64:7 Double:7.700000 String:Job7}]
+[{Bool:true Int:8 Int64:8 Double:8.800000 String:Job8} {Bool:false Int:9 Int64:9 Double:9.900000 String:Job9} {Bool:true Int:10 Int64:10 Double:10.100000 String:Job10} {Bool:false Int:11 Int64:11 Double:11.110000 String:Job11}]
+[{Bool:true Int:12 Int64:12 Double:12.120000 String:Job12} {Bool:false Int:13 Int64:13 Double:13.130000 String:Job13} {Bool:true Int:14 Int64:14 Double:14.140000 String:Job14} {Bool:false Int:15 Int64:15 Double:15.150000 String:Job15}]
+
+test case for-range&for --------------------
+
+test case range-index --------------------
+debug_assert PASS
