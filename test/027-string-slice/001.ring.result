@@ -100,3 +100,4 @@ astring_valuer[8:] = 890
 astring_valuer[9:] = 90
 astring_valuer[10:] = 0
 astring_valuer[11:] = 
+string_value[:] = 01234567890

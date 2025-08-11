@@ -100,3 +100,4 @@ arr[8:] = [{Bool:true Int:8 Int64:8 Double:8.800000 String:8.8.8} {Bool:false In
 arr[9:] = [{Bool:false Int:9 Int64:9 Double:9.900000 String:9.9.9} {Bool:true Int:10 Int64:10 Double:10.100000 String:10.10.10}]
 arr[10:] = [{Bool:true Int:10 Int64:10 Double:10.100000 String:10.10.10}]
 arr[11:] = []
+arr[:] = [{Bool:true Int:0 Int64:0 Double:0.000000 String:0.0.0} {Bool:false Int:1 Int64:1 Double:1.100000 String:1.1.1} {Bool:true Int:2 Int64:2 Double:2.200000 String:2.2.2} {Bool:false Int:3 Int64:3 Double:3.300000 String:3.3.3} {Bool:true Int:4 Int64:4 Double:4.400000 String:4.4.4} {Bool:false Int:5 Int64:5 Double:5.500000 String:5.5.5} {Bool:true Int:6 Int64:6 Double:6.600000 String:6.6.6} {Bool:false Int:7 Int64:7 Double:7.700000 String:7.7.7} {Bool:true Int:8 Int64:8 Double:8.800000 String:8.8.8} {Bool:false Int:9 Int64:9 Double:9.900000 String:9.9.9} {Bool:true Int:10 Int64:10 Double:10.100000 String:10.10.10}]

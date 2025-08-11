@@ -40,4 +40,7 @@ fn test_string_slices(string string_value) {
     for start = 0; start < len+1; start++ {
         fmt::printf("astring_valuer[{}:] = {}\n", start, string_value[start:]);
     }
+
+    // 测试 start 和 end 都不存在的情况
+    fmt::printf("string_value[:] = {}\n", string_value[:]);
 }

@@ -35,6 +35,9 @@ fn test_bool_slices(bool[] arr) {
     for start = range 0..len+1 {
         fmt::printf("arr[{}:] = {}\n", start, arr[start:]);
     }
+
+    // 测试 start 和 end 都不存在的情况
+    fmt::printf("arr[:] = {}\n", arr[:]);
 }
 
 

@@ -40,6 +40,9 @@ fn test_int_slices(int[,] arr) {
     for start = 0; start < len+1; start++ {
         fmt::printf("arr[{}:] = {}\n", start, arr[start:]);
     }
+
+    // 测试 start 和 end 都不存在的情况
+    fmt::printf("arr[:] = {}\n", arr[:]);
 }
 
 
