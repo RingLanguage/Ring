@@ -15,6 +15,10 @@ fn main() {
 	local_int64_value_0 += 20L;
 	local_double_value_0 += 30.0;
 	local_string_value_0 += "hello world";
+	fmt::println(local_int_value_0);
+	fmt::println(local_int64_value_0);
+	fmt::println(local_double_value_0);
+	fmt::println(local_string_value_0);
 	debug::assert(local_int_value_0 == 10);
 	debug::assert(local_int64_value_0 == 20L);
 	debug::assert(local_double_value_0 == 30.0);
@@ -25,6 +29,10 @@ fn main() {
 	local_int64_value_0 += 20L;
 	local_double_value_0 += 30.0;
 	local_string_value_0 += "hello world";
+	fmt::println(local_int_value_0);
+	fmt::println(local_int64_value_0);
+	fmt::println(local_double_value_0);
+	fmt::println(local_string_value_0);
 	debug::assert(local_int_value_0 == 20);
 	debug::assert(local_int64_value_0 == 40L);
 	debug::assert(local_double_value_0 == 60.0);

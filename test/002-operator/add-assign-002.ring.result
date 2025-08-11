@@ -14,3 +14,8 @@ debug_assert PASS
 debug_assert PASS
 debug_assert PASS
 debug_assert PASS
+---------- print array
+[[20]]
+[[40]]
+[[60.000000]]
+[[hello worldhello world]]
