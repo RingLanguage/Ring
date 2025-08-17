@@ -1309,6 +1309,21 @@ TypeSpecifier* create_type_specifier_alias(char* package_posit, char* identifier
     return type_specifier;
 }
 
+TypeAlias* add_type_alias(Identifier*    identifier,
+                          TypeSpecifier* type_specifier) {
+
+    TypeAlias* type_alias        = (TypeAlias*)mem_alloc(get_front_mem_pool(), sizeof(TypeAlias));
+    type_alias->line_number      = package_unit_get_line_number();
+    type_alias->identifier       = identifier->name;
+    type_alias->type_specifier   = type_specifier;
+    type_alias->is_enum          = false;
+    type_alias->enum_declaration = nullptr;
+
+    package_unit_add_type_alias(type_alias);
+
+    return type_alias;
+}
+
 TypeAlias* add_type_alias_class(char*            class_identifier,
                                 ClassDefinition* class_def) {
 

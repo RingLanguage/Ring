@@ -3314,6 +3314,8 @@ TypeSpecifier*                create_type_specifier(Ring_BasicType basic_type);
 TypeSpecifier*                create_type_specifier_array(TypeSpecifier* sub_type, DimensionExpression* dimension);
 TypeSpecifier*                create_type_specifier_alias(char* package_posit, char* identifier);
 
+TypeAlias*                    add_type_alias(Identifier*    identifier,
+                                             TypeSpecifier* type_specifier);
 TypeAlias*                    add_type_alias_class(char*            class_identifier,
                                                    ClassDefinition* class_def);
 TypeAlias*                    add_type_alias_func(Parameter*          parameter_list,

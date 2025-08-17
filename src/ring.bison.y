@@ -436,6 +436,11 @@ type_alias_def
         debug_bison_info_with_green("[RULE::type_definition]\t ");
          $<m_type_alias_def>$ = add_type_alias_func($6, $10, $2);
     }
+    | TOKEN_TYPEDEF identifier TOKEN_ASSIGN type_specifier
+    {
+        debug_bison_info_with_green("[RULE::type_definition]\t ");
+        $<m_type_alias_def>$ = add_type_alias($2, $4);
+    }
     ;
 
 class_member_declaration_list 
