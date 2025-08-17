@@ -1,0 +1,21 @@
+-----------------
+
+true
+1234567890
+1234567890123456789
+3.140000
+pending
+-----------------
+
+Task is billing.
+Task created at:  1234567890
+Task ID:  1234567890123456789
+Task score:  3.140000
+Task is pending.
+-----------------
+
+Task is billing.
+Task created at:  1234567890
+Task ID:  1234567890123456789
+Task score:  3.140000
+Task is completed.

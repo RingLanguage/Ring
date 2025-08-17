@@ -1,0 +1,21 @@
+-----------------
+
+[[true false true false] [false true false true]]
+[[1 2 3 4 5] [6 7 8 9 10]]
+[[1000 2000 3000 4000 5000] [6000 7000 8000 9000 10000]]
+[[1.100000 2.200000 3.300000 4.400000] [5.500000 6.600000 7.700000 8.800000]]
+[[Ring Language Test Go] [Array Type Alias Example]]
+-----------------
+
+Bool Array:  [[true false true false] [false true false true]]
+Int Array:  [[1 2 3 4 5] [6 7 8 9 10]]
+Int64 Array:  [[1000 2000 3000 4000 5000] [6000 7000 8000 9000 10000]]
+Double Array:  [[1.100000 2.200000 3.300000 4.400000] [5.500000 6.600000 7.700000 8.800000]]
+String Array:  [[Ring Language Test Go] [Array Type Alias Example]]
+-----------------
+
+Bool Array:  [[true false true false] [false true false true]]
+Int Array:  [[1 2 3 4 5] [6 7 8 9 10]]
+Int64 Array:  [[1000 2000 3000 4000 5000] [6000 7000 8000 9000 10000]]
+Double Array:  [[1.100000 2.200000 3.300000 4.400000] [5.500000 6.600000 7.700000 8.800000]]
+String Array:  [[Ring Language Test Go] [Array Type Alias Example]]
