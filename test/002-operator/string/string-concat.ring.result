@@ -1,10 +1,49 @@
---------
-ab
-abc
---------
+test_concat_0--------
+local_string_value_0=ab
+debug_assert PASS
+local_string_value_0=abcdefghijklmnopqrstuvwxyz
+debug_assert PASS
+test_concat_1--------
+local_string_value_0=ab
+debug_assert PASS
+local_string_value_0=abcdef
+debug_assert PASS
+local_string_value_0=abcdefghijklmnopqrstuvwxyz
+debug_assert PASS
+test_concat_2--------
 [ab cd]
 [ab-- cd--]
---------
-ad
-bc
-ad1
+test_concat_3--------
+[ab cd]
+[ab-- cd--]
+test_concat_4--------
+[[1 2] [3 4]]
+[[1a 2a] [3a 4a]]
+[[1abcdefghijklmnopqrstuvwxyz 2abcdefghijklmnopqrstuvwxyz] [3abcdefghijklmnopqrstuvwxyz 4abcdefghijklmnopqrstuvwxyz]]
+test_concat_5--------
+[[1 2] [3 4]]
+[[1a 2a] [3a 4a]]
+[[1abcdefghijklmnopqrstuvwxyz 2abcdefghijklmnopqrstuvwxyz] [3abcdefghijklmnopqrstuvwxyz 4abcdefghijklmnopqrstuvwxyz]]
+test_concat_6--------
+local_job_value_0.String=ab
+debug_assert PASS
+local_job_value_0.String=abcd
+debug_assert PASS
+local_job_value_0.String=abcdefghijklmnopqrstuvwxyz
+debug_assert PASS
+test_concat_7--------
+local_job_array_0[0].String=ab
+debug_assert PASS
+local_job_array_0[0].String=abcd
+debug_assert PASS
+local_job_array_0[0].String=abcdefghijklmnopqrstuvwxyz
+debug_assert PASS
+local_job_array_0=[{Bool:false Int:0 Int64:0 Double:0.000000 String:abcdefghijklmnopqrstuvwxyz} {Bool:false Int:0 Int64:0 Double:0.000000 String:}]
+test_concat_8--------
+local_job_array_0[1,1].String=ab
+debug_assert PASS
+local_job_array_0[1,1].String=abcd
+debug_assert PASS
+local_job_array_0[1,1].String=abcdefghijklmnopqrstuvwxyz
+debug_assert PASS
+local_job_array_0=[[{Bool:false Int:0 Int64:0 Double:0.000000 String:} {Bool:false Int:0 Int64:0 Double:0.000000 String:}] [{Bool:false Int:0 Int64:0 Double:0.000000 String:} {Bool:false Int:0 Int64:0 Double:0.000000 String:abcdefghijklmnopqrstuvwxyz}]]
