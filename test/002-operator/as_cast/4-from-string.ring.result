@@ -1,0 +1,82 @@
+
+test_bool_2_bool-------
+global_bool_value = true
+global_bool_value = false
+
+test_bool_2_int-------
+global_int_value = 1
+global_int_value = 0
+
+test_bool_2_int64-------
+global_int64_value = 1
+global_int64_value = 0
+
+test_bool_2_double-------
+global_double_value = 1.000000
+global_double_value = 0.000000
+
+test_bool_2_string-------
+global_string_value = true
+global_string_value = false
+
+test_int_2_bool-------
+global_bool_value = true
+global_bool_value = false
+
+test_int_2_int-------
+global_int_value = 123
+global_int_value = 0
+
+test_int_2_int64-------
+global_int64_value = 123
+global_int64_value = 1234567890
+
+test_int_2_double-------
+global_double_value = 123.000000
+global_double_value = 1234567890.000000
+
+test_int_2_string-------
+global_string_value = 123
+global_string_value = 1234567890
+global_string_value = -123
+
+test_int64_2_bool-------
+global_bool_value = true
+global_bool_value = false
+
+test_int64_2_int-------
+global_int_value = 123
+global_int_value = 0
+
+test_int64_2_int64-------
+global_int64_value = 123
+global_int64_value = 0
+
+test_int64_2_double-------
+global_double_value = 123.000000
+global_double_value = 0.000000
+
+test_int64_2_string-------
+global_string_value = 1
+global_string_value = 9223372036854775807
+global_string_value = -9223372036854775808
+
+test_double_2_bool-------
+global_bool_value = true
+global_bool_value = false
+
+test_double_2_int-------
+global_int_value = 1
+global_int_value = 0
+
+test_double_2_int64-------
+global_int64_value = 1
+global_int64_value = 0
+
+test_double_2_double-------
+global_double_value = 1.123400
+global_double_value = 0.000000
+
+test_bool_2_int-------
+global_string_value = 1.123400
+global_string_value = 1.123457

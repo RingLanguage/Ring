@@ -50,6 +50,7 @@ var (
 		"001-basic-type",
 
 		"002-operator",
+		"002-operator/as_cast",
 		"002-operator/bitwise",
 		"002-operator/minus",
 		"002-operator/parentheses",
@@ -128,6 +129,7 @@ var (
 		"100-ring-project-manage",
 	}
 
+	// 不需要测试的测试用例名单
 	NOT_TEST_FILES = []string{
 		"test/013-gc/gc-000.ring",
 
