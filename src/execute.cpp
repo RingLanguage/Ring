@@ -1808,6 +1808,14 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             STACK_SET_DOUBLE_OFFSET(-1, STACK_GET_INT_OFFSET(-1));
             VM_CUR_CO_PC += 1;
             break;
+        case RVM_CODE_CAST_INT64_TO_DOUBLE:
+            STACK_SET_DOUBLE_OFFSET(-1, STACK_GET_INT64_OFFSET(-1));
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_CAST_DOUBLE_TO_INT64:
+            STACK_SET_INT64_OFFSET(-1, (long long)STACK_GET_DOUBLE_OFFSET(-1));
+            VM_CUR_CO_PC += 1;
+            break;
 
         case RVM_CODE_CAST_INT_TO_BOOL:
             STACK_SET_BOOL_OFFSET(-1, (RVM_Bool)STACK_GET_INT_OFFSET(-1));

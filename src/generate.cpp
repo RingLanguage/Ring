@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <unordered_map>
 
 
 extern RVM_Opcode_Info RVM_Opcode_Infos[];
@@ -1235,9 +1236,6 @@ void generate_vmcode_from_expression(Package_Executer* executer,
         generate_vmcode_from_member_call_expression(executer, expression->u.member_call_expression, opcode_buffer);
         break;
 
-    case EXPRESSION_TYPE_CAST:
-        generate_vmcode_from_cast_expression(executer, expression->u.cast_expression, opcode_buffer);
-        break;
 
     case EXPRESSION_TYPE_MEMBER:
         generate_vmcode_from_member_expression(executer, expression->u.member_expression, opcode_buffer);
@@ -1245,6 +1243,10 @@ void generate_vmcode_from_expression(Package_Executer* executer,
 
     case EXPRESSION_TYPE_TERNARY:
         generate_vmcode_from_ternary_condition_expression(executer, expression->u.ternary_expression, opcode_buffer);
+        break;
+
+    case EXPRESSION_TYPE_CAST:
+        generate_vmcode_from_cast_expression(executer, expression->u.cast_expression, opcode_buffer);
         break;
 
     case EXPRESSION_TYPE_LAUNCH:
@@ -2085,46 +2087,46 @@ void generate_vmcode_from_cast_expression(Package_Executer* executer,
         return;
     }
 
+
     generate_vmcode_from_expression(executer, cast_expression->operand, opcode_buffer);
 
-    // TODO: convert derive type
-    switch (cast_expression->type_specifier->kind) {
-    case RING_BASIC_TYPE_BOOL:
-        if (cast_expression->operand->convert_type != nullptr
-            && cast_expression->operand->convert_type[0]->kind == RING_BASIC_TYPE_INT) {
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_INT_TO_BOOL, 0, cast_expression->line_number);
-        } else if (cast_expression->operand->convert_type != nullptr
-                   && cast_expression->operand->convert_type[0]->kind == RING_BASIC_TYPE_DOUBLE) {
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_DOUBLE_TO_INT, 0, cast_expression->line_number);
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_INT_TO_BOOL, 0, cast_expression->line_number);
-        }
-        break;
-    case RING_BASIC_TYPE_INT:
-        if (cast_expression->operand->convert_type != nullptr
-            && cast_expression->operand->convert_type[0]->kind == RING_BASIC_TYPE_BOOL) {
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_BOOL_TO_INT, 0, cast_expression->line_number);
-        } else if (cast_expression->operand->convert_type != nullptr
-                   && cast_expression->operand->convert_type[0]->kind == RING_BASIC_TYPE_DOUBLE) {
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_DOUBLE_TO_INT, 0, cast_expression->line_number);
-        }
-        break;
+    assert(cast_expression->operand->convert_type_size == 1);
+    assert(cast_expression->operand->convert_type != nullptr);
 
-    case RING_BASIC_TYPE_INT64:
-        // TODO: 待实现
-        break;
+    TypeSpecifier* target_type  = cast_expression->target_type_specifier;
+    TypeSpecifier* operand_type = cast_expression->operand->convert_type[0];
 
-    case RING_BASIC_TYPE_DOUBLE:
-        if (cast_expression->operand->convert_type != nullptr
-            && cast_expression->operand->convert_type[0]->kind == RING_BASIC_TYPE_BOOL) {
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_BOOL_TO_INT, 0, cast_expression->line_number);
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_INT_TO_DOUBLE, 0, cast_expression->line_number);
-        } else if (cast_expression->operand->convert_type != nullptr
-                   && cast_expression->operand->convert_type[0]->kind == RING_BASIC_TYPE_INT) {
-            generate_vmcode(executer, opcode_buffer, RVM_CODE_CAST_INT_TO_DOUBLE, 0, cast_expression->line_number);
+    // 如果类型相同，不需要转换
+    // TODO: 支持类或其他别名的转换
+    if (target_type->kind == operand_type->kind) {
+        return;
+    }
+
+    // 生成类型转换指令
+    generate_cast_instructions(executer, opcode_buffer,
+                               operand_type->kind, target_type->kind,
+                               cast_expression->line_number);
+}
+
+
+static void generate_cast_instructions(Package_Executer* executer,
+                                       RVM_OpcodeBuffer* opcode_buffer,
+                                       Ring_BasicType    source_type,
+                                       Ring_BasicType    target_type,
+                                       int               line_number) {
+    extern TypeCastInstructionTable type_cast_instruction_table;
+
+    auto                            key  = std::make_pair(source_type, target_type);
+    auto                            iter = type_cast_instruction_table.find(key);
+
+    if (iter != type_cast_instruction_table.end()) {
+        for (RVM_Opcode opcode : iter->second) {
+            generate_vmcode(executer, opcode_buffer, opcode, 0, line_number);
         }
-        break;
-    default:
-        break;
+    } else {
+        // TODO:
+        // 处理不支持的转换类型
+        // handle_unsupported_cast(source_type, target_type, line_number);
     }
 }
 

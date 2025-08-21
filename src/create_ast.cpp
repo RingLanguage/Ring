@@ -415,15 +415,15 @@ Expression* create_expression_bool_literal(ExpressionType type, bool value) {
     return expression;
 }
 
-Expression* create_cast_expression(TypeSpecifier* cast_type, Expression* operand) {
-    Expression* expression                        = (Expression*)mem_alloc(get_front_mem_pool(), sizeof(Expression));
-    expression->line_number                       = package_unit_get_line_number();
-    expression->convert_type                      = nullptr; // UPDATED_BY_FIX_AST
-    expression->type                              = EXPRESSION_TYPE_CAST;
-    expression->u.cast_expression                 = (CastExpression*)mem_alloc(get_front_mem_pool(), sizeof(CastExpression));
-    expression->u.cast_expression->line_number    = package_unit_get_line_number();
-    expression->u.cast_expression->type_specifier = cast_type;
-    expression->u.cast_expression->operand        = operand;
+Expression* create_cast_expression(TypeSpecifier* target_type_specifier, Expression* operand) {
+    Expression* expression                               = (Expression*)mem_alloc(get_front_mem_pool(), sizeof(Expression));
+    expression->line_number                              = package_unit_get_line_number();
+    expression->convert_type                             = nullptr; // UPDATED_BY_FIX_AST
+    expression->type                                     = EXPRESSION_TYPE_CAST;
+    expression->u.cast_expression                        = (CastExpression*)mem_alloc(get_front_mem_pool(), sizeof(CastExpression));
+    expression->u.cast_expression->line_number           = package_unit_get_line_number();
+    expression->u.cast_expression->target_type_specifier = target_type_specifier;
+    expression->u.cast_expression->operand               = operand;
 
     return expression;
 }
