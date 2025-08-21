@@ -1800,54 +1800,64 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             break;
 
         // type cast
-        case RVM_CODE_CAST_BOOL_TO_INT:
-            STACK_SET_INT_OFFSET(-1, STACK_GET_BOOL_OFFSET(-1));
-            VM_CUR_CO_PC += 1;
-            break;
-        case RVM_CODE_CAST_INT_TO_DOUBLE:
-            STACK_SET_DOUBLE_OFFSET(-1, STACK_GET_INT_OFFSET(-1));
-            VM_CUR_CO_PC += 1;
-            break;
-
-        case RVM_CODE_CAST_INT_TO_BOOL:
+        case RVM_CODE_CAST_INT_2_BOOL:
             STACK_SET_BOOL_OFFSET(-1, (RVM_Bool)STACK_GET_INT_OFFSET(-1));
             VM_CUR_CO_PC += 1;
             break;
-        case RVM_CODE_CAST_DOUBLE_TO_INT:
+
+        case RVM_CODE_CAST_BOOL_2_INT:
+            STACK_SET_INT_OFFSET(-1, STACK_GET_BOOL_OFFSET(-1));
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_CAST_DOUBLE_2_INT:
             STACK_SET_INT_OFFSET(-1, (int)STACK_GET_DOUBLE_OFFSET(-1));
             VM_CUR_CO_PC += 1;
             break;
 
-            // convert
-        case RVM_CODE_BOOL_2_STRING:
+        case RVM_CODE_CAST_INT_2_INT64:
+            int_value = STACK_GET_INT_OFFSET(-1);
+            STACK_SET_INT64_OFFSET(-1, int_value);
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_CAST_DOUBLE_2_INT64:
+            STACK_SET_INT64_OFFSET(-1, (long long)STACK_GET_DOUBLE_OFFSET(-1));
+            VM_CUR_CO_PC += 1;
+            break;
+
+        case RVM_CODE_CAST_INT_2_DOUBLE:
+            STACK_SET_DOUBLE_OFFSET(-1, STACK_GET_INT_OFFSET(-1));
+            VM_CUR_CO_PC += 1;
+            break;
+        case RVM_CODE_CAST_INT64_2_DOUBLE:
+            STACK_SET_DOUBLE_OFFSET(-1, STACK_GET_INT64_OFFSET(-1));
+            VM_CUR_CO_PC += 1;
+            break;
+
+        case RVM_CODE_CAST_BOOL_2_STRING:
             bool_value   = STACK_GET_BOOL_OFFSET(-1);
             string_value = rvm_bool_2_string(rvm, bool_value);
             STACK_SET_STRING_OFFSET(-1, string_value);
             VM_CUR_CO_PC += 1;
             break;
-        case RVM_CODE_INT_2_STRING:
+        case RVM_CODE_CAST_INT_2_STRING:
             int_value    = STACK_GET_INT_OFFSET(-1);
             string_value = rvm_int_2_string(rvm, int_value);
             STACK_SET_STRING_OFFSET(-1, string_value);
             VM_CUR_CO_PC += 1;
             break;
-        case RVM_CODE_INT64_2_STRING:
+        case RVM_CODE_CAST_INT64_2_STRING:
             int64_value  = STACK_GET_INT64_OFFSET(-1);
             string_value = rvm_int64_2_string(rvm, int64_value);
             STACK_SET_STRING_OFFSET(-1, string_value);
             VM_CUR_CO_PC += 1;
             break;
-        case RVM_CODE_DOUBLE_2_STRING:
+        case RVM_CODE_CAST_DOUBLE_2_STRING:
             double_value = STACK_GET_DOUBLE_OFFSET(-1);
             string_value = rvm_double_2_string(rvm, double_value);
             STACK_SET_STRING_OFFSET(-1, string_value);
             VM_CUR_CO_PC += 1;
             break;
-        case RVM_CODE_INT_2_INT64:
-            int_value = STACK_GET_INT_OFFSET(-1);
-            STACK_SET_INT64_OFFSET(-1, int_value);
-            VM_CUR_CO_PC += 1;
-            break;
+
 
         // logical
         case RVM_CODE_LOGICAL_AND:

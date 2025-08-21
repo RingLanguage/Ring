@@ -1,0 +1,21 @@
+
+test_int_2_bool-------
+global_bool_value = true
+global_bool_value = false
+
+test_int_2_int-------
+global_int_value = 123
+global_int_value = 0
+
+test_int_2_int64-------
+global_int64_value = 123
+global_int64_value = 1234567890
+
+test_int_2_double-------
+global_double_value = 123.000000
+global_double_value = 1234567890.000000
+
+test_int_2_string-------
+global_string_value = 123
+global_string_value = 1234567890
+global_string_value = -123

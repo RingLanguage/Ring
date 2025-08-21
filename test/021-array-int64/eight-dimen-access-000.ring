@@ -43,7 +43,7 @@ fn main() {
                         for f = 0; f < len(global_int64_array_0[a,b,c,d,e]); f = f + 1 {
                             for g = 0; g < len(global_int64_array_0[a,b,c,d,e,f]); g = g + 1 {
                                 for h = 0; h < len(global_int64_array_0[a,b,c,d,e,f,g]); h = h + 1 {
-                                    global_int64_array_0[a,b,c,d,e,f,g,h] = to_int64(num);
+                                    global_int64_array_0[a,b,c,d,e,f,g,h] = @int64(num);
                                     num = num + 1;
                                 }
                             }
@@ -77,7 +77,7 @@ fn main() {
                         for f = 0; f < len(global_int64_array_0[a,b,c,d,e]); f = f + 1 {
                             for g = 0; g < len(global_int64_array_0[a,b,c,d,e,f]); g = g + 1 {
                                 for h = 0; h < len(global_int64_array_0[a,b,c,d,e,f,g]); h = h + 1 {
-                                    if global_int64_array_0[a,b,c,d,e,f,g,h] != to_int64(num) {
+                                    if global_int64_array_0[a,b,c,d,e,f,g,h] != @int64(num) {
                                         fmt::println_string("test failed");
                                     }
                                     num = num + 1;

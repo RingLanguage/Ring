@@ -20,28 +20,28 @@ fn main() {
     fmt::println_string("test cast 1 ------------------------");
 	bool_value = false;
 	fmt::println_bool(bool_value);
-	string_value = to_string(bool_value);
+	string_value = @string(bool_value);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "false");
 
     fmt::println_string("\ntest cast 2 ------------------------");
 	bool_value = true;
 	fmt::println_bool(bool_value);
-	string_value = to_string(bool_value);
+	string_value = @string(bool_value);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "true");
 
     fmt::println_string("\ntest cast 3 ------------------------");
 	bool_value = false;
 	fmt::println_bool(bool_value);
-	string_value = to_string(bool_value);
+	string_value = @string(bool_value);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "false");
 
     fmt::println_string("\ntest cast 4 ------------------------");
 	bool_value = true;
 	fmt::println_bool(bool_value);
-	string_value = to_string(bool_value);
+	string_value = @string(bool_value);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "true");
 

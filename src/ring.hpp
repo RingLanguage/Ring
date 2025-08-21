@@ -1238,17 +1238,21 @@ typedef enum {
     RVM_CODE_PUSH_STRING_CAPACITY,
 
     // type cast
-    RVM_CODE_CAST_BOOL_TO_INT,
-    RVM_CODE_CAST_INT_TO_DOUBLE,
+    RVM_CODE_CAST_INT_2_BOOL,
 
-    RVM_CODE_CAST_INT_TO_BOOL,
-    RVM_CODE_CAST_DOUBLE_TO_INT,
+    RVM_CODE_CAST_BOOL_2_INT,
+    RVM_CODE_CAST_DOUBLE_2_INT,
 
-    RVM_CODE_BOOL_2_STRING,
-    RVM_CODE_INT_2_STRING,
-    RVM_CODE_INT64_2_STRING,
-    RVM_CODE_DOUBLE_2_STRING,
-    RVM_CODE_INT_2_INT64,
+    RVM_CODE_CAST_INT_2_INT64,
+    RVM_CODE_CAST_DOUBLE_2_INT64,
+
+    RVM_CODE_CAST_INT_2_DOUBLE,
+    RVM_CODE_CAST_INT64_2_DOUBLE,
+
+    RVM_CODE_CAST_BOOL_2_STRING,
+    RVM_CODE_CAST_INT_2_STRING,
+    RVM_CODE_CAST_INT64_2_STRING,
+    RVM_CODE_CAST_DOUBLE_2_STRING,
 
     // logical
     RVM_CODE_LOGICAL_AND,
@@ -1344,6 +1348,23 @@ typedef enum {
     // 不对应实际的字节码, 不能在生成代码的时候使用
     RVM_CODES_NUM, // 用来标记RVM CODE 的数量
 } RVM_Opcode;
+
+struct TypeCastInstructionTablePairHash {
+    template <typename T1, typename T2>
+    std::size_t operator()(const std::pair<T1, T2>& p) const {
+        std::size_t seed  = 0;
+        auto        hash1 = std::hash<T1>{}(p.first);
+        auto        hash2 = std::hash<T2>{}(p.second);
+        seed ^= hash1 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= hash2 + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+};
+typedef std::unordered_map<
+    std::pair<Ring_BasicType, Ring_BasicType>,
+    std::vector<RVM_Opcode>,
+    TypeCastInstructionTablePairHash>
+    TypeCastInstructionTable;
 
 
 typedef enum {
@@ -1879,7 +1900,7 @@ struct ClassObjectLiteralExpression {
 struct CastExpression {
     unsigned int   line_number;
 
-    TypeSpecifier* type_specifier;
+    TypeSpecifier* target_type_specifier;
     Expression*    operand;
 };
 
@@ -3236,7 +3257,7 @@ Expression*                   create_expression_binary(ExpressionType type, Expr
 Expression*                   create_expression_unitary(ExpressionType type, Expression* unitary_expression);
 Expression*                   create_expression_literal(ExpressionType type, char* literal_interface);
 Expression*                   create_expression_bool_literal(ExpressionType type, bool value);
-Expression*                   create_cast_expression(TypeSpecifier* cast_type, Expression* operand);
+Expression*                   create_cast_expression(TypeSpecifier* target_type_specifier, Expression* operand);
 Expression*                   create_new_array_expression(TypeSpecifier*       sub_type,
                                                           DimensionExpression* dimension_expression);
 
@@ -3527,6 +3548,11 @@ void                        fix_launch_expression(Expression*       expression,
                                                   LaunchExpression* launch_expression,
                                                   Block*            block,
                                                   FunctionTuple*    func);
+void                        fix_cast_expression(Expression*     expression,
+                                                CastExpression* cast_expression,
+                                                Block*          block,
+                                                FunctionTuple*  func,
+                                                RingContext     ctx);
 
 void                        fix_anonymous_func_expression(Expression*              expression,
                                                           AnonymousFuncExpression* closure_expression,
@@ -3688,7 +3714,15 @@ void              generate_vmcode_from_string_expression(Package_Executer* execu
                                                          RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_function_call_expression(Package_Executer* executer, FunctionCallExpression* function_call_expression, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_member_call_expression(Package_Executer* executer, MemberCallExpression* member_call_expression, RVM_OpcodeBuffer* opcode_buffer);
+
 void              generate_vmcode_from_cast_expression(Package_Executer* executer, CastExpression* cast_expression, RVM_OpcodeBuffer* opcode_buffer);
+static void       generate_cast_instructions(Package_Executer* executer,
+                                             RVM_OpcodeBuffer* opcode_buffer,
+                                             Ring_BasicType    source_type,
+                                             Ring_BasicType    target_type,
+                                             int               line_number);
+
+
 void              generate_vmcode_from_member_expression(Package_Executer* executer, MemberExpression* member_expression, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_ternary_condition_expression(Package_Executer* executer, TernaryExpression* ternary_expression, RVM_OpcodeBuffer* opcode_buffer);
 void              generate_vmcode_from_launch_expression(Package_Executer* executer,
@@ -4372,16 +4406,6 @@ void         fix_buildin_func_pop(Expression*             expression,
                                   Block*                  block,
                                   Function*               func,
                                   Ring_Buildin_Func*      build_func);
-void         fix_buildin_func_to_string(Expression*             expression,
-                                        FunctionCallExpression* function_call_expression,
-                                        Block*                  block,
-                                        Function*               func,
-                                        Ring_Buildin_Func*      build_func);
-void         fix_buildin_func_to_int64(Expression*             expression,
-                                       FunctionCallExpression* function_call_expression,
-                                       Block*                  block,
-                                       Function*               func,
-                                       Ring_Buildin_Func*      build_func);
 
 void         fix_buildin_func_to_resume(Expression*             expression,
                                         FunctionCallExpression* function_call_expression,
@@ -4416,13 +4440,6 @@ void         generate_buildin_func_pop(Package_Executer*       executer,
                                        FunctionCallExpression* function_call_expression,
                                        RVM_OpcodeBuffer*       opcode_buffer);
 
-void         generate_buildin_func_to_string(Package_Executer*       executer,
-                                             FunctionCallExpression* function_call_expression,
-                                             RVM_OpcodeBuffer*       opcode_buffer);
-
-void         generate_buildin_func_to_int64(Package_Executer*       executer,
-                                            FunctionCallExpression* function_call_expression,
-                                            RVM_OpcodeBuffer*       opcode_buffer);
 void         generate_buildin_func_resume(Package_Executer*       executer,
                                           FunctionCallExpression* function_call_expression,
                                           RVM_OpcodeBuffer*       opcode_buffer);

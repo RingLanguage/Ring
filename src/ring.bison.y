@@ -1286,6 +1286,10 @@ primary_expression
         debug_bison_info_with_green("[RULE::primary_expression:parentheses operator]\t ");
         $$ = $2;
     }
+    | TOKEN_ATTRIBUTE type_specifier TOKEN_LP expression TOKEN_RP
+    {
+        $$ = create_cast_expression($2, $4);
+    }
     ;
 
 primary_new_creation

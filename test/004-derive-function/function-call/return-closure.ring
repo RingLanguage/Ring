@@ -87,7 +87,7 @@ fn return_closure_2() -> (FuncTypeInt2String) {
 	fmt::printf("return_closure_2 build closure:FuncTypeInt2String\n");
 	return fn(int int_param) -> (string) {
 		fmt::printf("return_closure_2 closure block receive int_param={}\n", int_param);
-		return to_string(int_param);
+		return @string(int_param);
 	};
 }
 

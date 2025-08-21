@@ -391,6 +391,10 @@ BEGIN:
         fix_ternary_condition_expression(expression, expression->u.ternary_expression, block, func);
         break;
 
+    case EXPRESSION_TYPE_CAST:
+        fix_cast_expression(expression, expression->u.cast_expression, block, func, ctx);
+        break;
+
     case EXPRESSION_TYPE_LAUNCH:
         fix_launch_expression(expression, expression->u.launch_expression, block, func);
         break;
@@ -471,10 +475,6 @@ BEGIN:
 
     case EXPRESSION_TYPE_ELEMENT_ACCESS:
         ring_error_report("not implemented");
-        break;
-
-    case EXPRESSION_TYPE_CAST:
-        fix_expression(expression->u.cast_expression->operand, block, func, ctx);
         break;
 
     default: break;
@@ -604,8 +604,13 @@ void fix_type_specfier(TypeSpecifier* type_specifier, Package* curr_package) {
         return;
     }
 
-
     TypeAlias* type_alias = nullptr;
+
+    // 基础类型无需修正
+    if (TYPE_IS_BASIC(type_specifier)) {
+        return;
+    }
+
 
     // e.g. var a tmp;
     // 1. a 是一个类-类型, 从全局类定义中搜索
@@ -3486,6 +3491,22 @@ void fix_ternary_condition_expression(Expression*        expression,
 
 
     return;
+}
+
+void fix_cast_expression(Expression*     expression,
+                         CastExpression* cast_expression,
+                         Block*          block,
+                         FunctionTuple*  func,
+                         RingContext     ctx) {
+
+    fix_expression(cast_expression->operand, block, func, ctx);
+
+    fix_type_specfier(cast_expression->target_type_specifier, nullptr);
+
+    // TODO: 需要判断类型是否可以转换
+
+    EXPRESSION_CLEAR_CONVERT_TYPE(expression);
+    EXPRESSION_ADD_CONVERT_TYPE(expression, cast_expression->target_type_specifier);
 }
 
 /*
