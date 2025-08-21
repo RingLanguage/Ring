@@ -55,16 +55,6 @@ Ring_Buildin_Func Ring_Buildin_Funcs[] = {
     },
     {
         .package_posit         = "",
-        .identifier            = "to_int64",
-        .param_size            = 1,
-        .param_types           = std::vector<TypeSpecifier*>{},
-        .return_size           = 1,
-        .return_types          = std::vector<TypeSpecifier*>{},
-        .buildin_func_fix      = fix_buildin_func_to_int64,
-        .buildin_func_generate = generate_buildin_func_to_int64,
-    },
-    {
-        .package_posit         = "",
         .identifier            = "resume",
         .param_size            = 1,
         .param_types           = std::vector<TypeSpecifier*>{},
@@ -427,49 +417,6 @@ void fix_buildin_func_pop(Expression*             expression,
 }
 
 
-void fix_buildin_func_to_int64(Expression*             expression,
-                               FunctionCallExpression* function_call_expression,
-                               Block*                  block,
-                               Function*               func,
-                               Ring_Buildin_Func*      build_func) {
-
-    check_build_func_param_num(expression, function_call_expression, block, (Function*)func, build_func);
-
-    TypeSpecifier* type_specifier = function_call_expression->argument_list->expression->convert_type[0];
-
-    // Ring-Compiler-Error-Report ERROR_ARGUMENT_MISMATCH_TYPE
-    if (type_specifier->kind != RING_BASIC_TYPE_INT) {
-        DEFINE_ERROR_REPORT_STR;
-
-        compile_err_buf = sprintf_string(
-            "the buildin function `%s()` can only be applied to int; E:%d.",
-            build_func->identifier,
-            ERROR_ARGUMENT_MISMATCH_TYPE);
-        compile_adv_buf = sprintf_string(
-            "the aragument's type is '%s'.", format_type_specifier(type_specifier).c_str());
-
-        ErrorReportContext context = {
-            .package                 = nullptr,
-            .package_unit            = get_package_unit(),
-            .source_file_name        = get_package_unit()->current_file_name,
-            .line_content            = package_unit_get_line_content(function_call_expression->line_number),
-            .line_number             = function_call_expression->line_number,
-            .column_number           = package_unit_get_column_number(),
-            .error_message           = std::string(compile_err_buf),
-            .advice                  = std::string(compile_adv_buf),
-            .report_type             = ERROR_REPORT_TYPE_COLL_ERR,
-            .ring_compiler_file      = (char*)__FILE__,
-            .ring_compiler_file_line = __LINE__,
-        };
-        ring_compile_error_report(&context);
-    }
-
-    EXPRESSION_CLEAR_CONVERT_TYPE(expression);
-    extern TypeSpecifier int64_type_specifier;
-    EXPRESSION_ADD_CONVERT_TYPE(expression, &int64_type_specifier);
-}
-
-
 void fix_buildin_func_to_resume(Expression*             expression,
                                 FunctionCallExpression* function_call_expression,
                                 Block*                  block,
@@ -625,17 +572,6 @@ void generate_buildin_func_pop(Package_Executer*       executer,
     generate_vmcode(executer, opcode_buffer, opcode, 0, function_call_expression->line_number);
 }
 
-
-void generate_buildin_func_to_int64(Package_Executer*       executer,
-                                    FunctionCallExpression* function_call_expression,
-                                    RVM_OpcodeBuffer*       opcode_buffer) {
-
-    TypeSpecifier* type_specifier = function_call_expression->argument_list->expression->convert_type[0];
-    assert(type_specifier->kind == RING_BASIC_TYPE_INT);
-
-
-    generate_vmcode(executer, opcode_buffer, RVM_CODE_INT_2_INT64, 0, function_call_expression->line_number);
-}
 
 void generate_buildin_func_resume(Package_Executer*       executer,
                                   FunctionCallExpression* function_call_expression,
