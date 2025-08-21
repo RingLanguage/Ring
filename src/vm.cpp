@@ -234,19 +234,21 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
 
 
     // type cast
-    {RVM_CODE_CAST_BOOL_TO_INT, "cast_bool_to_int", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
-    {RVM_CODE_CAST_INT_TO_DOUBLE, "cast_int_to_double", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
-    {RVM_CODE_CAST_INT64_TO_DOUBLE, "cast_int64_to_double", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
-    {RVM_CODE_CAST_DOUBLE_TO_INT64, "cast_double_to_int64", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
+    {RVM_CODE_CAST_INT_2_BOOL, "cast_int_2_bool", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int to bool", "[int]->[bool]", "So(-1).bool = So(-1).int"},
 
-    {RVM_CODE_CAST_INT_TO_BOOL, "cast_int_to_bool", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
-    {RVM_CODE_CAST_DOUBLE_TO_INT, "cast_double_to_int", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "", "", ""},
+    {RVM_CODE_CAST_BOOL_2_INT, "cast_bool_2_int", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert bool to int", "[bool]->[int]", "So(-1).int = So(-1).bool"},
+    {RVM_CODE_CAST_DOUBLE_2_INT, "cast_double_2_int", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert double to int", "[double]->[int]", "So(-1).int = So(-1).double"},
 
-    {RVM_CODE_BOOL_2_STRING, "bool_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert bool to string", "[bool]->[string]", "So(-1).string = So(-1).bool"},
-    {RVM_CODE_INT_2_STRING, "int_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int to string", "[int]->[string]", "So(-1).string = So(-1).int"},
-    {RVM_CODE_INT64_2_STRING, "int64_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int64 to string", "[int]->[string]", "So(-1).string = So(-1).int64"},
-    {RVM_CODE_DOUBLE_2_STRING, "double_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert double to string", "[double]->[string]", "So(-1).string = So(-1).double"},
-    {RVM_CODE_INT_2_INT64, "int_2_int64", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int to int64", "[int]->[int64]", "So(-1).int64 = So(-1).int"},
+    {RVM_CODE_CAST_INT_2_INT64, "cast_int_2_int64", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int to int64", "[int]->[int64]", "So(-1).int64 = So(-1).int"},
+    {RVM_CODE_CAST_DOUBLE_2_INT64, "cast_double_2_int64", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert double to int64", "[double]->[int64]", "So(-1).int64 = So(-1).double"},
+
+    {RVM_CODE_CAST_INT_2_DOUBLE, "cast_int_2_double", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int to double", "[int]->[double]", "So(-1).double = So(-1).int"},
+    {RVM_CODE_CAST_INT64_2_DOUBLE, "cast_int64_2_double", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int64 to double", "[int64]->[double]", "So(-1).double = So(-1).int64"},
+
+    {RVM_CODE_CAST_BOOL_2_STRING, "cast_bool_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert bool to string", "[bool]->[string]", "So(-1).string = So(-1).bool"},
+    {RVM_CODE_CAST_INT_2_STRING, "cast_int_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int to string", "[int]->[string]", "So(-1).string = So(-1).int"},
+    {RVM_CODE_CAST_INT64_2_STRING, "cast_int64_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert int64 to string", "[int]->[string]", "So(-1).string = So(-1).int64"},
+    {RVM_CODE_CAST_DOUBLE_2_STRING, "cast_double_2_string", OPCODE_OPERAND_TYPE_0BYTE, "0", 0, "convert double to string", "[double]->[string]", "So(-1).string = So(-1).double"},
 
 
     // logical
@@ -528,27 +530,27 @@ std::vector<_StackIncrExprTerm> parse_stack_incr_expr(const char* expression) {
 TypeCastInstructionTable type_cast_instruction_table = {
     // bool
     {{RING_BASIC_TYPE_BOOL, RING_BASIC_TYPE_INT}, {}},
-    {{RING_BASIC_TYPE_BOOL, RING_BASIC_TYPE_INT64}, {RVM_CODE_CAST_BOOL_TO_INT, RVM_CODE_INT_2_INT64}},
-    {{RING_BASIC_TYPE_BOOL, RING_BASIC_TYPE_DOUBLE}, {RVM_CODE_CAST_BOOL_TO_INT, RVM_CODE_CAST_INT_TO_DOUBLE}},
-    {{RING_BASIC_TYPE_BOOL, RING_BASIC_TYPE_STRING}, {RVM_CODE_BOOL_2_STRING}},
+    {{RING_BASIC_TYPE_BOOL, RING_BASIC_TYPE_INT64}, {RVM_CODE_CAST_BOOL_2_INT, RVM_CODE_CAST_INT_2_INT64}},
+    {{RING_BASIC_TYPE_BOOL, RING_BASIC_TYPE_DOUBLE}, {RVM_CODE_CAST_BOOL_2_INT, RVM_CODE_CAST_INT_2_DOUBLE}},
+    {{RING_BASIC_TYPE_BOOL, RING_BASIC_TYPE_STRING}, {RVM_CODE_CAST_BOOL_2_STRING}},
 
     // int
     // {{RING_BASIC_TYPE_INT, RING_BASIC_TYPE_BOOL}, {RVM_CODE_CAST_INT_TO_BOOL}},
-    {{RING_BASIC_TYPE_INT, RING_BASIC_TYPE_INT64}, {RVM_CODE_INT_2_INT64}},
-    {{RING_BASIC_TYPE_INT, RING_BASIC_TYPE_DOUBLE}, {RVM_CODE_CAST_INT_TO_DOUBLE}},
-    {{RING_BASIC_TYPE_INT, RING_BASIC_TYPE_STRING}, {RVM_CODE_INT_2_STRING}},
+    {{RING_BASIC_TYPE_INT, RING_BASIC_TYPE_INT64}, {RVM_CODE_CAST_INT_2_INT64}},
+    {{RING_BASIC_TYPE_INT, RING_BASIC_TYPE_DOUBLE}, {RVM_CODE_CAST_INT_2_DOUBLE}},
+    {{RING_BASIC_TYPE_INT, RING_BASIC_TYPE_STRING}, {RVM_CODE_CAST_INT_2_STRING}},
 
     // int64
     // {{RING_BASIC_TYPE_INT64, RING_BASIC_TYPE_BOOL}, {RVM_CODE_CAST_INT64_TO_INT, RVM_CODE_CAST_INT_TO_BOOL}},
     // {{RING_BASIC_TYPE_INT64, RING_BASIC_TYPE_INT}, {RVM_CODE_CAST_INT64_TO_INT}},
-    {{RING_BASIC_TYPE_INT64, RING_BASIC_TYPE_DOUBLE}, {RVM_CODE_CAST_INT64_TO_DOUBLE}},
-    {{RING_BASIC_TYPE_INT64, RING_BASIC_TYPE_STRING}, {RVM_CODE_INT64_2_STRING}},
+    {{RING_BASIC_TYPE_INT64, RING_BASIC_TYPE_DOUBLE}, {RVM_CODE_CAST_INT64_2_DOUBLE}},
+    {{RING_BASIC_TYPE_INT64, RING_BASIC_TYPE_STRING}, {RVM_CODE_CAST_INT64_2_STRING}},
 
     // double
-    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_BOOL}, {RVM_CODE_CAST_DOUBLE_TO_INT, RVM_CODE_CAST_INT_TO_BOOL}},
-    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_INT}, {RVM_CODE_CAST_DOUBLE_TO_INT}},
-    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_INT64}, {RVM_CODE_CAST_DOUBLE_TO_INT64}},
-    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_STRING}, {RVM_CODE_DOUBLE_2_STRING}},
+    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_BOOL}, {RVM_CODE_CAST_DOUBLE_2_INT, RVM_CODE_CAST_INT_2_BOOL}},
+    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_INT}, {RVM_CODE_CAST_DOUBLE_2_INT}},
+    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_INT64}, {RVM_CODE_CAST_DOUBLE_2_INT64}},
+    {{RING_BASIC_TYPE_DOUBLE, RING_BASIC_TYPE_STRING}, {RVM_CODE_CAST_DOUBLE_2_STRING}},
 
     // string
     // {{RING_BASIC_TYPE_STRING, RING_BASIC_TYPE_INT}, {RVM_CODE_STRING_TO_INT}},
