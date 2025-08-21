@@ -25,9 +25,6 @@ fn pop(any array) -> (any);
 
 
 @native
-fn to_string(any value) -> (string);
-
-@native
 fn to_int64(any value) -> (int64);
 
 

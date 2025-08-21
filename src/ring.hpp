@@ -4404,11 +4404,6 @@ void         fix_buildin_func_pop(Expression*             expression,
                                   Block*                  block,
                                   Function*               func,
                                   Ring_Buildin_Func*      build_func);
-void         fix_buildin_func_to_string(Expression*             expression,
-                                        FunctionCallExpression* function_call_expression,
-                                        Block*                  block,
-                                        Function*               func,
-                                        Ring_Buildin_Func*      build_func);
 void         fix_buildin_func_to_int64(Expression*             expression,
                                        FunctionCallExpression* function_call_expression,
                                        Block*                  block,
@@ -4447,10 +4442,6 @@ void         generate_buildin_func_push(Package_Executer*       executer,
 void         generate_buildin_func_pop(Package_Executer*       executer,
                                        FunctionCallExpression* function_call_expression,
                                        RVM_OpcodeBuffer*       opcode_buffer);
-
-void         generate_buildin_func_to_string(Package_Executer*       executer,
-                                             FunctionCallExpression* function_call_expression,
-                                             RVM_OpcodeBuffer*       opcode_buffer);
 
 void         generate_buildin_func_to_int64(Package_Executer*       executer,
                                             FunctionCallExpression* function_call_expression,
