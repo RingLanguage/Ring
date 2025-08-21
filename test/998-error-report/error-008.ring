@@ -38,7 +38,7 @@ fn main() {
 	// bool_value = true ? return_true() : return_false();
 	// fmt::println(bool_value);
 
-	// to_string();
+	// @string();
 	// len();
 
 	// var string tmp_file = "./tmp.ring";
@@ -53,7 +53,7 @@ fn main() {
 
 	// push(a, a);
 	// pop(a);
-	// to_string(s);
+	// @string(s);
 	// to_int64(s);
 	// resume(a);
 	// resume();

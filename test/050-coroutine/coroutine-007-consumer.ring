@@ -38,7 +38,7 @@ fn consumer_1() {
 		yield();
 		fmt::printf("consumer_1 {}\n", consumer_1_count);
 
-		send_msg = "\"send a message to consumer_2 " + to_string(consumer_1_count) + "\"";
+		send_msg = "\"send a message to consumer_2 " + @string(consumer_1_count) + "\"";
 
 		fmt::printf("consumer_1 send:{}\n", send_msg);
 

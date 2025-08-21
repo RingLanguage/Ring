@@ -18,25 +18,25 @@ fn main() {
 
     fmt::println_string("test cast 1 ------------------------");
 	fmt::println_int(0);
-	string_value = to_string(0);
+	string_value = @string(0);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "0");
 
     fmt::println_string("\ntest cast 2 ------------------------");
 	fmt::println_int(123);
-	string_value = to_string(123);
+	string_value = @string(123);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "123");
 
     fmt::println_string("\ntest cast 3 ------------------------");
 	fmt::println_int(223);
-	string_value = to_string(223);
+	string_value = @string(223);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "223");
 
     fmt::println_string("\ntest cast 4 ------------------------");
 	fmt::println_int(9870);
-	string_value = to_string(9870);
+	string_value = @string(9870);
 	fmt::println_string(string_value);
 	debug::assert(string_value == "9870");
 

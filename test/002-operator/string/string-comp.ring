@@ -47,7 +47,7 @@ fn main() {
 	fmt::printf("{}\n", local_string_array_1[0,0] < local_string_array_1[1,1]);
 	fmt::printf("{}\n", local_string_array_1[0,1] < local_string_array_1[1,0]);
 
-	fmt::printf("{}\n", local_string_array_1[0,0] > to_string(1));
+	fmt::printf("{}\n", local_string_array_1[0,0] > @string(1));
 
 
 }
