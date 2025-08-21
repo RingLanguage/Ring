@@ -54,7 +54,7 @@ fn main() {
 	// push(a, a);
 	// pop(a);
 	// @string(s);
-	// to_int64(s);
+	// @int64(s);
 	// resume(a);
 	// resume();
 	// cap(a);

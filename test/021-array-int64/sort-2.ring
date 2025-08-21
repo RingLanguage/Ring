@@ -24,8 +24,8 @@ fn main() {
 
     fmt::println_string("\ntest cast 2 ------------------------");
     for i=0; i+1 < len(global_int64_array_0); i+=2 {
-        global_int64_array_0[i] = to_int64(i);
-        global_int64_array_0[i+1] = to_int64(i);
+        global_int64_array_0[i] = @int64(i);
+        global_int64_array_0[i+1] = @int64(i);
     }
 
     for i = 0; i < len(global_int64_array_0); i++ {

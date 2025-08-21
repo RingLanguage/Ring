@@ -78,10 +78,10 @@ fn main() {
     for i=0; i<len(global_int64_array_0); i=i+1 {
         for j=0; j<len(global_int64_array_0[i]); j=j+1 {
             for k=0; k<len(global_int64_array_0[i,j]); k=k+1 {
-                if global_int64_array_0[i,j,k] != to_int64(i*100+j*10+k) {
+                if global_int64_array_0[i,j,k] != @int64(i*100+j*10+k) {
                     fmt::println_string("test failed1");
                 }
-                if global_int64_array_0[i,j,k] != to_int64(num) {
+                if global_int64_array_0[i,j,k] != @int64(num) {
                     fmt::println_string("test failed2");
                 }
                 num++;
