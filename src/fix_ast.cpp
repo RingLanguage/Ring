@@ -3501,7 +3501,7 @@ void fix_cast_expression(Expression*     expression,
 
     fix_expression(cast_expression->operand, block, func, ctx);
 
-    fix_type_specfier(cast_expression->target_type_specifier, nullptr);
+    fix_type_specfier(cast_expression->target_type_specifier, block->package_unit->parent_package);
 
     // TODO: 需要判断类型是否可以转换
 

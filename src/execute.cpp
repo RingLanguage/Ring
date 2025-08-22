@@ -1801,7 +1801,7 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
 
         // type cast
         case RVM_CODE_CAST_INT_2_BOOL:
-            STACK_SET_BOOL_OFFSET(-1, (RVM_Bool)STACK_GET_INT_OFFSET(-1));
+            STACK_SET_BOOL_OFFSET(-1, (RVM_Bool)(STACK_GET_INT_OFFSET(-1) != 0));
             VM_CUR_CO_PC += 1;
             break;
 
