@@ -1,0 +1,6 @@
+
+complex_math-------
+debug_assert PASS
+global_int_value = 5
+debug_assert PASS
+global_double_value = 4.761905

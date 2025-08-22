@@ -1,0 +1,10 @@
+
+test_cast_type_alias-------
+int_value = 1
+int_alias_value = 0
+debug_assert PASS
+debug_assert PASS
+debug_assert PASS
+int_value = 101
+int_alias_value = 101
+debug_assert PASS
