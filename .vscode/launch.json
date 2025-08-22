@@ -10,7 +10,7 @@
       "args": [
         "-O0",
         "run",
-        "${workspaceFolder}/test/008-class/class-000.ring"
+        "${workspaceFolder}/test/002-operator/as_cast/test-0.ring"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
