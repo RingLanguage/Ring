@@ -1,0 +1,53 @@
+name: Build and Publish Ring
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: amd64
+            extension: tar.gz
+          - os: macos-latest
+            platform: darwin
+            arch: amd64
+            extension: tar.gz
+          - os: windows-latest
+            platform: windows
+            arch: amd64
+            extension: zip
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # ... 省略构建步骤 ...
+
+      - name: Upload versioned install scripts
+        run: |
+          VERSION=${{ github.ref_name }}
+          VERSION=${VERSION#v}
+          # 创建版本目录并上传
+          coscmd upload scripts/install.sh /${VERSION}/install.sh
+          coscmd upload scripts/install.ps1 /${VERSION}/install.ps1
+          # 更新latest目录
+          coscmd upload scripts/install.sh /latest/install.sh
+          coscmd upload scripts/install.ps1 /latest/install.ps1
+          # 上传版本清单
+          echo $VERSION >> versions.txt
+          coscmd upload versions.txt /versions.txt
+
+      - name: Upload package to versioned directory
+        run: |
+          VERSION=${{ github.ref_name }}
+          VERSION=${VERSION#v}
+          coscmd upload dist/${{ env.PACKAGE_NAME }} /${VERSION}/package/${{ env.PACKAGE_NAME }}
+          coscmd upload dist/${{ env.PACKAGE_NAME }} /latest/package/${{ env.PACKAGE_NAME }}
