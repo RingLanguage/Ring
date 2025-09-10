@@ -926,6 +926,7 @@ struct RVM_FreeValueBlock {
 struct RVM_TypeSpecifier_Class {
     unsigned int package_index; // 定义 class的package 的全局索引
     unsigned int class_def_index;
+    // TODO: 这里寻址的方式有点简陋，应该直接保存指针比较好
 };
 
 struct RVM_TypeSpecifier_Array {
@@ -4092,6 +4093,7 @@ RVM_Array*       json_2_rvm_array(Ring_VirtualMachine* rvm,
                                   RVM_Array_Type       expect_array_type,
                                   Ring_BasicType       expect_array_item_type_kind,
                                   RVM_ClassDefinition* expect_array_class_def);
+bool             is_json_type_compatible_with_rvm_type(const json& json_value, RVM_TypeSpecifier* type_specifier);
 // --------------------
 
 /* --------------------
@@ -4149,6 +4151,7 @@ std::string              format_rvm_function(Package_Executer* package_executer,
 std::string              format_rvm_type_specifier(Package_Executer*  package_executer,
                                                    RVM_TypeSpecifier* type_specifier,
                                                    std::string        prefix);
+std::string              format_rvm_type_specifier_brief(RVM_TypeSpecifier* type_specifier);
 
 std::vector<std::string> split(const std::string& str, const std::string& delimiters);
 

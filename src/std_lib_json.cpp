@@ -172,23 +172,68 @@ RVM_ClassObject* json_2_rvm_class_ob(Ring_VirtualMachine* rvm,
     rvm_fill_class_ob(rvm, class_ob, rvm_class_definition);
 
     for (unsigned int i = 0; i < rvm_class_definition->field_size; i++) {
-        RVM_Field* field            = &rvm_class_definition->field_list[i];
-        char*      field_identifier = field->identifier;
-        // RVM_TypeSpecifier* type_specifier   = field->type_specifier;
+        RVM_Field*         field            = &rvm_class_definition->field_list[i];
+        char*              field_identifier = field->identifier;
+        RVM_TypeSpecifier* type_specifier   = field->type_specifier;
 
         if (!j.contains(field_identifier)) {
             continue;
         }
 
-        // TODO: 类型是否不一致
+        // 获取JSON值
+        const json& json_value = j[field_identifier];
 
+        // 类型检查：验证JSON值类型是否与RVM字段类型兼容
+        if (!is_json_type_compatible_with_rvm_type(json_value, type_specifier)) {
+            std::string error_msg = "Type mismatch for field '";
+            error_msg += std::string(rvm_class_definition->identifier) + "." + std::string(field_identifier);
+            error_msg += "': JSON value type '";
+            error_msg += get_json_type_string(json_value);
+            error_msg += "' is not compatible with type '";
+            error_msg += format_rvm_type_specifier_brief(type_specifier);
+            error_msg += "'";
+            throw std::logic_error(error_msg);
+        }
 
         // 内存泄漏
-        class_ob->field_list[i] = json_2_rvm_value(rvm, j[field_identifier], &class_ob->field_list[i]);
+        class_ob->field_list[i] = json_2_rvm_value(rvm, json_value, &class_ob->field_list[i]);
     }
 
-
     return class_ob;
+}
+
+
+/*
+ * is_json_type_compatible_with_rvm_type
+ *
+ * 检查JSON值类型是否与RVM类型兼容
+ */
+bool is_json_type_compatible_with_rvm_type(const json& json_value, RVM_TypeSpecifier* type_specifier) {
+    // 如果RVM类型是动态类型或任意类型，总是兼容
+    if (!type_specifier || type_specifier->kind == RING_BASIC_TYPE_ANY) {
+        return true;
+    }
+
+    switch (type_specifier->kind) {
+    case RING_BASIC_TYPE_BOOL:
+        return json_value.is_boolean();
+    case RING_BASIC_TYPE_INT:
+        return json_value.is_number_integer() && json_value <= INT_MAX && json_value >= INT_MIN;
+    case RING_BASIC_TYPE_INT64:
+        return json_value.is_number_integer();
+    case RING_BASIC_TYPE_DOUBLE:
+        return json_value.is_number();
+    case RING_BASIC_TYPE_STRING:
+        return json_value.is_string();
+    case RING_BASIC_TYPE_ARRAY:
+        return json_value.is_array();
+    case RING_BASIC_TYPE_CLASS:
+        // 对于类类型，只检查JSON是否是对象
+        return json_value.is_object();
+    default:
+        // 对于未知类型，默认认为不兼容
+        return false;
+    }
 }
 
 // TODO: 这个函数动态内存分配了，需要优化，直接交给gc分配，不然会gc 计算的逻辑会分散在各处

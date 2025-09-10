@@ -3,7 +3,9 @@
 #define RING_JSON_INCLUDE_H
 
 #include <nlohmann/json.hpp>
+#include <string>
 #include <variant>
+
 using json = nlohmann::json;
 
 namespace nlohmann {
@@ -128,6 +130,24 @@ SerializeResult json_encode(const T& obj, int indent = -1, char indent_char = ' 
     } catch (const json::exception& e) {
         return JsonError{std::string("json_encode::error: ") + e.what()};
     }
+}
+
+inline std::string get_json_type_string(const json& json_value) {
+    if (json_value.is_null())
+        return "null";
+    if (json_value.is_boolean())
+        return "boolean";
+    if (json_value.is_number_integer())
+        return "integer";
+    if (json_value.is_number_float())
+        return "float";
+    if (json_value.is_string())
+        return "string";
+    if (json_value.is_array())
+        return "array";
+    if (json_value.is_object())
+        return "object";
+    return "unknown";
 }
 
 #endif // RING_JSON_INCLUDE_H

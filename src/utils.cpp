@@ -1368,6 +1368,25 @@ std::string format_rvm_type_specifier(Package_Executer*  package_executer,
     return str;
 }
 
+// 辅助函数：获取RVM类型的名称
+std::string format_rvm_type_specifier_brief(RVM_TypeSpecifier* type_specifier) {
+    if (!type_specifier)
+        return "";
+
+    switch (type_specifier->kind) {
+    case RING_BASIC_TYPE_BOOL: return "bool";
+    case RING_BASIC_TYPE_INT: return "int";
+    case RING_BASIC_TYPE_INT64: return "int64";
+    case RING_BASIC_TYPE_DOUBLE: return "double";
+    case RING_BASIC_TYPE_STRING: return "string";
+    case RING_BASIC_TYPE_CLASS: return "class";
+    case RING_BASIC_TYPE_ARRAY: return "array";
+    case RING_BASIC_TYPE_FUNC: return "func";
+    case RING_BASIC_TYPE_ANY: return "any";
+    default: return "unknown";
+    }
+}
+
 std::vector<std::string> split(const std::string& str, const std::string& delimiters) {
     std::vector<std::string> result;
     std::string::size_type   start = 0;
