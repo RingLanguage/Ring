@@ -1,0 +1,14 @@
+test_json_encode_decode ------
+job1: {Bool:false Int:0 Int64:0 Double:0.000000 String: Job1:{Job1Bool:false Job1Int:0 Job1Int64:0 Job1Double:0.000000 Job1String:}}
+job2: {Bool:false Int:0 Int64:0 Double:0.000000 String: Job1:{Job1Bool:false Job1Int:0 Job1Int64:0 Job1Double:0.000000 Job1String:}}
+json_str_1: {"Bool":false,"Double":0.0,"Int":0,"Int64":0,"Job1":{"Job1Bool":false,"Job1Double":0.0,"Job1Int":0,"Job1Int64":0,"Job1String":""},"String":""}
+json_str_2: {"Bool":false,"Double":0.0,"Int":0,"Int64":0,"Job1":{"Job1Bool":false,"Job1Double":0.0,"Job1Int":0,"Job1Int64":0,"Job1String":""},"String":""}
+Test PASS: json_str_1 == json_str_2
+test_json_encode_decode ------
+test_json_encode_decode ------
+job1: {Bool:true Int:2147483647 Int64:9223372036854775807 Double:3.140000 String:hello world Job1:{Job1Bool:true Job1Int:2147483647 Job1Int64:9223372036854775807 Job1Double:3.140000 Job1String:hello world}}
+job2: {Bool:true Int:2147483647 Int64:9223372036854775807 Double:3.140000 String:hello world Job1:{Job1Bool:true Job1Int:2147483647 Job1Int64:9223372036854775807 Job1Double:3.140000 Job1String:hello world}}
+json_str_1: {"Bool":true,"Double":3.14,"Int":2147483647,"Int64":9223372036854775807,"Job1":{"Job1Bool":true,"Job1Double":3.14,"Job1Int":2147483647,"Job1Int64":9223372036854775807,"Job1String":"hello world"},"String":"hello world"}
+json_str_2: {"Bool":true,"Double":3.14,"Int":2147483647,"Int64":9223372036854775807,"Job1":{"Job1Bool":true,"Job1Double":3.14,"Job1Int":2147483647,"Job1Int64":9223372036854775807,"Job1String":"hello world"},"String":"hello world"}
+Test PASS: json_str_1 == json_str_2
+test_json_encode_decode ------

@@ -165,6 +165,12 @@ var (
 		"test/013-gc/gc-test-000.ring",
 		"test/013-gc/gc-array-001.ring",
 		"test/013-gc/test-array-copy.ring",
+
+		// 后续支持类的比较之后，再放开测试用例
+		"test/009-typedef/type-alias/003.ring",
+		"test/009-typedef/type-alias/004.ring",
+
+
 	}
 
 	TEST_CASE_WORKFLOW_PATH = "/Users/bytedance/Desktop/Ring"

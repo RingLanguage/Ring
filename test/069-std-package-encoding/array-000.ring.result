@@ -1,0 +1,55 @@
+test_bool_array--------
+test_json_encode_decode_array_bool ------
+json_str_1: []
+json_str_2: []
+Test PASS
+test_json_encode_decode_array_bool ------
+test_json_encode_decode_array_bool ------
+json_str_1: [false,true,false]
+json_str_2: [false,true,false]
+Test PASS
+test_json_encode_decode_array_bool ------
+test_int_array--------
+test_json_encode_decode_array_int ------
+json_str_1: []
+json_str_2: []
+Test PASS
+test_json_encode_decode_array_int ------
+test_json_encode_decode_array_int ------
+json_str_1: [1,2,3]
+json_str_2: [1,2,3]
+Test PASS
+test_json_encode_decode_array_int ------
+test_int64_array--------
+test_json_encode_decode_array_int64 ------
+json_str_1: []
+json_str_2: []
+Test PASS
+test_json_encode_decode_array_int64 ------
+test_json_encode_decode_array_int64 ------
+json_str_1: [1,2,3]
+json_str_2: [1,2,3]
+Test PASS
+test_json_encode_decode_array_int64 ------
+test_double_array--------
+test_json_encode_decode_array_double ------
+json_str_1: []
+json_str_2: []
+Test PASS
+test_json_encode_decode_array_double ------
+test_json_encode_decode_array_double ------
+json_str_1: [1.1,2.2,3.3]
+json_str_2: [1.1,2.2,3.3]
+Test PASS
+test_json_encode_decode_array_double ------
+test_string_array--------
+test_json_encode_decode_array_string ------
+json_str_1: []
+json_str_2: []
+Test PASS
+test_json_encode_decode_array_string ------
+test_json_encode_decode_array_string ------
+json_str_1: ["1","2","3"]
+json_str_2: ["1","2","3"]
+Test PASS
+test_json_encode_decode_array_string ------
