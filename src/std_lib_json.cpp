@@ -185,17 +185,17 @@ RVM_ClassObject* json_2_rvm_class_ob(Ring_VirtualMachine* rvm,
 
         // 类型检查：验证JSON值类型是否与RVM字段类型兼容
         if (!is_json_type_compatible_with_rvm_type(json_value, type_specifier)) {
-            std::string error_msg = "Type mismatch for field '";
-            error_msg += std::string(rvm_class_definition->identifier) + "." + std::string(field_identifier);
-            error_msg += "': JSON value type '";
-            error_msg += get_json_type_string(json_value);
-            error_msg += "' is not compatible with type '";
-            error_msg += format_rvm_type_specifier_brief(type_specifier);
-            error_msg += "'";
-            throw std::logic_error(error_msg);
+            std::string err_msg = "";
+
+            //
+            err_msg = sprintf_string("type mismatch for field `%s.%s`, json value type `%s` is not match with type `%s`",
+                                     rvm_class_definition->identifier, field_identifier,
+                                     get_json_type_string(json_value).c_str(),
+                                     format_rvm_type_specifier_brief(type_specifier).c_str());
+            throw std::type_error(err_msg);
         }
 
-        // 内存泄漏
+        // FIXME: 内存泄漏
         class_ob->field_list[i] = json_2_rvm_value(rvm, json_value, &class_ob->field_list[i]);
     }
 

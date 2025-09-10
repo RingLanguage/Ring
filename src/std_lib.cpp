@@ -1075,15 +1075,16 @@ void std_lib_encoding_json_decode(Ring_VirtualMachine* rvm,
                                        json_str->data, json_str->length,
                                        &args[0]);
     } catch (const json::type_error& e) {
-        err_msg = std::string("json_decode: type error: ") + e.what();
+        err_msg = std::string("json_decode type error: ") + e.what();
     } catch (const json::out_of_range& e) {
-        err_msg = std::string("json_decode: out of range: ") + e.what();
+        err_msg = std::string("json_decode out of range: ") + e.what();
     } catch (const json::parse_error& e) {
-        err_msg = std::string("json_decode: parse error: ") + e.what();
+        err_msg = std::string("json_decode parse error: ") + e.what();
     } catch (const json::exception& e) {
-        err_msg = std::string("json_decode: json error: ") + e.what();
+        err_msg = std::string("json_decode json error: ") + e.what();
     } catch (const std::logic_error& e) {
-        err_msg = std::string("json_decode: logic_error error: ") + e.what();
+        // TODO: 这个捕获的错误不对
+        err_msg = std::string("json_decode logical error: ") + e.what();
     } catch (...) {
         err_msg = std::string("json_decode: unknow error: ");
     }
