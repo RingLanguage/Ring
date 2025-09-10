@@ -1,0 +1,1 @@
+json_res: json_decode logical error: type mismatch for field `Job.Bool`, json value type `object` is not match with type `bool`
