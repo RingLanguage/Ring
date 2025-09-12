@@ -192,7 +192,7 @@ RVM_ClassObject* json_2_rvm_class_ob(Ring_VirtualMachine* rvm,
                                      rvm_class_definition->identifier, field_identifier,
                                      get_json_type_string(json_value).c_str(),
                                      format_rvm_type_specifier_brief(type_specifier).c_str());
-            throw std::type_error(err_msg);
+            throw std::logic_error(err_msg);
         }
 
         // FIXME: 内存泄漏
