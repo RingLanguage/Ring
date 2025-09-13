@@ -13,7 +13,7 @@
 #include <unordered_set>
 #include <vector>
 
-#define RING_VERSION "ring-v0.3.0-beta Copyright (C) 2021-2025 ring.wiki, ZhenhuLi"
+#define RING_VERSION "ring-v0.3.1-beta Copyright (C) 2021-2025 ring.wiki, ZhenhuLi"
 
 using json = nlohmann::json;
 
