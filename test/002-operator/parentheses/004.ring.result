@@ -1,0 +1,6 @@
+2 + 3 * 4 == 14 = true
+(2 + 3) * 4 == 20 = true
+debug_assert PASS
+debug_assert PASS
+(2 * 3 + 4) < 15 and not(5 % 2 == 0) = true
+debug_assert PASS
