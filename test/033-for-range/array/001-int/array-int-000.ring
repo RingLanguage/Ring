@@ -9,6 +9,7 @@ global {
 
 }
 
+// TE: 对于 int 数组的 for-range 测试，range的对象是个变量
 fn main() {
 	var int[] local_int_array_0 = int[]{0, 1, 2, 
 		3, 4, 5, 

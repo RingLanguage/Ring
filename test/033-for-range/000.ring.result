@@ -1,0 +1,9 @@
+test_step --------------------
+count:  10
+debug_assert PASS
+test_array --------------------
+index:  0
+index:  1
+index:  2
+index:  3
+debug_assert PASS

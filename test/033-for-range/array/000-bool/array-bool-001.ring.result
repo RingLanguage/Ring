@@ -1,0 +1,35 @@
+test case for-range --------------------
+true
+false
+false
+true
+false
+false
+true
+false
+false
+true
+false
+false
+true
+false
+false
+true
+false
+false
+true
+false
+false
+true
+false
+false
+true
+false
+false
+true
+false
+false
+debug_assert PASS
+
+test case for-range&for --------------------
+debug_assert PASS

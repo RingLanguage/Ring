@@ -1,0 +1,11 @@
+test case for-range --------------------
+Function 0 executed
+Function 1 executed
+Function 2 executed
+Function 3 executed
+Function 4 executed
+Function 5 executed
+debug_assert PASS
+
+test case for-range&for --------------------
+debug_assert PASS

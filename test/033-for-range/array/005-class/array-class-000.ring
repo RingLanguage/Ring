@@ -17,6 +17,7 @@ typedef Job = class {
 	var string String;
 }
 
+// TE: 对于 class 数组的 for-range 测试，range的对象是个变量
 fn main() {
 	var Job[] local_bool_array_0 = Job[]{
 		Job{Bool: false, Int: 0, Int64: 0L, Double: 0.0, String: "Job0"},

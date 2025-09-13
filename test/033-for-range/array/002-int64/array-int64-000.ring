@@ -9,6 +9,7 @@ global {
 
 }
 
+// TE: 对于 int64 数组的 for-range 测试，range的对象是个变量
 fn main() {
 	var int64[] local_int_array_0 = int64[]{0L, 1L, 2L, 
 		3L,  4L,  5L, 

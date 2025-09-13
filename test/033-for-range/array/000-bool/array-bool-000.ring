@@ -9,6 +9,7 @@ global {
 
 }
 
+// TE: 对于 bool 数组的 for-range 测试，range的对象是个变量
 fn main() {
 	var bool[] local_bool_array_0 = bool[]{true, false, false, 
 		true, false, false, 

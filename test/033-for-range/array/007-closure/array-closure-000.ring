@@ -11,6 +11,7 @@ global {
 
 typedef FuncType = fn();
 
+// TE: 对于 匿名函数 数组的 for-range 测试，range的对象是个变量
 fn main() {
 	var FuncType[] local_bool_array_0 = FuncType[]{
 		fn() { fmt::println_string("Function 0 executed"); },

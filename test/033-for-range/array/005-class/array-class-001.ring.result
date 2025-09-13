@@ -1,0 +1,10 @@
+test case for-range --------------------
+{Bool:false Int:0 Int64:0 Double:0.000000 String:Job0}
+{Bool:true Int:1 Int64:1 Double:1.100000 String:Job1}
+{Bool:false Int:2 Int64:2 Double:2.200000 String:Job2}
+{Bool:true Int:3 Int64:3 Double:3.300000 String:Job3}
+{Bool:false Int:4 Int64:4 Double:4.400000 String:Job4}
+debug_assert PASS
+
+test case for-range&for --------------------
+debug_assert PASS
