@@ -24,6 +24,8 @@ fn job_action2() {
 	fmt::println("            job_action2::2");
 }
 
+// TE: 测试协程简单的 yield resume
+// TE: yield 调用是在协程的 第二个函数调用中
 fn main() {
 
 	var int64 co_id;

@@ -20,3 +20,5 @@ producer 8
 consumer 8
 producer 9
 consumer 9
+producer end work
+main end work

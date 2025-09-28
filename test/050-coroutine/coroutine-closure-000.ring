@@ -14,6 +14,8 @@ import {
 
 typedef FuncType = fn();
 
+// TE: 测试协程 yield resume
+// TE: launch 一个匿名函数变量
 fn main() {
 
 	var FuncType job_action1;

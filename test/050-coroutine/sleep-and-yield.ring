@@ -14,6 +14,8 @@ import {
 
 typedef FuncType = fn();
 
+// TE: 测试协程 yield resume
+// TE: 父协程 每次 sleep 1s ，然后去 resume 子协程
 fn main() {
 
 	var int64 co_id;
@@ -21,7 +23,6 @@ fn main() {
 
 	co_id = launch fn() {
 		for ;true; {
-			time::sleep(1000000000L);
 			fmt::printf("time={}          job\n", time::time()/1000000000L);
 			yield();
 		}

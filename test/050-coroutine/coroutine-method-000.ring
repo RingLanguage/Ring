@@ -51,7 +51,7 @@ typedef Job1 = class {
 }
 
 
-
+// TE: 测试在 method 进行协程的 yield
 fn main() {
 
 	var int64 co_id;

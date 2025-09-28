@@ -25,6 +25,7 @@ fn job_action2() {
 	fmt::println("            job_action2::2");
 }
 
+// TE: 测试 launch 一个 method
 fn main() {
 
 	var Job local_job_value_0 = Job{

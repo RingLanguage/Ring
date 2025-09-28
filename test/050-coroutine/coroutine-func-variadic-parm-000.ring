@@ -8,7 +8,7 @@ import {
 global {
 }
 
-// TestDetail:测试可变参数
+// TestDetail:测试 launch 一个函数，函数为可变参数
 // TestDetail:可变参数为 int... 类型
 fn main() {
     var int64 co_id;

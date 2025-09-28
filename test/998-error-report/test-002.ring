@@ -71,4 +71,18 @@ fn main() {
 	tmp();
 }
 
+fn test() {
+	return err;
+}
+
+
+fn test_2() {
+	test();
+
+	test?() and test?();
+
+	if !{
+
+	}
+}
 
