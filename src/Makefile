@@ -1,5 +1,5 @@
 TARGET = ring
-VERSION= ring-v0.3.0-beta
+VERSION= ring-v0.3.1-beta
 CC     = g++
 OBJS   = \
 	lex.yy.o\
@@ -27,14 +27,15 @@ OBJS   = \
 	debug-free-value.o\
 	debug-gc.o\
 	coroutine.o\
+	scheduler.o\
 	../deps/linenoise/linenoise.o\
 	fmt.o\
 	main.o
 
 # bison 可执行文件路径
 # bison >= 3.8.2
-# BisonBin     = /opt/homebrew/Cellar/bison/3.8.2/bin/bison
-BisonBin     = /usr/local/Cellar/bison/3.8.2/bin/bison
+BisonBin     = /opt/homebrew/Cellar/bison/3.8.2/bin/bison
+# BisonBin     = /usr/local/Cellar/bison/3.8.2/bin/bison
 # BisonBin     = bison
 BisonRequire = 3.8.2
 BisonVersion =  $(shell $(BisonBin) --version | grep 'bison' | awk '{print $$4}')

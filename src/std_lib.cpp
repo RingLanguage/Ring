@@ -550,20 +550,37 @@ void std_lib_io_close(Ring_VirtualMachine* rvm,
  * Package: io
  * Function: remove
  * Type: @native
+ * Description: 删除指定路径的文件
  */
 void std_lib_io_remove(Ring_VirtualMachine* rvm,
                        unsigned int arg_size, RVM_Value* args,
                        unsigned int* return_size, RVM_Value** return_list) {
-
+    // 参数校验
     assert(arg_size == 1);
     assert(args[0].type == RVM_VALUE_TYPE_STRING);
 
     RVM_String* str = args[0].u.string_value;
+    
+    // 分配临时缓冲区并复制字符串内容，避免直接修改原始字符串
+    char* file_path = (char*)mem_alloc(NULL_MEM_POOL, (str->length + 1) * sizeof(char));
+    if (file_path) {
+        memcpy(file_path, str->data, str->length);
+        file_path[str->length] = '\0';
+        
+        // 执行文件删除操作并检查结果
+        int result = remove(file_path);
+        
+        // 释放临时缓冲区
+        mem_free(NULL_MEM_POOL, file_path, (str->length + 1) * sizeof(char));
+        
+        // 如果删除失败，可以考虑添加错误处理逻辑
+        if (result != 0) {
+            // 此处可以根据需要记录错误信息或返回错误状态
+            // 例如：rvm->set_last_error("Failed to remove file");
+        }
+    }
 
-    // TODO: 写法丑陋，需要后续抽象
-    str->data[str->length] = '\0';
-    remove(str->data);
-
+    // 设置返回值（无返回值）
     *return_size = 0;
     *return_list = nullptr;
 }

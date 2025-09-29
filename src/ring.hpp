@@ -12,6 +12,10 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <pthread.h>
+#include <mutex>
+#include <atomic>
+#include <deque>
 
 #define RING_VERSION "ring-v0.3.1-beta Copyright (C) 2021-2025 ring.wiki, ZhenhuLi"
 
@@ -258,6 +262,9 @@ struct Ring_VirtualMachine {
     RVM_DebugConfig*     debug_config;
 
     RingCoroutine*       current_coroutine;
+    
+    // 新增字段 - Golang风格协程支持
+    struct Scheduler*    scheduler;     // 协程调度器
 };
 
 // 从后边获取 1BYTE的操作数
@@ -300,6 +307,20 @@ typedef enum {
     CO_STAT_DEAD,
 } CO_STAT;
 
+typedef enum {
+    G_STATUS_IDLE,
+    G_STATUS_RUNNABLE,
+    G_STATUS_RUNNING,
+    G_STATUS_SUSPENDED,
+    G_STATUS_DEAD,
+} G_STATUS;
+
+typedef unsigned long long M_ID;
+
+// 提前声明
+struct Machine;
+struct Scheduler;
+
 typedef unsigned long long CO_ID;
 
 
@@ -323,17 +344,59 @@ struct RingCoroutine {
 
     long long         last_run_time;
     CO_STAT           status;
+    G_STATUS          g_status;      // Golang风格协程状态
 
     RVM_RuntimeStack* runtime_stack; // 运行堆栈
 
     RVM_CallInfo*     call_info; // 函数调用栈
 
+    // 新增字段 - Golang风格协程支持
+    M_ID              m_id;          // 当前执行该协程的M的ID
+    uint64_t          stack_size;    // 栈大小
+    uint64_t          goid;          // 协程唯一标识
+    bool              is_system;     // 是否为系统协程
+
     // defer 调用链
-    unsigned int   defer_list_size;
-    RVM_DeferItem* defer_list;
+    unsigned int      defer_list_size;
+    RVM_DeferItem*    defer_list;
 };
 
 struct GarbageCollector {
+};
+
+/*
+ * Machine 表示一个物理线程
+ * 
+ * m_id:            机器ID
+ * thread_id:       物理线程ID
+ * running_g:       当前正在运行的G
+ * local_runnable_gs: 本地可运行队列
+ * park_count:      挂起计数
+ * is_main:         是否为主线程
+ */
+struct Machine {
+    M_ID                     m_id;          // 机器ID
+    pthread_t                thread_id;     // 物理线程ID
+    RingCoroutine*           running_g;     // 当前正在运行的G
+    std::vector<RingCoroutine*> local_runnable_gs; // 本地可运行队列
+    std::atomic<int>         park_count;    // 挂起计数
+    bool                     is_main;       // 是否为主线程
+    std::mutex               local_queue_mutex; // 本地队列锁
+};
+
+/*
+ * Scheduler 负责协程调度
+ * 
+ * machines:              所有机器
+ * global_runnable_gs:    全局可运行队列
+ * global_runnable_count: 全局可运行协程计数
+ * global_queue_mutex:    全局队列锁
+ */
+struct Scheduler {
+    std::vector<Machine*>    machines;   // 所有机器
+    std::deque<RingCoroutine*> global_runnable_gs; // 全局可运行队列
+    std::atomic<int>         global_runnable_count; // 全局可运行协程计数
+    std::mutex               global_queue_mutex;  // 全局队列锁
 };
 
 struct ImportPackageInfo {
