@@ -30,7 +30,8 @@ OBJS   = \
 	scheduler.o\
 	../deps/linenoise/linenoise.o\
 	fmt.o\
-	main.o
+	main.o\
+	channel.o
 
 # bison 可执行文件路径
 # bison >= 3.8.2

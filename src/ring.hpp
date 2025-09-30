@@ -399,6 +399,29 @@ struct Scheduler {
     std::mutex               global_queue_mutex;  // 全局队列锁
 };
 
+/*
+ * Channel 表示一个通道，用于协程间通信
+ * 
+ * buffer:           通道缓冲区
+ * buffer_size:      缓冲区大小，0表示无缓冲通道
+ * mutex:            互斥锁，保护通道操作
+ * send_cond:        发送条件变量
+ * recv_cond:        接收条件变量
+ * closed:           通道是否已关闭
+ * send_wait_gs:     等待发送的协程队列
+ * recv_wait_gs:     等待接收的协程队列
+ */
+struct Channel {
+    std::deque<RVM_Value>    buffer;           // 通道缓冲区
+    size_t                   buffer_size;      // 缓冲区大小，0表示无缓冲通道
+    std::mutex               mutex;            // 互斥锁，保护通道操作
+    std::condition_variable  send_cond;        // 发送条件变量
+    std::condition_variable  recv_cond;        // 接收条件变量
+    bool                     closed;           // 通道是否已关闭
+    std::deque<RingCoroutine*> send_wait_gs;   // 等待发送的协程队列
+    std::deque<RingCoroutine*> recv_wait_gs;   // 等待接收的协程队列
+};
+
 struct ImportPackageInfo {
     unsigned int line_number;
 
@@ -4098,6 +4121,12 @@ void       std_lib_runtime_heap_size(Ring_VirtualMachine* rvm,
 void       std_lib_runtime_gc(Ring_VirtualMachine* rvm,
                               unsigned int arg_size, RVM_Value* args,
                               unsigned int* return_size, RVM_Value** return_list);
+
+// Channel 相关函数声明
+Channel*   create_channel(size_t buffer_size);
+void       close_channel(Channel* ch);
+bool       send_to_channel(Channel* ch, const RVM_Value& value);
+bool       recv_from_channel(Channel* ch, RVM_Value* value);
 void       std_lib_runtime_print_call_stack(Ring_VirtualMachine* rvm,
                                             unsigned int arg_size, RVM_Value* args,
                                             unsigned int* return_size, RVM_Value** return_list);
