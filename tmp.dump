@@ -1,0 +1,185 @@
+#Constants:       18
+ ├──     0: string(./io-create-001.ring.result.tmp.1)
+ ├──     1: string(test-write-content)
+ ├──     2: string(李振虎test case [0][exist]----------
+)
+ ├──     3: string(file exist: {}
+)
+ ├──     4: string(
+test case [1][create]----------
+)
+ ├──     5: string(
+test case [2][exist]----------
+)
+ ├──     6: string(
+test case [4][read_all]----------
+)
+ ├──     7: string(content={}
+)
+ ├──     8: string()
+ ├──     9: string(
+test case [5][write]----------
+)
+ ├──    10: string(
+test case [6][read_all]----------
+)
+ ├──    11: int64(0)
+ ├──    12: string(
+test case [7][read_all]----------
+)
+ ├──    13: string(
+test case [8][close]----------
+)
+ ├──    14: string(close result={}
+)
+ ├──    15: string(
+test case [9][remove]----------
+)
+ ├──    16: string(remove result={}
+)
+ ├──    17: string(
+test case [10][exist]----------
+)
+
+#Globals:       0
+
+$main()    <./test/065-std-package-io/io-create-001.ring:18,85>
++Parameter:   0
++Local:       6
+ ├──var string           file_name           
+ ├──var bool             exist               
+ ├──var int              fileid              
+ ├──var string           content             
+ ├──var string           content_tmp         
+ ├──var int              res                 
++FreeValue:        0
++Instructions: 469
+ ├──*Num    *PC     *Instruction                  *Operand            *SourceLineNum    
+ ├──0       0       push_string                   0, 10               20                
+ ├──1       4       pop_stack_string              0                                     
+ ├──2       7       push_string                   1, 10               24                
+ ├──3       11      pop_stack_string              4                                     
+ ├──4       14      push_string                   2, 10               28                
+ ├──5       18      invoke_func_native            2, 7, 1                               
+ ├──6       24      push_stack_string             0                   29                
+ ├──7       27      invoke_func_native            3, 0, 1                               
+ ├──8       33      pop_stack_bool                1                                     
+ ├──9       36      push_string                   3, 10               30                
+ ├──10      40      push_stack_bool               1                                     
+ ├──11      43      invoke_func_native            2, 7, 2                               
+ ├──12      49      push_stack_bool               1                   31                
+ ├──13      52      push_bool                     0                                     
+ ├──14      54      eq_int                                                              
+ ├──15      55      invoke_func_native            0, 0, 1                               
+ ├──16      61      push_string                   4, 10               34                
+ ├──17      65      invoke_func_native            2, 7, 1                               
+ ├──18      71      push_stack_string             0                   35                
+ ├──19      74      invoke_func_native            3, 2, 1                               
+ ├──20      80      pop_stack_int                 2                                     
+ ├──21      83      push_stack_int                2                   36                
+ ├──22      86      push_int_1byte                1                                     
+ ├──23      88      minus_int                                                           
+ ├──24      89      ne_int                                                              
+ ├──25      90      invoke_func_native            0, 0, 1                               
+ ├──26      96      push_string                   5, 10               39                
+ ├──27      100     invoke_func_native            2, 7, 1                               
+ ├──28      106     push_stack_string             0                   40                
+ ├──29      109     invoke_func_native            3, 0, 1                               
+ ├──30      115     pop_stack_bool                1                                     
+ ├──31      118     push_string                   3, 10               41                
+ ├──32      122     push_stack_bool               1                                     
+ ├──33      125     invoke_func_native            2, 7, 2                               
+ ├──34      131     push_stack_bool               1                   42                
+ ├──35      134     push_bool                     1                                     
+ ├──36      136     eq_int                                                              
+ ├──37      137     invoke_func_native            0, 0, 1                               
+ ├──38      143     push_string                   6, 10               45                
+ ├──39      147     invoke_func_native            2, 7, 1                               
+ ├──40      153     push_stack_int                2                   46                
+ ├──41      156     invoke_func_native            3, 4, 1                               
+ ├──42      162     pop_stack_string              3                                     
+ ├──43      165     push_string                   7, 10               47                
+ ├──44      169     push_stack_string             3                                     
+ ├──45      172     invoke_func_native            2, 7, 2                               
+ ├──46      178     push_stack_string             3                   48                
+ ├──47      181     push_string                   8, 10                                 
+ ├──48      185     eq_string                                                           
+ ├──49      186     invoke_func_native            0, 0, 1                               
+ ├──50      192     push_string                   9, 10               51                
+ ├──51      196     invoke_func_native            2, 7, 1                               
+ ├──52      202     push_stack_int                2                   52                
+ ├──53      205     push_stack_string             4                                     
+ ├──54      208     invoke_func_native            3, 5, 2                               
+ ├──55      214     push_string                   10, 10              55                
+ ├──56      218     invoke_func_native            2, 7, 1                               
+ ├──57      224     push_stack_int                2                   56                
+ ├──58      227     push_int64                    11, 10                                
+ ├──59      231     push_int_1byte                0                                     
+ ├──60      233     invoke_func_native            3, 3, 3                               
+ ├──61      239     push_stack_int                2                   57                
+ ├──62      242     invoke_func_native            3, 4, 1                               
+ ├──63      248     pop_stack_string              3                                     
+ ├──64      251     push_string                   7, 10               58                
+ ├──65      255     push_stack_string             3                                     
+ ├──66      258     invoke_func_native            2, 7, 2                               
+ ├──67      264     push_stack_string             3                   59                
+ ├──68      267     push_stack_string             4                                     
+ ├──69      270     eq_string                                                           
+ ├──70      271     invoke_func_native            0, 0, 1                               
+ ├──71      277     push_string                   12, 10              63                
+ ├──72      281     invoke_func_native            2, 7, 1                               
+ ├──73      287     push_stack_int                2                   64                
+ ├──74      290     invoke_func_native            3, 4, 1                               
+ ├──75      296     pop_stack_string              3                                     
+ ├──76      299     push_string                   7, 10               65                
+ ├──77      303     push_stack_string             3                                     
+ ├──78      306     invoke_func_native            2, 7, 2                               
+ ├──79      312     push_stack_string             3                   66                
+ ├──80      315     push_string                   8, 10                                 
+ ├──81      319     eq_string                                                           
+ ├──82      320     invoke_func_native            0, 0, 1                               
+ ├──83      326     push_string                   13, 10              69                
+ ├──84      330     invoke_func_native            2, 7, 1                               
+ ├──85      336     push_stack_int                2                   70                
+ ├──86      339     invoke_func_native            3, 6, 1                               
+ ├──87      345     pop_stack_int                 5                                     
+ ├──88      348     push_string                   14, 10              71                
+ ├──89      352     push_stack_int                5                                     
+ ├──90      355     invoke_func_native            2, 7, 2                               
+ ├──91      361     push_stack_int                5                   72                
+ ├──92      364     push_int_1byte                0                                     
+ ├──93      366     eq_int                                                              
+ ├──94      367     invoke_func_native            0, 0, 1                               
+ ├──95      373     push_string                   15, 10              75                
+ ├──96      377     invoke_func_native            2, 7, 1                               
+ ├──97      383     push_stack_string             0                   76                
+ ├──98      386     invoke_func_native            3, 7, 1                               
+ ├──99      392     pop_stack_int                 5                                     
+ ├──100     395     push_string                   16, 10              77                
+ ├──101     399     push_stack_int                5                                     
+ ├──102     402     invoke_func_native            2, 7, 2                               
+ ├──103     408     push_stack_int                5                   78                
+ ├──104     411     push_int_1byte                0                                     
+ ├──105     413     eq_int                                                              
+ ├──106     414     invoke_func_native            0, 0, 1                               
+ ├──107     420     push_string                   17, 10              81                
+ ├──108     424     invoke_func_native            2, 7, 1                               
+ ├──109     430     push_stack_string             0                   82                
+ ├──110     433     invoke_func_native            3, 0, 1                               
+ ├──111     439     pop_stack_bool                1                                     
+ ├──112     442     push_string                   3, 10               83                
+ ├──113     446     push_stack_bool               1                                     
+ ├──114     449     invoke_func_native            2, 7, 2                               
+ ├──115     455     push_stack_bool               1                   84                
+ ├──116     458     push_bool                     0                                     
+ ├──117     460     eq_int                                                              
+ ├──118     461     invoke_func_native            0, 0, 1                               
+ ├──119     467     pop_defer                                         85                
+ ├──120     468     function_finish                                                     
+
+%File    <./test/065-std-package-io/io-create-001.ring:13,15>
++Field:     1
+ ├──var int                        fd                  
++Method:    0
+
+

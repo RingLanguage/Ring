@@ -790,7 +790,7 @@ void dump_vm_class(Package_Executer*    package_executer,
     printf("\n");
 }
 
-std::string dump_vm_constant(RVM_Constant* constant) {
+std::string dump_vm_constant(RingDumpContext ctx, RVM_Constant* constant) {
     std::string tmp;
 
     switch (constant->type) {
@@ -1890,6 +1890,123 @@ std::string convert_troff_string_2_c_control(const std::string& input) {
         output += "\033[1m" + input.substr(pos, end - pos) + "\033[0m";
         pos = end + 2; // 移动到 |B 之后的位置
     }
+
+    return output;
+}
+
+/**
+ * 将字符串转义显示
+ * @param str 原始字符串
+ * @param len 字符串长度
+ * @param output 输出缓冲区
+ * @param output_size 输出缓冲区大小
+ * @return 转义后的字符串指针
+ */
+char* escape_string(const char* str, size_t len, char* output, size_t output_size) {
+    if (output_size == 0)
+        return NULL;
+
+    char*  p         = output;
+    size_t remaining = output_size;
+
+    // 开始引号
+    if (remaining > 1) {
+        *p++ = '"';
+        remaining--;
+    } else {
+        *output = '\0';
+        return output;
+    }
+
+    for (size_t i = 0; i < len && remaining > 1; i++) {
+        unsigned char c = str[i];
+
+        switch (c) {
+        case '\n':
+            if (remaining >= 3) {
+                strcpy(p, "\\n");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\r':
+            if (remaining >= 3) {
+                strcpy(p, "\\r");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\t':
+            if (remaining >= 3) {
+                strcpy(p, "\\t");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\b':
+            if (remaining >= 3) {
+                strcpy(p, "\\b");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\f':
+            if (remaining >= 3) {
+                strcpy(p, "\\f");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\v':
+            if (remaining >= 3) {
+                strcpy(p, "\\v");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\\':
+            if (remaining >= 3) {
+                strcpy(p, "\\\\");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\"':
+            if (remaining >= 3) {
+                strcpy(p, "\\\"");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        case '\0':
+            if (remaining >= 3) {
+                strcpy(p, "\\0");
+                p += 2;
+                remaining -= 2;
+            }
+            break;
+        default:
+            if (isprint(c)) {
+                // 可打印字符直接输出
+                *p++ = c;
+                remaining--;
+            } else {
+                // 不可打印字符显示为十六进制
+                if (remaining >= 5) {
+                    sprintf(p, "\\x%02x", c);
+                    p += 4;
+                    remaining -= 4;
+                }
+            }
+            break;
+        }
+    }
+
+    // 结束引号
+    if (remaining > 1) {
+        *p++ = '"';
+    }
+    *p = '\0';
 
     return output;
 }
