@@ -236,6 +236,35 @@ void mem_free(MemPool* pool, void* ptr, size_t size) {
     pool->active_mem_map.erase(ptr);
 }
 
+HeapMem::HeapMem(MemPool* pool, size_t size) {
+    pool_ = pool;
+    size_ = size;
+    ptr_  = mem_alloc(pool, size);
+}
+
+HeapMem::~HeapMem() {
+    if (ptr_ != nullptr) {
+        mem_free(pool_, ptr_, size_);
+    }
+}
+
+void* HeapMem::get() const {
+    return ptr_;
+}
+
+size_t HeapMem::size() const {
+    return size_;
+}
+bool HeapMem::resize(size_t new_size) {
+    void* new_ptr = mem_realloc(pool_, ptr_, size_, new_size);
+    if (new_ptr) {
+        ptr_  = new_ptr;
+        size_ = new_size;
+        return true;
+    }
+    return false;
+}
+
 void test_mem_pool() {
     MemPool* pool = create_mem_pool((char*)"test");
     dump_mem_pool(pool);

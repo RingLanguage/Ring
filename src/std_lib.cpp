@@ -104,7 +104,7 @@ std::vector<StdPackageInfo> Std_Lib_List = {
             {(char*)"read_all", std_lib_io_read_all, 1, 1},
             {(char*)"write", std_lib_io_write, 2, 0},
             {(char*)"close", std_lib_io_close, 1, 1},
-            {(char*)"remove", std_lib_io_remove, 1, 0},
+            {(char*)"remove", std_lib_io_remove, 1, 1},
         },
     },
 
@@ -412,6 +412,7 @@ void std_lib_io_open(Ring_VirtualMachine* rvm,
     assert(arg_size == 1);
     assert(args[0].type == RVM_VALUE_TYPE_STRING);
 
+    // TODO: 需要将模式透传到外层
     int fid      = open(args[0].u.string_value->data, O_RDONLY);
 
     *return_size = 1;
@@ -560,12 +561,25 @@ void std_lib_io_remove(Ring_VirtualMachine* rvm,
 
     RVM_String* str = args[0].u.string_value;
 
-    // TODO: 写法丑陋，需要后续抽象
-    str->data[str->length] = '\0';
-    remove(str->data);
+    HeapMem     heap_mem(NULL_MEM_POOL, (str->length + 1) * sizeof(char));
+    char*       file_path = (char*)heap_mem.get();
 
-    *return_size = 0;
-    *return_list = nullptr;
+    int         result    = 0;
+
+    if (file_path) {
+        // TODO: 后续编写成宏 CString
+        memcpy(file_path, str->data, str->length);
+        file_path[str->length] = '\0';
+
+        result                 = remove(file_path);
+        if (result != 0) {
+            // TODO: 错误处理
+        }
+    }
+
+    *return_size = 1;
+    *return_list = new_native_return_list(*return_size);
+    RETURN_LIST_SET_INT(*return_list, 0, result);
 }
 
 /*

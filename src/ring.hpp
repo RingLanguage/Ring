@@ -3005,6 +3005,39 @@ struct MemBlock {
     MemBlock* next;
 };
 
+
+// 通过RAII的方式自动管理堆内存
+// 用于临时使用的动态内存分配
+
+/*
+ * 堆内存管理类
+ *
+ * 1. 通过RAII的方式自动管理堆内存
+ * 2. 用于临时使用的动态内存分配
+ */
+class HeapMem {
+public:
+    HeapMem(MemPool* pool, size_t size);
+    ~HeapMem();
+    void*  get() const;
+    size_t size() const;
+    bool   resize(size_t new_size);
+    operator bool() const {
+        return ptr_ != nullptr;
+    }
+
+    // 禁止所有拷贝和移动
+    HeapMem(const HeapMem&)            = delete;
+    HeapMem(HeapMem&&)                 = delete;
+    HeapMem& operator=(const HeapMem&) = delete;
+    HeapMem& operator=(HeapMem&&)      = delete;
+
+private:
+    MemPool* pool_;
+    void*    ptr_;
+    size_t   size_;
+};
+
 /*
  * DEFINE_ERROR_REPORT_STR ring 语法报错str
  *

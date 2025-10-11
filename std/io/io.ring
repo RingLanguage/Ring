@@ -38,5 +38,5 @@ fn write(int fd, string buffer);
 fn close(int fd) -> (int);
 
 @native
-fn remove(string path);
+fn remove(string path) -> (int);
 
