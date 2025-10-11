@@ -73,7 +73,12 @@ fn main() {
 
     
     fmt::printf("\ntest case [9][remove]----------\n");
-	io::remove(file_name);
+	res = io::remove(file_name);
+    fmt::printf("remove result={}\n", res);
+    debug::assert(res == 0);
+
+
+    fmt::printf("\ntest case [10][exist]----------\n");
     exist = io::exist(file_name);
     fmt::printf("file exist: {}\n", exist);
     debug::assert(exist == false);
