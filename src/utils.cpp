@@ -790,7 +790,7 @@ void dump_vm_class(Package_Executer*    package_executer,
     printf("\n");
 }
 
-std::string dump_vm_constant(RVM_Constant* constant) {
+std::string dump_vm_constant(RingDumpContext ctx, RVM_Constant* constant) {
     std::string tmp;
 
     switch (constant->type) {
@@ -803,9 +803,15 @@ std::string dump_vm_constant(RVM_Constant* constant) {
     case CONSTANTPOOL_TYPE_DOUBLE:
         return "double(" + std::to_string(constant->u.double_value) + ")";
         break;
-    case CONSTANTPOOL_TYPE_STRING:
-        return "string(" + std::string(constant->u.string_value->data, constant->u.string_value->length) + ")";
-        break;
+    case CONSTANTPOOL_TYPE_STRING: {
+        std::string tmp;
+        if (ctx.escape_strings) {
+            tmp = escape_string(constant->u.string_value->data, constant->u.string_value->length);
+        } else {
+            tmp = std::string(constant->u.string_value->data, constant->u.string_value->length);
+        }
+        return "string(" + tmp + ")";
+    } break;
     case CONSTANTPOOL_TYPE_CLOSURE:
         tmp = sprintf_string("%p", (void*)constant->u.anonymous_func_value);
         return "closure(" + tmp + ")";
@@ -1892,4 +1898,74 @@ std::string convert_troff_string_2_c_control(const std::string& input) {
     }
 
     return output;
+}
+
+/*
+ * escape_string
+ *
+ * 将字符串中的特殊字符进行转义
+ */
+std::string escape_string(const char* data, size_t length) {
+
+    if (data == nullptr || length == 0) {
+        return "";
+    }
+
+    size_t escaped_length = 0;
+
+    for (size_t i = 0; i < length; i++) {
+        int c = (int)(unsigned char)data[i];
+
+        switch (c) {
+        case '\n':
+        case '\r':
+        case '\t':
+        case '\b':
+        case '\f':
+        case '\v':
+        case '\\':
+        case '\"':
+        case '\0':
+            escaped_length += 2;
+            break;
+        default:
+            if (std::isprint(c)) {
+                escaped_length += 1;
+            } else {
+                escaped_length += 4;
+            }
+            break;
+        }
+    }
+
+    // 分配精确大小的空间
+    std::string result;
+    result.reserve(escaped_length);
+
+    for (size_t i = 0; i < length; i++) {
+        int c = (int)(unsigned char)data[i];
+
+        switch (c) {
+        case '\n': result += "\\n"; break;
+        case '\r': result += "\\r"; break;
+        case '\t': result += "\\t"; break;
+        case '\b': result += "\\b"; break;
+        case '\f': result += "\\f"; break;
+        case '\v': result += "\\v"; break;
+        case '\\': result += "\\\\"; break;
+        case '\"': result += "\\\""; break;
+        case '\0': result += "\\0"; break;
+        default:
+            if (std::isprint(c)) {
+                result += c;
+            } else {
+                char buffer[4];
+                std::snprintf(buffer, sizeof(buffer), "\\%03d", c);
+                result += buffer;
+            }
+            break;
+        }
+    }
+
+    return result;
 }

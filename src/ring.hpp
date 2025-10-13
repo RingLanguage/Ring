@@ -24,6 +24,7 @@ typedef struct RingCoroutine                RingCoroutine;
 typedef struct GarbageCollector             GarbageCollector;
 typedef struct ImportPackageInfo            ImportPackageInfo;
 typedef struct RingContext                  RingContext;
+typedef struct RingDumpContext              RingDumpContext;
 typedef struct CompilerEntry                CompilerEntry;
 typedef struct ExecuterEntry                ExecuterEntry;
 typedef struct Package_Executer             Package_Executer;
@@ -375,6 +376,12 @@ struct RingContext {
     Expression*    expression;
 
     unsigned int   optimize_level;
+};
+
+struct RingDumpContext {
+    Package_Executer* package_executer;
+
+    bool              escape_strings; // dump 时是否转义字符串，格式化显示更加规整
 };
 
 struct CompilerEntry {
@@ -2578,6 +2585,7 @@ struct Ring_Command_Arg {
     std::string              keyword;         // man
     unsigned int             optimize_level;
     std::string              rdb_interpreter; // rdb 交互协议，默认为 命令行模式
+    bool                     escape_strings;  // dump 时是否转义字符串，格式化显示更加规整
     std::vector<std::string> shell_args;
 };
 
@@ -3669,7 +3677,7 @@ Package_Executer* package_executer_create(ExecuterEntry* executer_entry,
                                           char*          package_name,
                                           unsigned int   package_index);
 void              print_package_executer(Package_Executer* package_executer);
-void              package_executer_dump(Package_Executer* package_executer);
+void              package_executer_dump(RingDumpContext ctx);
 
 void              ring_generate_vm_code(Package* package, Package_Executer* executer);
 void              ring_generate_vm_code(CompilerEntry* compiler_entry, ExecuterEntry* executer_entry);
@@ -4155,7 +4163,7 @@ void                     dump_vm_function(Package_Executer*    package_executer,
                                           RVM_Function*        function);
 void                     dump_vm_class(Package_Executer*    package_executer,
                                        RVM_ClassDefinition* class_definition);
-std::string              dump_vm_constant(RVM_Constant* constant);
+std::string              dump_vm_constant(RingDumpContext ctx, RVM_Constant* constant);
 
 unsigned int             get_source_line_number_by_pc(RVM_Function* function, unsigned int pc);
 
@@ -4210,6 +4218,8 @@ std::string              sprintf_string(const char* format, ...);
 std::string              sprintf_string_va(const char* format, va_list args);
 
 std::string              convert_troff_string_2_c_control(const std::string& input);
+
+std::string              escape_string(const char* data, size_t length);
 
 
 // --------------------

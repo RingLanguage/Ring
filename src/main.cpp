@@ -55,6 +55,7 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
     std::string              keyword;
     unsigned int             optimize_level = 0;
     std::string              rdb_interpreter;
+    bool                     escape_strings = false;
     std::vector<std::string> shell_args;
 
 
@@ -63,7 +64,12 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
 
     auto rdb_interpreter_rule = (clipp::option("", "--interpreter=") & clipp::value("interpreter-protocol", rdb_interpreter));
 
-    auto option_rule          = (optimize_level_rule | rdb_interpreter_rule);
+    // -e --escape-strings
+    // 开始这个选项，可以在 ring dump 的过程中，将string 常量中的字符进行转义，格式化显示更加规整
+    auto escape_string_rule = (clipp::option("-e", "--escape-strings").set(escape_strings, true).doc("escape strings when dump"));
+
+
+    auto option_rule        = (optimize_level_rule | rdb_interpreter_rule | escape_string_rule);
 
     // run command
     auto run_rule = (clipp::command(RING_CMD_T_RUN).set(cmd, RING_COMMAND_RUN),
@@ -109,6 +115,7 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
         .keyword         = keyword,
         .optimize_level  = optimize_level,
         .rdb_interpreter = rdb_interpreter,
+        .escape_strings  = escape_strings,
         .shell_args      = shell_args,
     };
 
@@ -224,7 +231,12 @@ int cmd_handler_dump(Ring_Command_Arg command_arg) {
 
     executer_entry                = ring_compile_main(command_arg.input_file_name, command_arg.shell_args);
     // Only dump `main` package bytecode detail.
-    package_executer_dump(executer_entry->main_package_executer);
+
+    RingDumpContext dump_ctx = {
+        .package_executer = executer_entry->main_package_executer,
+        .escape_strings   = command_arg.escape_strings,
+    };
+    package_executer_dump(dump_ctx);
     return 0;
 }
 

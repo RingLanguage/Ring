@@ -21,6 +21,7 @@ std::string command_help_message = R"(
     
     B|Options:|B
             B|-O1                                            |B:optimize bytecode with level 1
+            B|-e, --escape-strings                           |B:escape strings in dump bytecode
     
     )";
 

@@ -55,15 +55,16 @@ void print_package_executer(Package_Executer* package_executer) {
     printf("|------------------ Package_Executer-Dump-end   ------------------\n\n");
 }
 
-// ring 使用者
-void package_executer_dump(Package_Executer* package_executer) {
+void package_executer_dump(RingDumpContext ctx) {
+
+    Package_Executer* package_executer = ctx.package_executer;
 
     // 1. dump constant
     printf("#Constants:       %d\n", package_executer->constant_pool->size);
     for (unsigned int i = 0; i < package_executer->constant_pool->size; i++) {
         printf(" ├──%6d: %s\n",
                i,
-               dump_vm_constant(&(package_executer->constant_pool->list[i])).c_str());
+               dump_vm_constant(ctx, &(package_executer->constant_pool->list[i])).c_str());
     }
     printf("\n");
 
@@ -136,6 +137,10 @@ void ring_generate_vm_code(Package* package, Package_Executer* package_executer)
 
 #ifdef DEBUG_GENERATE_SUMMARY
     if (str_eq(package->package_name, PACKAGE_MAIN)) {
+        RingDumpContext dump_ctx = {
+            .package_executer = package_executer,
+            .escape_strings   = true,
+        };
         package_executer_dump(package_executer);
     }
 #endif
