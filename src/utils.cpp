@@ -1959,13 +1959,15 @@ std::string escape_string(const char* data, size_t length) {
             if (std::isprint(c)) {
                 result += c;
             } else {
-                char buffer[4];
+                char buffer[5] = {0};
                 std::snprintf(buffer, sizeof(buffer), "\\%03d", c);
                 result += buffer;
             }
             break;
         }
     }
+
+    assert(result.size() == escaped_length);
 
     return result;
 }
