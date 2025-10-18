@@ -790,7 +790,7 @@ void dump_vm_class(Package_Executer*    package_executer,
     printf("\n");
 }
 
-std::string dump_vm_constant(RingDumpContext ctx, RVM_Constant* constant) {
+std::string dump_vm_constant(RingDumpContext* ctx, RVM_Constant* constant) {
     std::string tmp;
 
     switch (constant->type) {
@@ -805,7 +805,7 @@ std::string dump_vm_constant(RingDumpContext ctx, RVM_Constant* constant) {
         break;
     case CONSTANTPOOL_TYPE_STRING: {
         std::string tmp;
-        if (ctx.escape_strings) {
+        if (ctx->escape_strings) {
             tmp = escape_string(constant->u.string_value->data, constant->u.string_value->length);
         } else {
             tmp = std::string(constant->u.string_value->data, constant->u.string_value->length);

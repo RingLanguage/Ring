@@ -55,9 +55,9 @@ void print_package_executer(Package_Executer* package_executer) {
     printf("|------------------ Package_Executer-Dump-end   ------------------\n\n");
 }
 
-void package_executer_dump(RingDumpContext ctx) {
+void package_executer_dump(RingDumpContext* ctx) {
 
-    Package_Executer* package_executer = ctx.package_executer;
+    Package_Executer* package_executer = ctx->package_executer;
 
     // 1. dump constant
     printf("#Constants:       %d\n", package_executer->constant_pool->size);

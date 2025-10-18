@@ -14,6 +14,16 @@
 #include <vector>
 
 #define RING_VERSION "ring-v0.3.1-beta Copyright (C) 2021-2025 ring.wiki, ZhenhuLi"
+#define RING_MAJOR_VERSION 0
+#define RING_MINOR_VERSION 3
+#define RING_MAGIC 7 // ring 诞生的时间
+
+
+// 字节码专用
+#define RING_SIGNATURE "\x1bRing"
+#define RINGC_DATA "\x19\x93\r\n\x1a\n"
+#define MAX_LITERAL_LEN (strlen(RING_SIGNATURE) + strlen(RINGC_DATA))
+//
 
 using json = nlohmann::json;
 
@@ -25,6 +35,7 @@ typedef struct GarbageCollector             GarbageCollector;
 typedef struct ImportPackageInfo            ImportPackageInfo;
 typedef struct RingContext                  RingContext;
 typedef struct RingDumpContext              RingDumpContext;
+typedef struct RingUndumpContext            RingUndumpContext;
 typedef struct CompilerEntry                CompilerEntry;
 typedef struct ExecuterEntry                ExecuterEntry;
 typedef struct Package_Executer             Package_Executer;
@@ -379,10 +390,23 @@ struct RingContext {
 };
 
 struct RingDumpContext {
-    Package_Executer* package_executer;
+    Package_Executer*     package_executer;
 
-    bool              escape_strings; // dump 时是否转义字符串，格式化显示更加规整
+    bool                  escape_strings;  // dump 时是否转义字符串，格式化显示更加规整
+    bool                  contains_symbol; // dump 时是否包含符号信息, 包含函数名, 变量名, 常量名等
+
+    int                   output_fd; // 输出位置
+    std::vector<RVM_Byte> output_buffer;
 };
+
+struct RingUndumpContext {
+    Package_Executer*     package_executer;
+
+    int                   input_fd; // 输入位置
+    std::vector<RVM_Byte> input_buffer;
+    size_t                read_pos;
+};
+
 
 struct CompilerEntry {
     // std::unordered_map<std::string, Package*> package_map;
@@ -391,7 +415,7 @@ struct CompilerEntry {
 };
 
 struct ExecuterEntry {
-    std::vector<Package_Executer*> package_executer_list;
+    std::vector<Package_Executer*> package_executer_list; // 所有package的执行器
     Package_Executer*              main_package_executer;
 };
 
@@ -2554,6 +2578,7 @@ typedef enum {
 #define RING_CMD_T_RUN "run"
 #define RING_CMD_T_BUILD "build"
 #define RING_CMD_T_DUMP "dump"
+#define RING_CMD_T_UNDUMP "undump"
 #define RING_CMD_T_RDB "rdb"
 #define RING_CMD_T_MAN "man"
 #define RING_CMD_T_VERSION "version"
@@ -2571,6 +2596,7 @@ enum RING_COMMAND_TYPE {
     RING_COMMAND_RUN,
     RING_COMMAND_BUILD,
     RING_COMMAND_DUMP,
+    RING_COMMAND_UNDUMP,
     RING_COMMAND_RDB,
 
     RING_COMMAND_MAN,
@@ -2581,8 +2607,9 @@ enum RING_COMMAND_TYPE {
 struct Ring_Command_Arg {
     RING_COMMAND_TYPE        cmd;
 
-    std::string              input_file_name; // run/dump/rdb
-    std::string              keyword;         // man
+    std::string              input_file_name;  // run/dump/rdb
+    std::string              output_file_name; // dump
+    std::string              keyword;          // man
     unsigned int             optimize_level;
     std::string              rdb_interpreter; // rdb 交互协议，默认为 命令行模式
     bool                     escape_strings;  // dump 时是否转义字符串，格式化显示更加规整
@@ -3176,6 +3203,7 @@ private:
 int              cmd_handler_run(Ring_Command_Arg command_arg);
 int              cmd_handler_build(Ring_Command_Arg command_arg);
 int              cmd_handler_dump(Ring_Command_Arg command_arg);
+int              cmd_handler_undump(Ring_Command_Arg command_arg);
 int              cmd_handler_rdb(Ring_Command_Arg command_arg);
 int              cmd_handler_version(Ring_Command_Arg command_arg);
 int              cmd_handler_man(Ring_Command_Arg command_arg);
@@ -3677,7 +3705,7 @@ Package_Executer* package_executer_create(ExecuterEntry* executer_entry,
                                           char*          package_name,
                                           unsigned int   package_index);
 void              print_package_executer(Package_Executer* package_executer);
-void              package_executer_dump(RingDumpContext ctx);
+void              package_executer_dump(RingDumpContext* ctx);
 
 void              ring_generate_vm_code(Package* package, Package_Executer* executer);
 void              ring_generate_vm_code(CompilerEntry* compiler_entry, ExecuterEntry* executer_entry);
@@ -3950,8 +3978,17 @@ RVM_Array_Type       convert_rvm_array_type(RVM_TypeSpecifier* type_specifier);
  * function definition
  *
  */
-void ring_bytecode_dump(Package_Executer* executer, FILE* output);
-void ring_bytecode_load(Package_Executer* executer, FILE* input);
+void                       dumpBlock(RingDumpContext* ctx, char* data, size_t size);
+void                       bc_dump_header(RingDumpContext* ctx);
+void                       bc_dump(RingDumpContext* ctx);
+void                       bc_dump_binary_file(const std::vector<unsigned char>& data, const std::string& filename);
+
+void                       bc_check_header(RingUndumpContext* ctx);
+void                       bc_undump(RingUndumpContext* ctx);
+std::vector<unsigned char> bc_undump_binary_file(const std::string& filename);
+
+void                       ring_bytecode_dump(Package_Executer* executer, FILE* output);
+void                       ring_bytecode_undump(Package_Executer* executer, FILE* input);
 // --------------------
 
 
@@ -4163,7 +4200,7 @@ void                     dump_vm_function(Package_Executer*    package_executer,
                                           RVM_Function*        function);
 void                     dump_vm_class(Package_Executer*    package_executer,
                                        RVM_ClassDefinition* class_definition);
-std::string              dump_vm_constant(RingDumpContext ctx, RVM_Constant* constant);
+std::string              dump_vm_constant(RingDumpContext* ctx, RVM_Constant* constant);
 
 unsigned int             get_source_line_number_by_pc(RVM_Function* function, unsigned int pc);
 

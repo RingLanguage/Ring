@@ -29,6 +29,8 @@ OBJS   = \
 	coroutine.o\
 	../deps/linenoise/linenoise.o\
 	fmt.o\
+	bytecode_dump.o\
+	bytecode_undump.o\
 	main.o
 
 # bison 可执行文件路径
@@ -205,6 +207,8 @@ buildin.o: buildin.cpp ring.hpp
 generate.o: generate.cpp ring.hpp
 execute.o: execute.cpp ring.hpp
 bytecode.o: bytecode.cpp ring.hpp
+bytecode_dump.o: bytecode_dump.cpp ring.hpp
+bytecode_undump.o: bytecode_undump.cpp ring.hpp
 compiler.o: compiler.cpp ring.hpp
 error_msg.o: error_msg.cpp ring.hpp
 utils.o: utils.cpp ring.hpp
