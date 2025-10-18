@@ -9,15 +9,17 @@ std::string command_help_message = R"(
     
             ring [options] <command> [arguments]
     
-    B|All Commands:|B
+    B|Development Commands:|B
             B|run    <filename>                              |B:compile and run Ring program
             B|build  <filename>                              |B:only check syntax
-            B|dump   <filename>                              |B:dump bytecode detail after compile
+            B|dump   <filename>  [-o <output_file>]          |B:dump bytecode detail after compile
+            B|undump <bytecode_file>                         |B:undump bytecode file, human readable
             B|rdb    <filename>                              |B:debug interactive
-    
+
+    B|Utility Commands:|B
             B|man    <keyword>                               |B:get prompt of ring by keyword
             B|version                                        |B:get Ring version
-            B|help                                           |B:get Ring version
+            B|help                                           |B:get help message
     
     B|Options:|B
             B|-O1                                            |B:optimize bytecode with level 1

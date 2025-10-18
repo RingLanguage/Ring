@@ -185,3 +185,47 @@ void bc_dump_binary_file(const std::vector<unsigned char>& data, const std::stri
         printf("dump to binary file: write data not correct\n");
     }
 }
+
+
+/*
+ * bc_display_binary_file
+ *
+ * dis play binary data in a human-readable format
+ */
+void bc_display_binary_file(const std::vector<unsigned char>& data) {
+    printf("----------------------------------------------------------------------------------------------------------\n");
+    printf("Offset    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  Decoded Text\n");
+    printf("--------- -----------------------------------------------  -----------------------------------------------\n");
+
+    for (size_t i = 0; i < data.size(); i++) {
+        // 每行开头显示偏移量
+        if (i % 16 == 0) {
+            printf("%08lX: ", i);
+        }
+
+        printf("%02X ", RVM_Byte(data[i]));
+
+        // 每行结尾打印ASCII表示
+        if (i % 16 == 15 || i == data.size() - 1) {
+            // 填充不完整的行
+            int remaining = 15 - (i % 16);
+            for (int j = 0; j < remaining; j++) {
+                printf("   ");
+            }
+
+            printf(" ");
+
+            // 打印ASCII字符
+            for (size_t j = i - (i % 16); j <= i; j++) {
+                unsigned char c = RVM_Byte(data[j]);
+                if (c >= 32 && c <= 126) { // 可打印字符
+                    printf(" %c ", c);
+                } else {
+                    printf(" . "); // 非打印字符用点表示
+                }
+            }
+            printf("\n");
+        }
+    }
+    printf("----------------------------------------------------------------------------------------------------------\n");
+}

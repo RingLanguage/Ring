@@ -3982,6 +3982,7 @@ void                       dumpBlock(RingDumpContext* ctx, char* data, size_t si
 void                       bc_dump_header(RingDumpContext* ctx);
 void                       bc_dump(RingDumpContext* ctx);
 void                       bc_dump_binary_file(const std::vector<unsigned char>& data, const std::string& filename);
+void                       bc_display_binary_file(const std::vector<unsigned char>& data);
 
 void                       bc_check_header(RingUndumpContext* ctx);
 void                       bc_undump(RingUndumpContext* ctx);
