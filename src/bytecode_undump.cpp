@@ -2,19 +2,19 @@
 
 
 // 都得使用这个方法
-size_t bc_common_load(RingUndumpContext* ctx, void* dst, size_t size) {
+size_t bc_common_undump(RingUndumpContext* ctx, void* dst, size_t size) {
     memcpy(dst, &(ctx->input_buffer[ctx->read_pos]), size);
     ctx->read_pos += size;
     return size;
 }
 
-void bc_load_block(RingUndumpContext* ctx, void* dst, size_t size) {
-    bc_common_load(ctx, dst, size);
+void bc_undump_block(RingUndumpContext* ctx, void* dst, size_t size) {
+    bc_common_undump(ctx, dst, size);
 }
 
-#define bc_load_vector(ctx, vector, n) bc_load_block(ctx, vector, (n) * sizeof((vector)[0]))
+#define bc_undump_vector(ctx, vector, n) bc_undump_block(ctx, vector, (n) * sizeof((vector)[0]))
 
-RVM_Byte bc_load_byte(RingUndumpContext* ctx) {
+RVM_Byte bc_undump_byte(RingUndumpContext* ctx) {
     RVM_Byte data = ctx->input_buffer[ctx->read_pos++];
     return data;
 }
@@ -23,23 +23,23 @@ RVM_Byte bc_load_byte(RingUndumpContext* ctx) {
 void check_str_literal(RingUndumpContext* ctx, const char* s, const char* err_msg) {
     // TODO: 这里实现的不太好
     char   literal_buf[MAX_LITERAL_LEN] = {0};
-    size_t len                          = bc_load_byte(ctx);
+    size_t len                          = bc_undump_byte(ctx);
 
-    bc_load_vector(ctx, literal_buf, len);
+    bc_undump_vector(ctx, literal_buf, len);
     if (memcmp(s, literal_buf, len) != 0) {
         printf("checkliteral valid---------- %s\n", err_msg);
     }
 }
 
 
-static size_t bc_load_unsigned(RingUndumpContext* ctx, size_t limit) {
+static size_t bc_undump_unsigned(RingUndumpContext* ctx, size_t limit) {
     size_t x = 0;
     int    b;
     limit >>= 7;
     do {
-        b = bc_load_byte(ctx);
+        b = bc_undump_byte(ctx);
         if (x >= limit)
-            printf("loadUnsigned integer overflow");
+            printf("bc_undump_unsigned integer overflow");
         x = (x << 7) | (b & 0x7f);
     } while ((b & 0x80) == 0);
     return x;
@@ -47,17 +47,17 @@ static size_t bc_load_unsigned(RingUndumpContext* ctx, size_t limit) {
 
 
 static size_t bc_undump_size(RingUndumpContext* ctx) {
-    return bc_load_unsigned(ctx, ~(size_t)0);
+    return bc_undump_unsigned(ctx, ~(size_t)0);
 }
 
 
 #define bc_check_byte(ctx, byte, err_msg)             \
-    if (bc_load_byte(ctx) != byte) {                  \
+    if (bc_undump_byte(ctx) != byte) {                \
         printf("check byte failed, `%s`\n", err_msg); \
     }
 
 
-#define bc_undump_value(ctx, value) bc_load_vector(ctx, &value, 1)
+#define bc_undump_value(ctx, value) bc_undump_vector(ctx, &value, 1)
 int bc_undump_int(RingUndumpContext* ctx) {
     int data;
     bc_undump_value(ctx, data);
@@ -94,7 +94,7 @@ double bc_undump_double(RingUndumpContext* ctx) {
 char* bc_undump_cstring(RingUndumpContext* ctx) {
     size_t len = bc_undump_int64(ctx);
     char*  str = (char*)mem_alloc(NULL_MEM_POOL, len + 1); // TODO:
-    bc_load_vector(ctx, str, len);
+    bc_undump_vector(ctx, str, len);
     str[len] = '\0';
     return str;
 }
@@ -129,7 +129,7 @@ void bc_check_header(RingUndumpContext* ctx) {
 
 
 void bc_undump_constant(RingUndumpContext* ctx, RVM_Constant* constant) {
-    ConstantPoolType type = (ConstantPoolType)bc_load_byte(ctx);
+    ConstantPoolType type = (ConstantPoolType)bc_undump_byte(ctx);
     constant->type        = type;
 
     switch (type) {
@@ -167,7 +167,7 @@ void bc_undump_function(RingUndumpContext* ctx, RVM_Function* function) {
     unsigned int code_size     = bc_undump_size(ctx);
     RVM_Byte*    code_list     = (RVM_Byte*)mem_alloc(NULL_MEM_POOL,
                                                       sizeof(RVM_Byte) * code_size);
-    bc_load_vector(ctx, code_list, code_size);
+    bc_undump_vector(ctx, code_list, code_size);
 
 
     PRINT_STAT(function_name, "%s");
