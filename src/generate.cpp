@@ -2465,6 +2465,7 @@ void generate_vmcode_from_new_array_expression(Package_Executer*   executer,
     ClassDefinition* class_definition   = nullptr;
     RVM_Opcode       opcode             = RVM_CODE_UNKNOW;
     unsigned int     operand            = dimension;
+    unsigned int     package_index      = 0;
 
 
     switch (sub_type_specifier->kind) {
@@ -2476,7 +2477,8 @@ void generate_vmcode_from_new_array_expression(Package_Executer*   executer,
     case RING_BASIC_TYPE_CLASS:
         opcode           = RVM_CODE_NEW_ARRAY_CLASS_OB;
         class_definition = sub_type_specifier->u.class_t->class_definition;
-        operand          = (dimension << 8) | (class_definition->class_index);
+        package_index    = sub_type_specifier->u.class_t->package->package_index;
+        operand          = (dimension << 24) | (package_index << 16) | (class_definition->class_index);
         break;
     case RING_BASIC_TYPE_FUNC: opcode = RVM_CODE_NEW_ARRAY_CLOSURE; break;
     default:

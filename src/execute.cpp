@@ -215,8 +215,6 @@ Ring_VirtualMachine* ring_virtualmachine_create() {
     rvm->executer_entry      = nullptr;
     rvm->runtime_static      = new_runtime_static();
     rvm->runtime_heap        = new_runtime_heap();
-    rvm->class_list          = nullptr;
-    rvm->class_size          = 0;
     rvm->meta_pool           = create_mem_pool((char*)"RVM-Meta-Memory-Pool");
     rvm->data_pool           = create_mem_pool((char*)"RVM-Data-Memory-Pool");
     rvm->debug_config        = nullptr;
@@ -241,11 +239,6 @@ void ring_virtualmachine_load_executer(Ring_VirtualMachine* rvm,
 
     // TODO: 目前只初始化main包的全局变量
     rvm_add_static_variable(rvm->executer, rvm->runtime_static);
-
-    // add classes
-    // TODO: 目前只初始化main包的class定义
-    rvm->class_list = executer_entry->main_package_executer->class_list;
-    rvm->class_size = executer_entry->main_package_executer->class_size;
 }
 
 
@@ -1296,13 +1289,14 @@ int ring_execute_vm_code(Ring_VirtualMachine* rvm) {
             }
             VM_CUR_CO_STACK_TOP_INDEX -= dimension;
 
-            class_index          = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 2]);
-            rvm_class_definition = &(rvm->class_list[class_index]);
+            package_index        = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 2]);
+            class_index          = OPCODE_GET_2BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 3]);
+            rvm_class_definition = &(rvm->executer_entry->package_executer_list[package_index]->class_list[class_index]);
 
             array_value          = rvm_new_array(rvm, dimension, dimension_list, dimension, RVM_ARRAY_CLASS_OBJECT, RING_BASIC_TYPE_CLASS, rvm_class_definition);
             STACK_SET_ARRAY_OFFSET(0, array_value);
             VM_CUR_CO_STACK_TOP_INDEX += 1;
-            VM_CUR_CO_PC += 3;
+            VM_CUR_CO_PC += 5;
             break;
         case RVM_CODE_NEW_ARRAY_CLOSURE:
             dimension = OPCODE_GET_1BYTE(&VM_CUR_CO_CODE_LIST[VM_CUR_CO_PC + 1]);
@@ -2434,7 +2428,7 @@ void invoke_native_function(Ring_VirtualMachine* rvm,
                             RVM_Function*        function,
                             unsigned int         argument_list_size) {
 
-    RVM_NativeFuncProc* native_func_proc = function->u.native_func->func_proc;
+    RVM_NativeFuncProc* native_func_proc = function->u.native_func->func_proc; // TODO: 这里没有前后端解耦
     RVM_Value*          args             = nullptr;
     unsigned int        return_size      = 0;
     RVM_Value*          return_list      = nullptr;

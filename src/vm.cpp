@@ -144,7 +144,7 @@ RVM_Opcode_Info RVM_Opcode_Infos[] = {
     {RVM_CODE_NEW_ARRAY_INT64, "new_array_int64", OPCODE_OPERAND_TYPE_1BYTE_A, "-A+1", INT_MIN, "create an array of int64 with dimension", "", ""},
     {RVM_CODE_NEW_ARRAY_DOUBLE, "new_array_double", OPCODE_OPERAND_TYPE_1BYTE_A, "-A+1", INT_MIN, "create an array of double with dimension", "", ""},
     {RVM_CODE_NEW_ARRAY_STRING, "new_array_string", OPCODE_OPERAND_TYPE_1BYTE_A, "-A+1", INT_MIN, "create an array of string with dimension", "", ""},
-    {RVM_CODE_NEW_ARRAY_CLASS_OB, "new_array_class_ob", OPCODE_OPERAND_TYPE_2BYTE_AB, "-A+1", INT_MIN, "create an array of object with dimension", "", ""},
+    {RVM_CODE_NEW_ARRAY_CLASS_OB, "new_array_class_ob", OPCODE_OPERAND_TYPE_4BYTE_ABCs, "-A+1", INT_MIN, "create an array of object with dimension", "", ""},
     {RVM_CODE_NEW_ARRAY_CLOSURE, "new_array_closure", OPCODE_OPERAND_TYPE_1BYTE_A, "-A+1", INT_MIN, "create an array of closure with dimension", "", ""},
 
     {RVM_CODE_NEW_ARRAY_LITERAL_BOOL, "new_array_literal_bool", OPCODE_OPERAND_TYPE_2BYTE_As, "-As+1", INT_MIN, "create an array of bool with literal", "", ""},

@@ -200,7 +200,11 @@ void compile_std_lib(CompilerEntry* compiler_entry, ExecuterEntry* executer_entr
 
         // registe @native function
         for (StdPackageNativeFunction native_function : std_package_info.native_function_list) {
-            register_lib(package_executer, native_function.identifier, native_function.func_proc, native_function.arg_count, native_function.return_list_count);
+            register_lib(package_executer,
+                         native_function.identifier,
+                         native_function.func_proc,
+                         native_function.arg_count,
+                         native_function.return_list_count);
         }
     }
 }
