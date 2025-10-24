@@ -11,6 +11,8 @@ std::string command_help_message = R"(
     
     B|Development Commands:|B
             B|run    <filename>                              |B:compile and run Ring program
+            B|runbc  <filename>                              |B:run Ring binary bytecode file
+
             B|build  <filename>                              |B:only check syntax
             B|dump   <filename>  [-o <output_file>]          |B:dump bytecode detail after compile
             B|undump <bytecode_file>                         |B:undump bytecode file, human readable

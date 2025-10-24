@@ -66,9 +66,9 @@ void bc_dump_header(RingDumpContext* ctx) {
 
     bc_dump_byte(ctx, RING_MAGIC);
     bc_dump_byte(ctx, sizeof(RVM_Byte));
-    bc_dump_byte(ctx, sizeof(int));       // TODO 后续定义一个类型别名
-    bc_dump_byte(ctx, sizeof(long long)); // TODO 后续定义一个类型别名
-    bc_dump_byte(ctx, sizeof(double));    // TODO 后续定义一个类型别名
+    bc_dump_byte(ctx, sizeof(RVM_Int));
+    bc_dump_byte(ctx, sizeof(RVM_Int64));
+    bc_dump_byte(ctx, sizeof(RVM_Double));
 
 
     bc_dump_byte(ctx, RING_MAGIC);
@@ -101,6 +101,10 @@ void bc_dump_constant(RingDumpContext* ctx, RVM_Constant* constant) {
 void bc_dump_function(RingDumpContext* ctx, RVM_Function* function) {
     printf("----------dump a function----------\n");
 
+    printf("function_name: %s\n", function->identifier);
+    bc_dump_cstring(ctx, function->identifier);
+    bc_dump_byte(ctx, function->type);
+
     if (function->type == RVM_FUNCTION_TYPE_DERIVE) {
         RVM_Byte*    code_list = nullptr;
         unsigned int code_size = 0;
@@ -108,12 +112,11 @@ void bc_dump_function(RingDumpContext* ctx, RVM_Function* function) {
         code_list              = function->u.derive_func->code_list;
         code_size              = function->u.derive_func->code_size;
 
-        printf("function_name: %s\n", function->identifier);
         printf("code_size: %u\n", code_size);
 
-        bc_dump_cstring(ctx, function->identifier);
         bc_dump_size(ctx, code_size);
         bc_dump_vector(ctx, code_list, code_size);
+    } else if (function->type == RVM_FUNCTION_TYPE_NATIVE) {
     }
 }
 
@@ -127,6 +130,9 @@ void bc_dump_package(RingDumpContext* ctx, Package_Executer* package_executer) {
     printf("bootloader_code_size:%u\n", package_executer->bootloader_code_size);
     printf("exist_main_func:%d\n", package_executer->exist_main_func);
     printf("main_func_index:%u\n", package_executer->main_func_index);
+    printf("exist_global_init_func:%d\n", package_executer->exist_global_init_func);
+    printf("global_init_func_index:%u\n", package_executer->global_init_func_index);
+    printf("estimate_runtime_stack_capacity:%u\n", package_executer->estimate_runtime_stack_capacity);
 
     bc_dump_cstring(ctx, package_executer->package_name);
     bc_dump_size(ctx, package_executer->constant_pool->size);
@@ -134,8 +140,12 @@ void bc_dump_package(RingDumpContext* ctx, Package_Executer* package_executer) {
     bc_dump_size(ctx, package_executer->function_size);
     bc_dump_size(ctx, package_executer->class_size);
     bc_dump_size(ctx, package_executer->bootloader_code_size);
+    bc_dump_vector(ctx, package_executer->bootloader_code_list, package_executer->bootloader_code_size);
     bc_dump_size(ctx, package_executer->exist_main_func);
     bc_dump_size(ctx, package_executer->main_func_index);
+    bc_dump_size(ctx, package_executer->exist_global_init_func);
+    bc_dump_size(ctx, package_executer->global_init_func_index);
+    bc_dump_size(ctx, package_executer->estimate_runtime_stack_capacity);
 
 
     for (unsigned int i = 0; i < package_executer->constant_pool->size; i++) {
@@ -150,27 +160,22 @@ void bc_dump_package(RingDumpContext* ctx, Package_Executer* package_executer) {
     bc_dump_byte(ctx, RING_MAGIC);
 }
 
-void bc_dump(RingDumpContext* ctx) {
+void bc_dump_root(RingDumpContext* ctx) {
     bc_dump_header(ctx);
 
     ExecuterEntry* executer_entry = ctx->package_executer->executer_entry;
 
 
+    // package 的数量
     printf("package_count: %lu\n", executer_entry->package_executer_list.size());
+    bc_dump_size(ctx, executer_entry->package_executer_list.size());
 
-    bool debug = true;
-    if (debug) {
-        bc_dump_size(ctx, 1); // package 的数量
-        bc_dump_package(ctx, executer_entry->main_package_executer);
-    } else {
-        bc_dump_size(ctx, executer_entry->package_executer_list.size()); // package 的数量
-        for (Package_Executer* package_executer : executer_entry->package_executer_list) {
-            bc_dump_package(ctx, package_executer);
-        }
+    for (Package_Executer* package_executer : executer_entry->package_executer_list) {
+        bc_dump_package(ctx, package_executer);
     }
 }
 
-void bc_dump_binary_file(const std::vector<unsigned char>& data, const std::string& filename) {
+void bc_dump_binary_file(const std::vector<RVM_Byte>& data, const std::string& filename) {
     FILE* file = fopen(filename.c_str(), "wb");
     if (!file) {
         printf("dump to binary file failed: cannot open file: %s, err:%s\n",
@@ -178,7 +183,7 @@ void bc_dump_binary_file(const std::vector<unsigned char>& data, const std::stri
         return;
     }
 
-    size_t written = fwrite(data.data(), sizeof(unsigned char), data.size(), file);
+    size_t written = fwrite(data.data(), sizeof(RVM_Byte), data.size(), file);
     fclose(file);
 
     if (written != data.size()) {
@@ -192,7 +197,7 @@ void bc_dump_binary_file(const std::vector<unsigned char>& data, const std::stri
  *
  * dis play binary data in a human-readable format
  */
-void bc_display_binary_file(const std::vector<unsigned char>& data) {
+void bc_display_binary_file(const std::vector<RVM_Byte>& data) {
     printf("----------------------------------------------------------------------------------------------------------\n");
     printf("Offset    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  Decoded Text\n");
     printf("--------- -----------------------------------------------  -----------------------------------------------\n");
@@ -217,9 +222,8 @@ void bc_display_binary_file(const std::vector<unsigned char>& data) {
 
             // 打印ASCII字符
             for (size_t j = i - (i % 16); j <= i; j++) {
-                unsigned char c = RVM_Byte(data[j]);
-                if (c >= 32 && c <= 126) { // 可打印字符
-                    printf(" %c ", c);
+                if (data[j] >= 32 && data[j] <= 126) { // 可打印字符
+                    printf(" %c ", data[j]);
                 } else {
                     printf(" . "); // 非打印字符用点表示
                 }

@@ -167,6 +167,9 @@ typedef struct RVM_DeferItem                RVM_DeferItem;
 typedef struct RVM_GC_Object                RVM_GC_Object;
 
 typedef unsigned char                       RVM_Byte;
+typedef int32_t                             RVM_Int;
+typedef int64_t                             RVM_Int64;
+typedef double                              RVM_Double;
 
 typedef struct MemPool                      MemPool;
 typedef struct MemBlock                     MemBlock;
@@ -255,21 +258,18 @@ struct RingFileStat {
 typedef int (*TraceDispacth)(RVM_Frame* frame, const char* event, const char* arg);
 
 struct Ring_VirtualMachine {
-    Package_Executer*    executer;
-    ExecuterEntry*       executer_entry;
+    Package_Executer*  executer;
+    ExecuterEntry*     executer_entry;
 
-    RVM_RuntimeStatic*   runtime_static;
-    RVM_RuntimeHeap*     runtime_heap;
+    RVM_RuntimeStatic* runtime_static;
+    RVM_RuntimeHeap*   runtime_heap;
 
-    RVM_ClassDefinition* class_list;
-    unsigned int         class_size;
+    MemPool*           meta_pool;
+    MemPool*           data_pool;
 
-    MemPool*             meta_pool;
-    MemPool*             data_pool;
+    RVM_DebugConfig*   debug_config;
 
-    RVM_DebugConfig*     debug_config;
-
-    RingCoroutine*       current_coroutine;
+    RingCoroutine*     current_coroutine;
 };
 
 // 从后边获取 1BYTE的操作数
@@ -400,6 +400,7 @@ struct RingDumpContext {
 };
 
 struct RingUndumpContext {
+    ExecuterEntry*        executer_entry;
     Package_Executer*     package_executer;
 
     int                   input_fd; // 输入位置
@@ -706,7 +707,8 @@ struct RVM_LocalVariable {
 };
 
 struct NativeFunction {
-    RVM_NativeFuncProc* func_proc;
+
+    RVM_NativeFuncProc* func_proc;         // for rvm runtime
     int                 arg_count;         // -1 表示可变参数
     int                 return_list_count; // 返回值的数量
 };
@@ -2576,6 +2578,7 @@ typedef enum {
 
 
 #define RING_CMD_T_RUN "run"
+#define RING_CMD_T_RUNBC "runbc"
 #define RING_CMD_T_BUILD "build"
 #define RING_CMD_T_DUMP "dump"
 #define RING_CMD_T_UNDUMP "undump"
@@ -2594,6 +2597,8 @@ enum RING_COMMAND_TYPE {
     RING_COMMAND_UNKNOW,
 
     RING_COMMAND_RUN,
+    RING_COMMAND_RUNBC,
+
     RING_COMMAND_BUILD,
     RING_COMMAND_DUMP,
     RING_COMMAND_UNDUMP,
@@ -3201,6 +3206,7 @@ private:
 
 
 int              cmd_handler_run(Ring_Command_Arg command_arg);
+int              cmd_handler_runbc(Ring_Command_Arg command_arg);
 int              cmd_handler_build(Ring_Command_Arg command_arg);
 int              cmd_handler_dump(Ring_Command_Arg command_arg);
 int              cmd_handler_undump(Ring_Command_Arg command_arg);
@@ -3978,18 +3984,16 @@ RVM_Array_Type       convert_rvm_array_type(RVM_TypeSpecifier* type_specifier);
  * function definition
  *
  */
-void                       dumpBlock(RingDumpContext* ctx, char* data, size_t size);
-void                       bc_dump_header(RingDumpContext* ctx);
-void                       bc_dump(RingDumpContext* ctx);
-void                       bc_dump_binary_file(const std::vector<unsigned char>& data, const std::string& filename);
-void                       bc_display_binary_file(const std::vector<unsigned char>& data);
+void                  bc_dump_block(RingDumpContext* ctx, RVM_Byte* data, size_t size);
+void                  bc_dump_header(RingDumpContext* ctx);
+void                  bc_dump_root(RingDumpContext* ctx);
+void                  bc_dump_binary_file(const std::vector<RVM_Byte>& data, const std::string& filename);
+void                  bc_display_binary_file(const std::vector<RVM_Byte>& data);
 
-void                       bc_check_header(RingUndumpContext* ctx);
-void                       bc_undump(RingUndumpContext* ctx);
-std::vector<unsigned char> bc_undump_binary_file(const std::string& filename);
+void                  bc_check_header(RingUndumpContext* ctx);
+void                  bc_undump_root(RingUndumpContext* ctx);
+std::vector<RVM_Byte> bc_load_binary_file(const std::string& filename);
 
-void                       ring_bytecode_dump(Package_Executer* executer, FILE* output);
-void                       ring_bytecode_undump(Package_Executer* executer, FILE* input);
 // --------------------
 
 

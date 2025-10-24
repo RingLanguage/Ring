@@ -50,6 +50,7 @@ std::string rdb_command_help_message =
     "        bt                                  :Print a stack trace, with the most recent frame at the top.\n"
     "\n"
     "Exec Commands:\n"
+    "        run       (r)                       :Start a new process.\n"
     "        cont      (c)                       :Continue execution, only stop when a breakpoint is encountered.\n"
     "        \n"
     "        step over (n)                       :Executes the current line of code and moves to the next line.\n"

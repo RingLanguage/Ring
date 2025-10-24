@@ -59,6 +59,8 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
     std::string              rdb_interpreter;
     bool                     escape_strings = false;
     bool                     has_shell_args = false;
+    bool                     show_summary   = false;
+    bool                     show_detail    = false;
     std::vector<std::string> shell_args;
 
 
@@ -75,26 +77,58 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
     auto option_rule        = (optimize_level_rule | rdb_interpreter_rule | escape_string_rule);
 
     // run command
-    auto run_rule = (clipp::command(RING_CMD_T_RUN).set(cmd, RING_COMMAND_RUN).doc("run ring script"),
-                     clipp::value("input-file", input_file_name));
+    auto run_rule = (
+
+        clipp::command(RING_CMD_T_RUN).set(cmd, RING_COMMAND_RUN).doc("run ring script"),
+        clipp::value("input-file", input_file_name)
+
+    );
+
+    // binrun
+    auto binrun_rule = (
+
+        (clipp::command(RING_CMD_T_RUNBC).set(cmd, RING_COMMAND_RUNBC)),
+        clipp::value("input_file_name", input_file_name)
+
+    );
 
     // build command
-    auto build_rule = (clipp::command(RING_CMD_T_BUILD).set(cmd, RING_COMMAND_BUILD),
-                       clipp::value("input-file", input_file_name));
+    auto build_rule = (
+
+        clipp::command(RING_CMD_T_BUILD).set(cmd, RING_COMMAND_BUILD),
+        clipp::value("input-file", input_file_name)
+
+    );
 
     // dump command
     auto dump_output = (clipp::option("-o", "--output") & clipp::value("output-file", output_file_name));
-    auto dump_rule   = (clipp::command(RING_CMD_T_DUMP).set(cmd, RING_COMMAND_DUMP),
-                      clipp::value("input-file", input_file_name),
-                      dump_output);
+    auto dump_rule   = (
+
+        clipp::command(RING_CMD_T_DUMP).set(cmd, RING_COMMAND_DUMP),
+        clipp::value("input-file", input_file_name),
+        dump_output
+
+    );
 
     // undump command
-    auto undump_rule = ((clipp::command(RING_CMD_T_UNDUMP).set(cmd, RING_COMMAND_UNDUMP),
-                         clipp::value("input_file_name", input_file_name)));
+    auto undump_summary_opt = (clipp::option("-s", "").doc("only dump summary information").set(show_summary, true));
+    auto undump_detail_opt  = (clipp::option("-v", "").doc("dump detail information").set(show_detail, true));
+    auto undump_rule        = (
+
+        clipp::command(RING_CMD_T_UNDUMP).set(cmd, RING_COMMAND_UNDUMP),
+        clipp::value("input_file_name", input_file_name),
+        (undump_summary_opt | undump_detail_opt)
+
+    );
 
     // rdb command
-    auto rdb_rule = ((clipp::command(RING_CMD_T_RDB).set(cmd, RING_COMMAND_RDB),
-                      clipp::value("input_file_name", input_file_name)));
+    // input file name 是可选的
+    auto rdb_rule = (
+
+        clipp::command(RING_CMD_T_RDB).set(cmd, RING_COMMAND_RDB),
+        (clipp::value("input_file_name", input_file_name))
+
+    );
 
     // shell args
     // e.g.  ./bin/ring run ./test.ring args1 args2
@@ -105,7 +139,7 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
 
     auto ring_command_rule = (
 
-        (option_rule, run_rule | build_rule | dump_rule | undump_rule | rdb_rule, shell_args_rule)
+        (option_rule, run_rule | binrun_rule | build_rule | dump_rule | undump_rule | rdb_rule, shell_args_rule)
         | (clipp::command(RING_CMD_T_MAN).set(cmd, RING_COMMAND_MAN), clipp::value("keyword", keyword))
         | clipp::command(RING_CMD_T_VERSION).set(cmd, RING_COMMAND_VERSION)
         | clipp::command(RING_CMD_T_HELP).set(cmd, RING_COMMAND_HELP)
@@ -114,8 +148,9 @@ Ring_Command_Arg ring_parse_command(int argc, char** argv) {
 
 
     if (!clipp::parse(argc, argv, ring_command_rule)) {
-        std::cout << clipp::make_man_page(ring_command_rule) << std::endl;
-        exit(ERROR_CODE_COMMAND_ERROR);
+        // clipp 有点小bug，所以这里不要报错抛出
+        // fprintf(stderr, "Unknow command, type `ring help` find tip.\n");
+        // exit(ERROR_CODE_COMMAND_ERROR);
     }
 
 
@@ -201,6 +236,8 @@ int main(int argc, char** argv) {
 
     if (command_arg.cmd == RING_COMMAND_RUN) {
         exit_code = cmd_handler_run(command_arg);
+    } else if (command_arg.cmd == RING_COMMAND_RUNBC) {
+        exit_code = cmd_handler_runbc(command_arg);
     } else if (command_arg.cmd == RING_COMMAND_BUILD) {
         exit_code = cmd_handler_build(command_arg);
     } else if (command_arg.cmd == RING_COMMAND_DUMP) {
@@ -240,6 +277,25 @@ int cmd_handler_run(Ring_Command_Arg command_arg) {
     return ring_exec(rvm, executer_entry);
 }
 
+int cmd_handler_runbc(Ring_Command_Arg command_arg) {
+    printf("------ binrun summary-----\n");
+    std::vector<RVM_Byte> read_data  = bc_load_binary_file(command_arg.input_file_name);
+    RingUndumpContext     undump_ctx = {
+            .package_executer = nullptr,
+
+            .input_fd         = 0,
+            .input_buffer     = read_data,
+            .read_pos         = 0,
+    };
+    bc_undump_root(&undump_ctx);
+    printf("------ binrun summary-----\n");
+
+    Ring_VirtualMachine* rvm = nullptr;
+    rvm                      = ring_virtualmachine_create();
+
+    return ring_exec(rvm, undump_ctx.executer_entry);
+}
+
 
 int cmd_handler_build(Ring_Command_Arg command_arg) {
     ring_compile_main(command_arg.input_file_name, command_arg.shell_args);
@@ -274,7 +330,7 @@ int cmd_handler_dump(Ring_Command_Arg command_arg) {
     return 0;
 
     printf("------ dump summary-----\n");
-    bc_dump(&dump_ctx);
+    bc_dump_root(&dump_ctx);
     if (command_arg.output_file_name.size()) {
         bc_dump_binary_file(dump_ctx.output_buffer, command_arg.output_file_name);
     } else {
@@ -282,21 +338,26 @@ int cmd_handler_dump(Ring_Command_Arg command_arg) {
     }
     printf("------ dump summary-----\n");
 
+    if (command_arg.output_file_name.size()) {
+        command_arg.input_file_name = command_arg.output_file_name;
+        cmd_handler_undump(command_arg);
+    }
+
     return 0;
 }
 
 
 int cmd_handler_undump(Ring_Command_Arg command_arg) {
     printf("------ undump summary-----\n");
-    auto              read_data  = bc_undump_binary_file(command_arg.input_file_name);
-    RingUndumpContext undump_ctx = {
-        .package_executer = nullptr,
+    std::vector<RVM_Byte> read_data  = bc_load_binary_file(command_arg.input_file_name);
+    RingUndumpContext     undump_ctx = {
+            .package_executer = nullptr,
 
-        .input_fd         = 0,
-        .input_buffer     = read_data,
-        .read_pos         = 0,
+            .input_fd         = 0,
+            .input_buffer     = read_data,
+            .read_pos         = 0,
     };
-    bc_undump(&undump_ctx);
+    bc_undump_root(&undump_ctx);
     printf("------ undump summary-----\n");
 
     return 0;

@@ -39,7 +39,7 @@ static size_t bc_undump_unsigned(RingUndumpContext* ctx, size_t limit) {
     do {
         b = bc_undump_byte(ctx);
         if (x >= limit)
-            printf("bc_undump_unsigned integer overflow");
+            printf("bc_undump_unsigned integer overflow\n");
         x = (x << 7) | (b & 0x7f);
     } while ((b & 0x80) == 0);
     return x;
@@ -163,22 +163,31 @@ void bc_undump_constant(RingUndumpContext* ctx, RVM_Constant* constant) {
 void bc_undump_function(RingUndumpContext* ctx, RVM_Function* function) {
     printf("----------undump a function----------\n");
 
-    char*        function_name = bc_undump_cstring(ctx);
-    unsigned int code_size     = bc_undump_size(ctx);
-    RVM_Byte*    code_list     = (RVM_Byte*)mem_alloc(NULL_MEM_POOL,
+    function->identifier = bc_undump_cstring(ctx);
+    function->type       = (RVMFunctionType)bc_undump_byte(ctx);
+    PRINT_STAT(function->identifier, "%s");
+
+    if (function->type == RVM_FUNCTION_TYPE_DERIVE) {
+
+        unsigned int code_size = bc_undump_size(ctx);
+        RVM_Byte*    code_list = (RVM_Byte*)mem_alloc(NULL_MEM_POOL,
                                                       sizeof(RVM_Byte) * code_size);
-    bc_undump_vector(ctx, code_list, code_size);
+        bc_undump_vector(ctx, code_list, code_size);
 
 
-    PRINT_STAT(function_name, "%s");
-    PRINT_STAT(code_size, "%u");
+        // TODO: 这个地方需要重新规划
+        DeriveFunction* derive_func  = (DeriveFunction*)mem_alloc(NULL_MEM_POOL, sizeof(DeriveFunction));
+        derive_func->code_list       = code_list;
+        derive_func->code_size       = code_size;
+        derive_func->need_stack_size = 0;
+        derive_func->code_line_map   = std::vector<RVM_SourceCodeLineMap>{};
 
-    // TODO:
-    // function->code_list = code_list;
-    // function->code_size = code_size;
+        function->u.derive_func      = derive_func;
+    } else if (function->type == RVM_FUNCTION_TYPE_NATIVE) {
+    }
 }
 
-void bc_undump_package(RingUndumpContext* ctx) {
+void bc_undump_package(RingUndumpContext* ctx, Package_Executer* package_executer) {
     printf("----------undump a package----------\n");
     char*        package_name         = bc_undump_cstring(ctx);
     unsigned int constant_pool_size   = bc_undump_size(ctx);
@@ -186,8 +195,14 @@ void bc_undump_package(RingUndumpContext* ctx) {
     unsigned int function_size        = bc_undump_size(ctx);
     unsigned int class_size           = bc_undump_size(ctx);
     unsigned int bootloader_code_size = bc_undump_size(ctx);
-    unsigned int exist_main_func      = bc_undump_size(ctx);
-    unsigned int main_func_index      = bc_undump_size(ctx);
+    RVM_Byte*    bootloader_code_list = (RVM_Byte*)mem_alloc(NULL_MEM_POOL,
+                                                             sizeof(RVM_Byte) * bootloader_code_size);
+    bc_undump_vector(ctx, bootloader_code_list, bootloader_code_size);
+    unsigned int exist_main_func                 = bc_undump_size(ctx);
+    unsigned int main_func_index                 = bc_undump_size(ctx);
+    unsigned int exist_global_init_func          = bc_undump_size(ctx);
+    unsigned int global_init_func_index          = bc_undump_size(ctx);
+    unsigned int estimate_runtime_stack_capacity = bc_undump_size(ctx);
 
 
     PRINT_STAT(package_name, "%s");
@@ -198,15 +213,15 @@ void bc_undump_package(RingUndumpContext* ctx) {
     PRINT_STAT(bootloader_code_size, "%u");
     PRINT_STAT(exist_main_func, "%u");
     PRINT_STAT(main_func_index, "%u");
+    PRINT_STAT(exist_global_init_func, "%u");
+    PRINT_STAT(global_init_func_index, "%u");
+    PRINT_STAT(estimate_runtime_stack_capacity, "%u");
 
 
-    RVM_ConstantPool* constant_pool = (RVM_ConstantPool*)mem_alloc(NULL_MEM_POOL,
-                                                                   sizeof(RVM_ConstantPool));
-
+    RVM_ConstantPool* constant_pool = package_executer->constant_pool;
     constant_pool->size             = constant_pool_size;
     constant_pool->list             = (RVM_Constant*)mem_alloc(NULL_MEM_POOL,
                                                                sizeof(RVM_Constant) * constant_pool_size);
-
     for (unsigned int i = 0; i < constant_pool_size; i++) {
         bc_undump_constant(ctx, &constant_pool->list[i]);
     }
@@ -214,16 +229,26 @@ void bc_undump_package(RingUndumpContext* ctx) {
 
     RVM_Function* function_list = (RVM_Function*)mem_alloc(NULL_MEM_POOL,
                                                            sizeof(RVM_Function) * function_size);
-
     for (unsigned int i = 0; i < function_size; i++) {
         bc_undump_function(ctx, &function_list[i]);
     }
 
 
     bc_check_byte(ctx, RING_MAGIC, "check magic failed");
+
+
+    package_executer->package_name         = package_name;
+    package_executer->constant_pool        = constant_pool;
+    package_executer->global_variable_size = global_variable_size;
+    package_executer->global_variable_list = nullptr; // TODO:
+    package_executer->function_size        = function_size;
+    package_executer->function_list        = function_list;
+
+    package_executer->bootloader_code_size = bootloader_code_size;
+    package_executer->bootloader_code_list = bootloader_code_list;
 }
 
-void bc_undump(RingUndumpContext* ctx) {
+void bc_undump_root(RingUndumpContext* ctx) {
     bc_check_header(ctx);
 
 
@@ -234,25 +259,35 @@ void bc_undump(RingUndumpContext* ctx) {
     executer_entry->package_executer_list.resize(package_count);
 
     for (int i = 0; i < package_count; i++) {
-        bc_undump_package(ctx);
+        Package_Executer* package_executer = package_executer_create(executer_entry, nullptr, 0);
+
+        bc_undump_package(ctx, package_executer);
+
+        if (str_eq(package_executer->package_name, "main")) {
+            executer_entry->main_package_executer = package_executer;
+        }
+
+        executer_entry->package_executer_list[i] = package_executer;
     }
+
+    ctx->executer_entry = executer_entry;
 
     BC_CHECK_END(ctx);
 }
 
 
 // TODO: 测试读取大文件
-std::vector<unsigned char> bc_undump_binary_file(const std::string& filename) {
-    std::vector<unsigned char> buffer;
-    FILE*                      file = fopen(filename.c_str(), "rb");
+std::vector<RVM_Byte> bc_load_binary_file(const std::string& filename) {
+    std::vector<RVM_Byte> buffer;
+    FILE*                 file = fopen(filename.c_str(), "rb");
     if (!file) {
         printf("undump from binary file failed: cannot open file: %s, err:%s\n",
                filename.c_str(), strerror(errno));
         return buffer;
     }
 
-    const size_t  CHUNK_SIZE = 4096; // 4KB 块
-    unsigned char chunk[CHUNK_SIZE];
+    const size_t CHUNK_SIZE = 4096;
+    RVM_Byte     chunk[CHUNK_SIZE];
 
     while (true) {
         size_t bytes_read = fread(chunk, 1, CHUNK_SIZE, file);
@@ -262,7 +297,7 @@ std::vector<unsigned char> bc_undump_binary_file(const std::string& filename) {
 
         if (bytes_read < CHUNK_SIZE) {
             if (feof(file)) {
-                break; // 到达文件末尾
+                break;
             } else if (ferror(file)) {
                 printf("undump from binary file failed: read err:%s\n", strerror(errno));
                 break;
