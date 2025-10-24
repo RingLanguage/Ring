@@ -25,6 +25,9 @@ void bc_dump_byte(RingDumpContext* ctx, RVM_Byte data) {
 void bc_dump_int(RingDumpContext* ctx, int data) {
     bc_dump_value(ctx, data);
 }
+void bc_dump_uint(RingDumpContext* ctx, unsigned int data) {
+    bc_dump_value(ctx, data);
+}
 void bc_dump_int64(RingDumpContext* ctx, long long data) {
     bc_dump_value(ctx, data);
 }
@@ -38,6 +41,10 @@ void bc_dump_double(RingDumpContext* ctx, double data) {
 
 #define bc_dump_cstring(ctx, c_str) \
     bc_dump_string(ctx, c_str, strlen(c_str));
+
+#define bc_dump_cppstring(ctx, str) \
+    bc_dump_int64(ctx, str.size()); \
+    bc_dump_block(ctx, (RVM_Byte*)str.data(), str.size());
 
 
 /*
@@ -102,6 +109,18 @@ void bc_dump_function(RingDumpContext* ctx, RVM_Function* function) {
     printf("----------dump a function----------\n");
 
     printf("function_name: %s\n", function->identifier);
+
+
+    bc_dump_cppstring(ctx, function->source_file);
+    bc_dump_uint(ctx, function->start_line_number);
+    bc_dump_uint(ctx, function->end_line_number);
+
+    bc_dump_uint(ctx, function->parameter_size);
+    bc_dump_uint(ctx, function->return_value_size);
+    bc_dump_uint(ctx, function->local_variable_size);
+    bc_dump_uint(ctx, function->free_value_size);
+    bc_dump_uint(ctx, function->estimate_runtime_stack_capacity);
+
     bc_dump_cstring(ctx, function->identifier);
     bc_dump_byte(ctx, function->type);
 

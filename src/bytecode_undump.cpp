@@ -63,6 +63,11 @@ int bc_undump_int(RingUndumpContext* ctx) {
     bc_undump_value(ctx, data);
     return data;
 }
+unsigned int bc_undump_uint(RingUndumpContext* ctx) {
+    unsigned int data;
+    bc_undump_value(ctx, data);
+    return data;
+}
 #define bc_check_int(ctx, int_value, err_msg)        \
     if (bc_undump_int(ctx) != int_value) {           \
         printf("check int failed, `%s`\n", err_msg); \
@@ -163,8 +168,20 @@ void bc_undump_constant(RingUndumpContext* ctx, RVM_Constant* constant) {
 void bc_undump_function(RingUndumpContext* ctx, RVM_Function* function) {
     printf("----------undump a function----------\n");
 
-    function->identifier = bc_undump_cstring(ctx);
-    function->type       = (RVMFunctionType)bc_undump_byte(ctx);
+
+    function->source_file                     = bc_undump_cstring(ctx);
+    function->start_line_number               = bc_undump_uint(ctx);
+    function->end_line_number                 = bc_undump_uint(ctx);
+
+    function->parameter_size                  = bc_undump_uint(ctx);
+    function->return_value_size               = bc_undump_uint(ctx);
+    function->local_variable_size             = bc_undump_uint(ctx);
+    function->free_value_size                 = bc_undump_uint(ctx);
+    function->estimate_runtime_stack_capacity = bc_undump_uint(ctx);
+
+
+    function->identifier                      = bc_undump_cstring(ctx);
+    function->type                            = (RVMFunctionType)bc_undump_byte(ctx);
     PRINT_STAT(function->identifier, "%s");
 
     if (function->type == RVM_FUNCTION_TYPE_DERIVE) {
@@ -258,19 +275,23 @@ void bc_undump_root(RingUndumpContext* ctx) {
     ExecuterEntry* executer_entry = executer_entry_create();
     executer_entry->package_executer_list.resize(package_count);
 
+    Package_Executer* main_package_executer = nullptr;
+
     for (int i = 0; i < package_count; i++) {
         Package_Executer* package_executer = package_executer_create(executer_entry, nullptr, 0);
 
         bc_undump_package(ctx, package_executer);
 
         if (str_eq(package_executer->package_name, "main")) {
+            main_package_executer                 = package_executer;
             executer_entry->main_package_executer = package_executer;
         }
 
         executer_entry->package_executer_list[i] = package_executer;
     }
 
-    ctx->executer_entry = executer_entry;
+    ctx->executer_entry   = executer_entry;
+    ctx->package_executer = main_package_executer;
 
     BC_CHECK_END(ctx);
 }

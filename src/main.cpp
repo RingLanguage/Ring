@@ -327,7 +327,7 @@ int cmd_handler_dump(Ring_Command_Arg command_arg) {
     };
     package_executer_dump(&dump_ctx);
 
-    return 0;
+    // return 0;
 
     printf("------ dump summary-----\n");
     bc_dump_root(&dump_ctx);
@@ -338,6 +338,7 @@ int cmd_handler_dump(Ring_Command_Arg command_arg) {
     }
     printf("------ dump summary-----\n");
 
+    // debug 使用，再load一下，看看能否解析成功
     if (command_arg.output_file_name.size()) {
         command_arg.input_file_name = command_arg.output_file_name;
         cmd_handler_undump(command_arg);
@@ -351,6 +352,7 @@ int cmd_handler_undump(Ring_Command_Arg command_arg) {
     printf("------ undump summary-----\n");
     std::vector<RVM_Byte> read_data  = bc_load_binary_file(command_arg.input_file_name);
     RingUndumpContext     undump_ctx = {
+            .executer_entry   = nullptr,
             .package_executer = nullptr,
 
             .input_fd         = 0,
@@ -359,6 +361,15 @@ int cmd_handler_undump(Ring_Command_Arg command_arg) {
     };
     bc_undump_root(&undump_ctx);
     printf("------ undump summary-----\n");
+
+    RingDumpContext dump_ctx = {
+        .package_executer = undump_ctx.package_executer,
+
+        .escape_strings   = true,
+        .contains_symbol  = true,
+    };
+
+    package_executer_dump(&dump_ctx);
 
     return 0;
 }
