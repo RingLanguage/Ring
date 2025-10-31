@@ -3137,34 +3137,42 @@ private:
 
 // debug flex 词法分析
 #ifdef DEBUG_FLEX
-#define debug_flex_info_with_red(format, ...) \
+#define debug_flex(format, ...) \
     printf("%s[DEBUG][%s:%d][function:%s]" format "%s\n", LOG_COLOR_RED, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__, LOG_COLOR_CLEAR)
 #else
-#define debug_flex_info_with_red(format, ...)
+#define debug_flex(format, ...)
 #endif
 
 // debug bison 语法分析
 #ifdef DEBUG_BISON
-#define debug_bison_info_with_green(format, ...) \
+#define debug_bison(format, ...) \
     printf("%s[DEBUG][%s:%d][function:%s]" format "%s\n", LOG_COLOR_GREEN, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__, LOG_COLOR_CLEAR)
 #else
-#define debug_bison_info_with_green(format, ...)
+#define debug_bison(format, ...)
 #endif
 
 // debug 语法分析构建AST
 #ifdef DEBUG_CREATE_AST
-#define debug_ast_info_with_yellow(format, ...) \
+#define debug_ast(format, ...) \
     printf("%s[DEBUG][%s:%d][function:%s]" format "%s\n", LOG_COLOR_YELLOW, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__, LOG_COLOR_CLEAR)
 #else
-#define debug_ast_info_with_yellow(format, ...)
+#define debug_ast(format, ...)
 #endif
 
 // debug 生成 vm opcode
 #ifdef DEBUG_GENERATE_DETAIL
-#define debug_generate_info_with_darkgreen(format, ...) \
+#define debug_generate(format, ...) \
     printf("%s[DEBUG][%s:%d][function:%s]" format "%s\n", LOG_COLOR_DARKGREEN, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__, LOG_COLOR_CLEAR)
 #else
-#define debug_generate_info_with_darkgreen(format, ...)
+#define debug_generate(format, ...)
+#endif
+
+// debug 生成、解析 字节码文件
+#ifdef DEBUG_BYTECODE_DUMP
+#define debug_bytecode(format, ...) \
+    printf("%s[DEBUG][%s:%d][function:%s]" format "%s\n", LOG_COLOR_DARKGREEN, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__, LOG_COLOR_CLEAR)
+#else
+#define debug_bytecode(format, ...)
 #endif
 
 // debug ring debugger 的详情

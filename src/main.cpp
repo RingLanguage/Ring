@@ -325,32 +325,37 @@ int cmd_handler_dump(Ring_Command_Arg command_arg) {
         .output_fd        = fileno(stdout),
         .output_buffer    = std::vector<RVM_Byte>{},
     };
-    package_executer_dump(&dump_ctx);
 
-    return 0;
 
-    printf("------ dump summary-----\n");
     bc_dump_root(&dump_ctx);
+
     if (command_arg.output_file_name.size()) {
         bc_dump_binary_file(dump_ctx.output_buffer, command_arg.output_file_name);
-    } else {
-        bc_display_binary_file(dump_ctx.output_buffer);
-    }
-    printf("------ dump summary-----\n");
 
-    if (command_arg.output_file_name.size()) {
+#ifdef DEBUG
+        // 可视化展示 字节码文件 hex形式
+        bc_display_binary_file(dump_ctx.output_buffer);
+
+        // 再load 一次，看文件格式是否正确
         command_arg.input_file_name = command_arg.output_file_name;
         cmd_handler_undump(command_arg);
+
+#endif
+
+    } else {
+        package_executer_dump(&dump_ctx);
     }
+
 
     return 0;
 }
 
 
 int cmd_handler_undump(Ring_Command_Arg command_arg) {
-    printf("------ undump summary-----\n");
+    debug_bytecode("------ undump summary-----\n");
     std::vector<RVM_Byte> read_data  = bc_load_binary_file(command_arg.input_file_name);
     RingUndumpContext     undump_ctx = {
+            .executer_entry   = nullptr,
             .package_executer = nullptr,
 
             .input_fd         = 0,
@@ -358,7 +363,16 @@ int cmd_handler_undump(Ring_Command_Arg command_arg) {
             .read_pos         = 0,
     };
     bc_undump_root(&undump_ctx);
-    printf("------ undump summary-----\n");
+    debug_bytecode("------ undump summary-----\n");
+
+    RingDumpContext dump_ctx = {
+        .package_executer = undump_ctx.package_executer,
+
+        .escape_strings   = true,
+        .contains_symbol  = true,
+    };
+
+    package_executer_dump(&dump_ctx);
 
     return 0;
 }

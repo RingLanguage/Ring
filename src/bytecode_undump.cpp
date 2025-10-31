@@ -63,6 +63,11 @@ int bc_undump_int(RingUndumpContext* ctx) {
     bc_undump_value(ctx, data);
     return data;
 }
+unsigned int bc_undump_uint(RingUndumpContext* ctx) {
+    unsigned int data;
+    bc_undump_value(ctx, data);
+    return data;
+}
 #define bc_check_int(ctx, int_value, err_msg)        \
     if (bc_undump_int(ctx) != int_value) {           \
         printf("check int failed, `%s`\n", err_msg); \
@@ -125,7 +130,7 @@ void bc_check_header(RingUndumpContext* ctx) {
         printf("check end failed\n");                \
     }
 
-#define PRINT_STAT(value, fmt) printf(#value ": " fmt "\n", value)
+#define PRINT_STAT(value, fmt) debug_bytecode(#value ": " fmt "\n", value)
 
 
 void bc_undump_constant(RingUndumpContext* ctx, RVM_Constant* constant) {
@@ -135,15 +140,15 @@ void bc_undump_constant(RingUndumpContext* ctx, RVM_Constant* constant) {
     switch (type) {
     case CONSTANTPOOL_TYPE_INT:
         constant->u.int_value = bc_undump_int(ctx);
-        printf("dumpConstantPool int:%d\n", constant->u.int_value);
+        debug_bytecode("bc_undump_constant int:%d\n", constant->u.int_value);
         break;
     case CONSTANTPOOL_TYPE_INT64:
         constant->u.int64_value = bc_undump_int64(ctx);
-        printf("dumpConstantPool int64:%lld\n", constant->u.int64_value);
+        debug_bytecode("bc_undump_constant int64:%lld\n", constant->u.int64_value);
         break;
     case CONSTANTPOOL_TYPE_DOUBLE:
         constant->u.double_value = bc_undump_double(ctx);
-        printf("dumpConstantPool double:%f\n", constant->u.double_value);
+        debug_bytecode("bc_undump_constant double:%f\n", constant->u.double_value);
         break;
     case CONSTANTPOOL_TYPE_STRING: {
         char*       str          = bc_undump_cstring(ctx);
@@ -151,7 +156,7 @@ void bc_undump_constant(RingUndumpContext* ctx, RVM_Constant* constant) {
         rvm_str->data            = str;
         rvm_str->length          = strlen(str);
         constant->u.string_value = rvm_str;
-        printf("dumpConstantPool string: %s\n", str);
+        debug_bytecode("bc_undump_constant string: %s\n", str);
         break;
     }
     default:
@@ -161,10 +166,22 @@ void bc_undump_constant(RingUndumpContext* ctx, RVM_Constant* constant) {
 }
 
 void bc_undump_function(RingUndumpContext* ctx, RVM_Function* function) {
-    printf("----------undump a function----------\n");
+    debug_bytecode("----------undump a function----------\n");
 
-    function->identifier = bc_undump_cstring(ctx);
-    function->type       = (RVMFunctionType)bc_undump_byte(ctx);
+
+    function->source_file                     = bc_undump_cstring(ctx);
+    function->start_line_number               = bc_undump_uint(ctx);
+    function->end_line_number                 = bc_undump_uint(ctx);
+
+    function->parameter_size                  = bc_undump_uint(ctx);
+    function->return_value_size               = bc_undump_uint(ctx);
+    function->local_variable_size             = bc_undump_uint(ctx);
+    function->free_value_size                 = bc_undump_uint(ctx);
+    function->estimate_runtime_stack_capacity = bc_undump_uint(ctx);
+
+
+    function->identifier                      = bc_undump_cstring(ctx);
+    function->type                            = (RVMFunctionType)bc_undump_byte(ctx);
     PRINT_STAT(function->identifier, "%s");
 
     if (function->type == RVM_FUNCTION_TYPE_DERIVE) {
@@ -188,7 +205,7 @@ void bc_undump_function(RingUndumpContext* ctx, RVM_Function* function) {
 }
 
 void bc_undump_package(RingUndumpContext* ctx, Package_Executer* package_executer) {
-    printf("----------undump a package----------\n");
+    debug_bytecode("----------undump a package----------\n");
     char*        package_name         = bc_undump_cstring(ctx);
     unsigned int constant_pool_size   = bc_undump_size(ctx);
     unsigned int global_variable_size = bc_undump_size(ctx);
@@ -216,6 +233,13 @@ void bc_undump_package(RingUndumpContext* ctx, Package_Executer* package_execute
     PRINT_STAT(exist_global_init_func, "%u");
     PRINT_STAT(global_init_func_index, "%u");
     PRINT_STAT(estimate_runtime_stack_capacity, "%u");
+
+    (void)class_size;
+    (void)exist_main_func;
+    (void)main_func_index;
+    (void)exist_global_init_func;
+    (void)global_init_func_index;
+    (void)estimate_runtime_stack_capacity;
 
 
     RVM_ConstantPool* constant_pool = package_executer->constant_pool;
@@ -258,19 +282,23 @@ void bc_undump_root(RingUndumpContext* ctx) {
     ExecuterEntry* executer_entry = executer_entry_create();
     executer_entry->package_executer_list.resize(package_count);
 
+    Package_Executer* main_package_executer = nullptr;
+
     for (int i = 0; i < package_count; i++) {
         Package_Executer* package_executer = package_executer_create(executer_entry, nullptr, 0);
 
         bc_undump_package(ctx, package_executer);
 
         if (str_eq(package_executer->package_name, "main")) {
+            main_package_executer                 = package_executer;
             executer_entry->main_package_executer = package_executer;
         }
 
         executer_entry->package_executer_list[i] = package_executer;
     }
 
-    ctx->executer_entry = executer_entry;
+    ctx->executer_entry   = executer_entry;
+    ctx->package_executer = main_package_executer;
 
     BC_CHECK_END(ctx);
 }

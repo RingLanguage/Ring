@@ -304,19 +304,19 @@ translation_unit_list
 translation_unit
     : package_definition
     {
-        debug_bison_info_with_green("[RULE::translation_unit:1]\t ");
+        debug_bison("[RULE::translation_unit:1]\t ");
     }
     | import_block
     {
-        debug_bison_info_with_green("[RULE::translation_unit:2]\t ");
+        debug_bison("[RULE::translation_unit:2]\t ");
     }
     | global_variable_definition_block
     {
-        debug_bison_info_with_green("[RULE::translation_unit:4]\t ");
+        debug_bison("[RULE::translation_unit:4]\t ");
     }
     | definition_or_statement
     {
-        debug_bison_info_with_green("[RULE::translation_unit:3]\t ");
+        debug_bison("[RULE::translation_unit:3]\t ");
     }
     ;
 
@@ -356,30 +356,30 @@ import_package_info
 global_variable_definition_block
     : TOKEN_GLOBAL TOKEN_LC { $<m_block>$ = start_new_block(); } global_variable_definition_list TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::global_variable_definition_block:2]\t ");
+        debug_bison("[RULE::global_variable_definition_block:2]\t ");
         finish_global_block($<m_block>3, $4);
     }
     | TOKEN_GLOBAL TOKEN_LC TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::global_variable_definition_block:1]\t ");
+        debug_bison("[RULE::global_variable_definition_block:1]\t ");
     }
     ;
 global_variable_definition_list
     : global_variable_definition
     {
-        debug_bison_info_with_green("[RULE::global_variable_definition_list:1]\t ");
+        debug_bison("[RULE::global_variable_definition_list:1]\t ");
         $$ = $1;
     }
     | global_variable_definition_list global_variable_definition
     {
-        debug_bison_info_with_green("[RULE::global_variable_definition_list:2]\t ");
+        debug_bison("[RULE::global_variable_definition_list:2]\t ");
         $$ = statement_list_add_item($1, $2);
     }
     ;
 global_variable_definition
     : multi_variable_definition_statement TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::global_variable_definition]\t ");
+        debug_bison("[RULE::global_variable_definition]\t ");
         $$ = $1;
     }
     ;
@@ -388,32 +388,32 @@ global_variable_definition
 definition_or_statement
     : function_definition
     {
-        debug_bison_info_with_green("[RULE::statement:function_definition]\t ");
+        debug_bison("[RULE::statement:function_definition]\t ");
         add_function_definition(nullptr, $1);
     }
     | attribute_list function_definition
     {
-        debug_bison_info_with_green("[RULE::statement:function_definition]\t ");
+        debug_bison("[RULE::statement:function_definition]\t ");
         add_function_definition($1, $2);
     }
     | class_definition
     {
-        debug_bison_info_with_green("[RULE::statement:class_definition]\t ");
+        debug_bison("[RULE::statement:class_definition]\t ");
     }
     | enum_declaration
     {
-        debug_bison_info_with_green("[RULE::statement:enum_declaration]\t ");
+        debug_bison("[RULE::statement:enum_declaration]\t ");
     }
     | type_alias_def TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::statement:type_definition]\t ");
+        debug_bison("[RULE::statement:type_definition]\t ");
     }
     ;
 
 class_definition
     : TOKEN_TYPEDEF IDENTIFIER TOKEN_ASSIGN TOKEN_CLASS {$<m_class_definition>$ = start_class_definition($2);} TOKEN_LC class_member_declaration_list TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::class_definition]\t ");
+        debug_bison("[RULE::class_definition]\t ");
         $<m_class_definition>$ = finish_class_definition($<m_class_definition>5, $7, $2);
         $<m_type_alias_def>$ = add_type_alias_class($2, $<m_class_definition>5);
     }
@@ -428,17 +428,17 @@ class_definition
 type_alias_def
     : TOKEN_TYPEDEF identifier TOKEN_ASSIGN TOKEN_FN TOKEN_LP simple_parameter_list_maybe_empty TOKEN_RP
     {
-        debug_bison_info_with_green("[RULE::type_definition]\t ");
+        debug_bison("[RULE::type_definition]\t ");
          $<m_type_alias_def>$ = add_type_alias_func($6, nullptr, $2);
     }
     | TOKEN_TYPEDEF identifier TOKEN_ASSIGN TOKEN_FN TOKEN_LP simple_parameter_list_maybe_empty TOKEN_RP TOKEN_ARROW TOKEN_LP return_list TOKEN_RP
     {
-        debug_bison_info_with_green("[RULE::type_definition]\t ");
+        debug_bison("[RULE::type_definition]\t ");
          $<m_type_alias_def>$ = add_type_alias_func($6, $10, $2);
     }
     | TOKEN_TYPEDEF identifier TOKEN_ASSIGN type_specifier
     {
-        debug_bison_info_with_green("[RULE::type_definition]\t ");
+        debug_bison("[RULE::type_definition]\t ");
         $<m_type_alias_def>$ = add_type_alias($2, $4);
     }
     ;
@@ -457,12 +457,12 @@ class_member_declaration_list
 class_member_declaration
     : field_member
     {
-        debug_bison_info_with_green("[RULE::class_member_declaration:field_member]\t ");
+        debug_bison("[RULE::class_member_declaration:field_member]\t ");
         $$ = create_class_member_field_declaration(ACCESS_PUBLIC, $1);
     }
     | method_member
     {
-        debug_bison_info_with_green("[RULE::class_member_declaration:method_member]\t ");
+        debug_bison("[RULE::class_member_declaration:method_member]\t ");
         $$ = create_class_member_method_declaration(ACCESS_PUBLIC, $1);
     }
     ;
@@ -470,7 +470,7 @@ class_member_declaration
 field_member
     : TOKEN_VAR type_specifier identifier_list TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::filed_member]\t ");
+        debug_bison("[RULE::filed_member]\t ");
         $$ = create_class_member_field($2, $3);
     }
     ;
@@ -478,22 +478,22 @@ field_member
 method_member
     : TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP block
     {
-        debug_bison_info_with_green("[RULE::method_member]\t ");
+        debug_bison("[RULE::method_member]\t ");
         $$ = create_class_member_method(FUNCTION_TYPE_UNKNOW, $2, $4, nullptr, $6);
     }
     | TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::method_member]\t ");
+        debug_bison("[RULE::method_member]\t ");
         $$ = create_class_member_method(FUNCTION_TYPE_UNKNOW, $2, $4, nullptr, nullptr);
     }
     | TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP TOKEN_ARROW TOKEN_LP return_list TOKEN_RP block
     {
-        debug_bison_info_with_green("[RULE::method_member]\t ");
+        debug_bison("[RULE::method_member]\t ");
         $$ = create_class_member_method(FUNCTION_TYPE_UNKNOW, $2, $4, $8, $10);
     }
     | TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP TOKEN_ARROW TOKEN_LP return_list TOKEN_RP TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::method_member]\t ");
+        debug_bison("[RULE::method_member]\t ");
         $$ = create_class_member_method(FUNCTION_TYPE_UNKNOW, $2, $4, $8, nullptr);
     }
     ;
@@ -554,7 +554,7 @@ maybe_empty_expression
     | expression
     | assign_expression
     {
-        debug_bison_info_with_green("[RULE:expression-assign_expression]\t ");
+        debug_bison("[RULE:expression-assign_expression]\t ");
         $$ = create_expression_assign($1);
     }
     ;
@@ -562,37 +562,37 @@ maybe_empty_expression
 statement_list
     : statement
     {
-        debug_bison_info_with_green("[RULE::statement:statement]\t ");
+        debug_bison("[RULE::statement:statement]\t ");
         $$ = $1;
     }
     | statement_list statement
     {
         // 这个地方不应该加在全局的 statment_list 中
         // 应该只放到函数的 statement_list 中
-        debug_bison_info_with_green("[RULE::statement:statement_list]\t ");
+        debug_bison("[RULE::statement:statement_list]\t ");
         $$ = statement_list_add_item($1, $2);
     }
     ;
 statement
     : maybe_empty_expression TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::statement:expression]\t ");
+        debug_bison("[RULE::statement:expression]\t ");
         $$ = create_statemen_from_expression($1);
     }
     | multi_variable_definition_statement TOKEN_SEMICOLON
     | if_statement
     {
-        debug_bison_info_with_green("[RULE::statement:if_statement]\t ");
+        debug_bison("[RULE::statement:if_statement]\t ");
         $$ = create_statement_from_if($1);
     }
     | for_statement
     {
-        debug_bison_info_with_green("[RULE::statement:for_statement]\t ");
+        debug_bison("[RULE::statement:for_statement]\t ");
         $$ = create_statement_from_for($1);
     }
     | dofor_statement TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::statement:dofor_statement]\t ");
+        debug_bison("[RULE::statement:dofor_statement]\t ");
         $$ = create_statement_from_dofor($1);
     }
     | break_statement TOKEN_SEMICOLON
@@ -605,22 +605,22 @@ statement
     }
     | return_statement
     {
-        debug_bison_info_with_green("[RULE::statement:return_statement]\t ");
+        debug_bison("[RULE::statement:return_statement]\t ");
         $$ = create_statement_from_return($1);
     }
     | tag_definition_statement
     {
-        debug_bison_info_with_green("[RULE::statement:jump_tag_definition_statement]\t ");
+        debug_bison("[RULE::statement:jump_tag_definition_statement]\t ");
         $$ = create_statement_from_tag_definition($1);
     }
     | jump_tag_statement
     {
-        debug_bison_info_with_green("[RULE::statement:jump_tag_statement]\t ");
+        debug_bison("[RULE::statement:jump_tag_statement]\t ");
         $$ = create_statement_from_jump_tag($1);
     }
     | defer_statement
     {
-        debug_bison_info_with_green("[RULE::statement:defer_statement]\t ");
+        debug_bison("[RULE::statement:defer_statement]\t ");
         $$ = create_statement_from_defer($1);
     }
     ;
@@ -682,12 +682,12 @@ dofor_statement
 break_statement
     : TOKEN_BREAK 
     {
-        debug_bison_info_with_green("[RULE::break_statement]\t ");
+        debug_bison("[RULE::break_statement]\t ");
         $$ = create_break_statement(nullptr);
     }
     | TOKEN_BREAK INT_LITERAL
     {
-        debug_bison_info_with_green("[RULE::break_statement]\t ");
+        debug_bison("[RULE::break_statement]\t ");
         $$ = create_break_statement($2);
     }
     ;
@@ -695,7 +695,7 @@ break_statement
 continue_statement
     : TOKEN_CONTINUE 
     {
-        debug_bison_info_with_green("[RULE::continue_statement]\t ");
+        debug_bison("[RULE::continue_statement]\t ");
         $$ = create_continue_statement();
     }
     ;
@@ -703,12 +703,12 @@ continue_statement
 return_statement
     : TOKEN_RETURN                 TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::return_statement]\t ");
+        debug_bison("[RULE::return_statement]\t ");
         $$ = create_return_statement(nullptr);
     }
     | TOKEN_RETURN expression_list TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::return_statement]\t ");
+        debug_bison("[RULE::return_statement]\t ");
         $$ = create_return_statement($2);
     }
     ;
@@ -717,12 +717,12 @@ return_statement
 multi_variable_definition_statement
     : TOKEN_VAR type_specifier identifier_list
     {
-        debug_bison_info_with_green("[RULE::multi_variable_definition_statement]\t ");
+        debug_bison("[RULE::multi_variable_definition_statement]\t ");
         $$ = create_multi_declaration_statement($2, $3, nullptr);
     }
     | TOKEN_VAR type_specifier identifier_list TOKEN_ASSIGN expression_list
     {
-        debug_bison_info_with_green("[RULE::multi_variable_definition_statement]\t ");
+        debug_bison("[RULE::multi_variable_definition_statement]\t ");
         $$ = create_multi_declaration_statement($2, $3, $5);
     }
     ;
@@ -730,29 +730,29 @@ multi_variable_definition_statement
 defer_statement
     : TOKEN_DEFER iife_expression
     {
-        debug_bison_info_with_green("[RULE::defer_statement]\t ");
+        debug_bison("[RULE::defer_statement]\t ");
         $$ = create_defer_statement($2);
     }
 
 function_definition
     : TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP block
     {
-        debug_bison_info_with_green("[RULE::function_definition]\t ");
+        debug_bison("[RULE::function_definition]\t ");
         $$ = create_function_definition(FUNCTION_TYPE_DERIVE, $2, $4, nullptr, $6);
     }
     | TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::function_definition]\t ");
+        debug_bison("[RULE::function_definition]\t ");
         $$ = create_function_definition(FUNCTION_TYPE_DERIVE, $2, $4, nullptr, nullptr);
     }
     | TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP TOKEN_ARROW TOKEN_LP return_list TOKEN_RP block
     {
-        debug_bison_info_with_green("[RULE::function_definition]\t ");
+        debug_bison("[RULE::function_definition]\t ");
         $$ = create_function_definition(FUNCTION_TYPE_DERIVE, $2, $4, $8, $10);
     }
     | TOKEN_FN identifier TOKEN_LP parameter_list_maybe_empty TOKEN_RP TOKEN_ARROW TOKEN_LP return_list TOKEN_RP TOKEN_SEMICOLON
     {
-        debug_bison_info_with_green("[RULE::function_definition]\t ");
+        debug_bison("[RULE::function_definition]\t ");
         $$ = create_function_definition(FUNCTION_TYPE_DERIVE, $2, $4, $8, nullptr);
     }
     ;
@@ -761,7 +761,7 @@ function_definition
 closure_definition
     : TOKEN_FN function_tuple
     {
-        debug_bison_info_with_green("[RULE::anonymous_function]\t ");
+        debug_bison("[RULE::anonymous_function]\t ");
         $$ = create_expression_anonymous_func((AnonymousFunc*)($2));
     }
     ;
@@ -770,12 +770,12 @@ closure_definition
 function_tuple
     : TOKEN_LP parameter_list_maybe_empty TOKEN_RP {$<m_location>$ = a_location();} block
     {
-        debug_bison_info_with_green("[RULE::function_tuple:1]\t ");
+        debug_bison("[RULE::function_tuple:1]\t ");
         $$ = create_function_tuple($<m_location>4, $2, nullptr, $5);
     }
     | TOKEN_LP parameter_list_maybe_empty TOKEN_RP TOKEN_ARROW TOKEN_LP return_list TOKEN_RP {$<m_location>$ = a_location();} block
     {
-        debug_bison_info_with_green("[RULE::function_tuple:2]\t ");
+        debug_bison("[RULE::function_tuple:2]\t ");
         $$ = create_function_tuple($<m_location>8, $2, $6, $9);
     }
     ;
@@ -788,34 +788,34 @@ parameter_list_maybe_empty
     }
     | parameter
     {
-        debug_bison_info_with_green("[RULE::parameter_list_maybe_empty]\t ");
+        debug_bison("[RULE::parameter_list_maybe_empty]\t ");
     }
     | parameter_list TOKEN_COMMA parameter
     {
-        debug_bison_info_with_green("[RULE::parameter_list_maybe_empty]\t ");
+        debug_bison("[RULE::parameter_list_maybe_empty]\t ");
         $$ = parameter_list_add_statement($1, $3);
     }
     ;
 parameter_list
     : parameter
     {
-        debug_bison_info_with_green("[RULE::parameter_list]\t ");
+        debug_bison("[RULE::parameter_list]\t ");
     }
     | parameter_list TOKEN_COMMA parameter
     {
-        debug_bison_info_with_green("[RULE::parameter_list]\t ");
+        debug_bison("[RULE::parameter_list]\t ");
         $$ = parameter_list_add_statement($1, $3);
     }
     ;
 parameter
     : type_specifier IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::parameter]\t ");
+        debug_bison("[RULE::parameter]\t ");
         $$ = create_parameter($1, $2, false);
     }
     | type_specifier TOKEN_3DOT IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::parameter:TOKEN_3DOT]\t ");
+        debug_bison("[RULE::parameter:TOKEN_3DOT]\t ");
         $$ = create_parameter($1, $3, true);
     }
     ;
@@ -827,11 +827,11 @@ simple_parameter_list_maybe_empty
     }
     | simple_parameter
     {
-        debug_bison_info_with_green("[RULE::parameter_list_maybe_empty]\t ");
+        debug_bison("[RULE::parameter_list_maybe_empty]\t ");
     }
     | simple_parameter_list TOKEN_COMMA simple_parameter
     {
-        debug_bison_info_with_green("[RULE::parameter_list_maybe_empty]\t ");
+        debug_bison("[RULE::parameter_list_maybe_empty]\t ");
         $$ = parameter_list_add_statement($1, $3);
     }
     ;
@@ -871,12 +871,12 @@ return_list
 block
     : TOKEN_LC { $<m_block>$ = start_new_block(); } statement_list TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::block: statment_list]\t ");
+        debug_bison("[RULE::block: statment_list]\t ");
         $<m_block>$ = finish_block($<m_block>2, $3);
     }
     | TOKEN_LC TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::block: empty statement_list]\t ");
+        debug_bison("[RULE::block: empty statement_list]\t ");
         $$ = finish_block(start_new_block(), nullptr);
     }
     ;
@@ -885,21 +885,21 @@ block
 type_specifier
     : basic_type_specifier
     {
-        debug_bison_info_with_green("[RULE::type_specifier:basic_type_specifier]");
+        debug_bison("[RULE::type_specifier:basic_type_specifier]");
         $$ = create_type_specifier($1);
     }
     | class_type_specifier
     {
-        debug_bison_info_with_green("[RULE::type_specifier:class_type_specifier]");
+        debug_bison("[RULE::type_specifier:class_type_specifier]");
     }
     | basic_type_specifier dimension_expression
     {
-        debug_bison_info_with_green("[RULE::type_specifier:array_type_specifier]");
+        debug_bison("[RULE::type_specifier:array_type_specifier]");
         $$ = create_type_specifier_array(create_type_specifier($1), $2);
     }
     | class_type_specifier dimension_expression
     {
-        debug_bison_info_with_green("[RULE::type_specifier:array-class]");
+        debug_bison("[RULE::type_specifier:array-class]");
         $$ = create_type_specifier_array($1, $2);
     }
     ;
@@ -907,32 +907,32 @@ type_specifier
 basic_type_specifier
     : TOKEN_BOOL
     {
-        debug_bison_info_with_green("[RULE::basic_type_specifier]\t variable_type(TOKEN_BOOL) ");
+        debug_bison("[RULE::basic_type_specifier]\t variable_type(TOKEN_BOOL) ");
         $$ = RING_BASIC_TYPE_BOOL;
     }
     | TOKEN_INT
     {
-        debug_bison_info_with_green("[RULE::basic_type_specifier]\t variable_type(TOKEN_INT) ");
+        debug_bison("[RULE::basic_type_specifier]\t variable_type(TOKEN_INT) ");
         $$ = RING_BASIC_TYPE_INT;
     }
     | TOKEN_INT64
     {
-        debug_bison_info_with_green("[RULE::basic_type_specifier]\t variable_type(TOKEN_INT64) ");
+        debug_bison("[RULE::basic_type_specifier]\t variable_type(TOKEN_INT64) ");
         $$ = RING_BASIC_TYPE_INT64;
     }
     | TOKEN_DOUBLE
     {
-        debug_bison_info_with_green("[RULE::basic_type_specifier]\t variable_type(TOKEN_DOUBLE) ");
+        debug_bison("[RULE::basic_type_specifier]\t variable_type(TOKEN_DOUBLE) ");
         $$ = RING_BASIC_TYPE_DOUBLE;
     }
     | TOKEN_STRING
     {
-        debug_bison_info_with_green("[RULE::basic_type_specifier]\t variable_type(TOKEN_STRING) ");
+        debug_bison("[RULE::basic_type_specifier]\t variable_type(TOKEN_STRING) ");
         $$ = RING_BASIC_TYPE_STRING;
     }
     | TOKEN_ANY
     {
-        debug_bison_info_with_green("[RULE::basic_type_specifier]\t variable_type(TOKEN_ANY) ");
+        debug_bison("[RULE::basic_type_specifier]\t variable_type(TOKEN_ANY) ");
         $$ = RING_BASIC_TYPE_ANY;
     }
     ;
@@ -941,7 +941,7 @@ basic_type_specifier
 class_type_specifier
     : IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::class_type_specifier]\t variable_type(TOKEN_ANY) ");
+        debug_bison("[RULE::class_type_specifier]\t variable_type(TOKEN_ANY) ");
         $$ = create_type_specifier_alias(nullptr, $1);
     }
     | IDENTIFIER TOKEN_2COLON IDENTIFIER
@@ -955,7 +955,7 @@ class_field_init_element_list
     : class_field_init_element
     | class_field_init_element_list TOKEN_COMMA class_field_init_element
     {
-        debug_bison_info_with_green("[RULE::class_field_init_element_list]\t ");
+        debug_bison("[RULE::class_field_init_element_list]\t ");
         $$ = field_init_list_add_item($1, $3);
     }
     ;
@@ -963,7 +963,7 @@ class_field_init_element_list
 class_field_init_element
     : IDENTIFIER TOKEN_COLON expression
     {
-        debug_bison_info_with_green("[RULE::class_field_init_element]\t ");
+        debug_bison("[RULE::class_field_init_element]\t ");
         $$ = create_field_init_expression($1, $3);
     }
     ;
@@ -982,7 +982,7 @@ expression_list
     : expression
     | expression_list TOKEN_COMMA expression
     {
-        debug_bison_info_with_green("[RULE::expression_list]\t ");
+        debug_bison("[RULE::expression_list]\t ");
         $$ = expression_list_add_item($1, $3);
     }
     ;
@@ -993,7 +993,7 @@ expression
 ternary_expression
     : logical_expression_or TOKEN_QUESTION_MARK expression_arithmetic_operation_additive TOKEN_COLON expression_arithmetic_operation_additive
     {
-        debug_bison_info_with_green("[RULE::expression:condition ternary expression]\t ");
+        debug_bison("[RULE::expression:condition ternary expression]\t ");
         $$ = create_expression_ternary($1, $3, $5);
     }
     ;
@@ -1001,17 +1001,17 @@ ternary_expression
 launch_expression
     : TOKEN_LAUNCH function_call_expression
     {
-        debug_bison_info_with_green("[RULE::launch_expression:function_call_expression]\t ");
+        debug_bison("[RULE::launch_expression:function_call_expression]\t ");
         $$ = create_expression_launch(LAUNCH_EXPRESSION_TYPE_FUNCTION_CALL, $2, nullptr, nullptr);
     }
     | TOKEN_LAUNCH member_call_expression
     {
-        debug_bison_info_with_green("[RULE::launch_expression:member_call_expression]\t ");
+        debug_bison("[RULE::launch_expression:member_call_expression]\t ");
         $$ = create_expression_launch(LAUNCH_EXPRESSION_TYPE_MEMBER_CALL, nullptr, $2, nullptr);
     }
     | TOKEN_LAUNCH iife_expression
     {
-        debug_bison_info_with_green("[RULE::launch_expression:iife_expression]\t ");
+        debug_bison("[RULE::launch_expression:iife_expression]\t ");
         $$ = create_expression_launch(LAUNCH_EXPRESSION_TYPE_IIFE, nullptr, nullptr, $2);
     }
     ;
@@ -1020,22 +1020,22 @@ launch_expression
 left_value_expression_list
     : left_value_expression
     {
-        debug_bison_info_with_green("[RULE::left_value_expression_list]\t ");
+        debug_bison("[RULE::left_value_expression_list]\t ");
     }
     | left_value_expression_list TOKEN_COMMA left_value_expression
     {
-        debug_bison_info_with_green("[RULE::left_value_expression_list]\t ");
+        debug_bison("[RULE::left_value_expression_list]\t ");
         $$ = expression_list_add_item($1, $3);
     }
     ;
 left_value_expression
     : primary_not_new_array
     {
-        debug_bison_info_with_green("[RULE::left_value_expression:primary_not_new_array]\t ");
+        debug_bison("[RULE::left_value_expression:primary_not_new_array]\t ");
     }
     | member_expression
     {
-        debug_bison_info_with_green("[RULE::left_value_expression:member_expression]\t ");
+        debug_bison("[RULE::left_value_expression:member_expression]\t ");
     }
     ;
 
@@ -1043,34 +1043,34 @@ left_value_expression
 right_value_expression_list
     : right_value_expression
     {
-        debug_bison_info_with_green("[RULE::right_value_expression_list]\t ");
+        debug_bison("[RULE::right_value_expression_list]\t ");
     }
     | right_value_expression_list TOKEN_COMMA right_value_expression
     {
-        debug_bison_info_with_green("[RULE::right_value_expression_list]\t ");
+        debug_bison("[RULE::right_value_expression_list]\t ");
         $$ = expression_list_add_item($1, $3);
     }
     ;
 right_value_expression
     : derive_value_literal_expression
     {
-        debug_bison_info_with_green("[RULE::right_value_expression:derive_value_literal_expression]\t ");
+        debug_bison("[RULE::right_value_expression:derive_value_literal_expression]\t ");
     }
     | logical_expression_or
     {
-        debug_bison_info_with_green("[RULE::right_value_expression:logical_expression_or]\t ");
+        debug_bison("[RULE::right_value_expression:logical_expression_or]\t ");
     }
     | ternary_expression
     {
-        debug_bison_info_with_green("[RULE::right_value_expression:ternary_expression]\t ");
+        debug_bison("[RULE::right_value_expression:ternary_expression]\t ");
     }
     | launch_expression
     {
-        debug_bison_info_with_green("[RULE::right_value_expression:launch_expression]\t ");
+        debug_bison("[RULE::right_value_expression:launch_expression]\t ");
     }
     | closure_definition
     {
-        debug_bison_info_with_green("[RULE::right_value_expression:closure_definition]\t ");
+        debug_bison("[RULE::right_value_expression:closure_definition]\t ");
     }
     ;
 
@@ -1078,11 +1078,11 @@ right_value_expression
 logical_expression_or
     : logical_expression_and
     {
-        debug_bison_info_with_green("[RULE::logical_expression_or:1]\t ");
+        debug_bison("[RULE::logical_expression_or:1]\t ");
     }
     | logical_expression_or TOKEN_OR logical_expression_and
     {
-        debug_bison_info_with_green("[RULE::logical_expression_or:2]\t ");
+        debug_bison("[RULE::logical_expression_or:2]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_LOGICAL_OR, $1, $3);
     }
     ;
@@ -1090,11 +1090,11 @@ logical_expression_or
 logical_expression_and
     : equality_expression
     {
-        debug_bison_info_with_green("[RULE::logical_expression_and]\t ");
+        debug_bison("[RULE::logical_expression_and]\t ");
     }
     | logical_expression_and TOKEN_AND equality_expression
     {
-        debug_bison_info_with_green("[RULE::logical_expression_and]\t ");
+        debug_bison("[RULE::logical_expression_and]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_LOGICAL_AND, $1, $3);
     }
     ;
@@ -1103,12 +1103,12 @@ equality_expression
         : relational_expression
         | equality_expression TOKEN_EQ relational_expression
         {
-            debug_bison_info_with_green("[RULE::equality_expression]\t ");
+            debug_bison("[RULE::equality_expression]\t ");
             $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_EQ, $1, $3);
         }
         | equality_expression TOKEN_NE relational_expression
         {
-            debug_bison_info_with_green("[RULE::equality_expression]\t ");
+            debug_bison("[RULE::equality_expression]\t ");
             $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_NE, $1, $3);
         }
         ;
@@ -1116,26 +1116,26 @@ equality_expression
 relational_expression
     : bitwise_expression_or
     {
-        debug_bison_info_with_green("[RULE::relational_expression]\t ");
+        debug_bison("[RULE::relational_expression]\t ");
     }
     | relational_expression TOKEN_GT bitwise_expression_or
     {
-        debug_bison_info_with_green("[RULE::relational_expression]\t ");
+        debug_bison("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_GT, $1, $3);
     }
     | relational_expression TOKEN_GE bitwise_expression_or
     {
-        debug_bison_info_with_green("[RULE::relational_expression]\t ");
+        debug_bison("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_GE, $1, $3);
     }
     | relational_expression TOKEN_LT bitwise_expression_or
     {
-        debug_bison_info_with_green("[RULE::relational_expression]\t ");
+        debug_bison("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_LT, $1, $3);
     }
     | relational_expression TOKEN_LE bitwise_expression_or
     {
-        debug_bison_info_with_green("[RULE::relational_expression]\t ");
+        debug_bison("[RULE::relational_expression]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_RELATIONAL_LE, $1, $3);
     }
     ;
@@ -1146,7 +1146,7 @@ bitwise_expression_or
     }
     | bitwise_expression_or TOKEN_BIT_XOR bitwise_expression_xor
     {
-        debug_bison_info_with_green("[RULE::bitwise_expression_or]\t ");
+        debug_bison("[RULE::bitwise_expression_or]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_XOR, $1, $3);
     }
     ;
@@ -1157,7 +1157,7 @@ bitwise_expression_xor
     }
     | bitwise_expression_xor TOKEN_BIT_OR bitwise_expression_and
     {
-        debug_bison_info_with_green("[RULE::bitwise_expression_or]\t ");
+        debug_bison("[RULE::bitwise_expression_or]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_OR, $1, $3);
     }
     ;
@@ -1168,7 +1168,7 @@ bitwise_expression_and
     }
     | bitwise_expression_and TOKEN_BIT_AND bitwise_expression_shift
     {
-        debug_bison_info_with_green("[RULE::bitwise_expression_and]\t ");
+        debug_bison("[RULE::bitwise_expression_and]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_AND, $1, $3);
     }
     ;
@@ -1179,12 +1179,12 @@ bitwise_expression_shift
     }
     | bitwise_expression_shift TOKEN_BIT_LSHIFT expression_arithmetic_operation_additive
     {
-        debug_bison_info_with_green("[RULE::bitwise_expression_shift]\t ");
+        debug_bison("[RULE::bitwise_expression_shift]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_LSH, $1, $3);
     }
     | bitwise_expression_shift TOKEN_BIT_RSHIFT expression_arithmetic_operation_additive
     {
-        debug_bison_info_with_green("[RULE::bitwise_expression_shift]\t ");
+        debug_bison("[RULE::bitwise_expression_shift]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_BITWISE_RSH, $1, $3);
     }
     ;
@@ -1192,16 +1192,16 @@ bitwise_expression_shift
 expression_arithmetic_operation_additive
     : expression_arithmetic_operation_multiplicative 
     {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_additive]\t ");
+        debug_bison("[RULE::expression_arithmetic_operation_additive]\t ");
     }
     | expression_arithmetic_operation_additive TOKEN_ADD expression_arithmetic_operation_multiplicative
     {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_additive]\t ");
+        debug_bison("[RULE::expression_arithmetic_operation_additive]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_ARITHMETIC_ADD, $1, $3);
     }
     | expression_arithmetic_operation_additive TOKEN_SUB expression_arithmetic_operation_multiplicative
     {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_additive]\t ");
+        debug_bison("[RULE::expression_arithmetic_operation_additive]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_ARITHMETIC_SUB, $1, $3);
     }
     ;
@@ -1209,21 +1209,21 @@ expression_arithmetic_operation_additive
 expression_arithmetic_operation_multiplicative
     : unitary_expression
     {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_multiplicative]\t ");
+        debug_bison("[RULE::expression_arithmetic_operation_multiplicative]\t ");
     }
     | expression_arithmetic_operation_multiplicative TOKEN_MUL unitary_expression
     {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_multiplicative]\t ");
+        debug_bison("[RULE::expression_arithmetic_operation_multiplicative]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_ARITHMETIC_MUL, $1, $3);
     }
     | expression_arithmetic_operation_multiplicative TOKEN_DIV unitary_expression
     {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_multiplicative]\t ");
+        debug_bison("[RULE::expression_arithmetic_operation_multiplicative]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_ARITHMETIC_DIV, $1, $3);
     }
     | expression_arithmetic_operation_multiplicative TOKEN_MOD unitary_expression
     {
-        debug_bison_info_with_green("[RULE::expression_arithmetic_operation_multiplicative]\t ");
+        debug_bison("[RULE::expression_arithmetic_operation_multiplicative]\t ");
         $$ = create_expression_binary(EXPRESSION_TYPE_ARITHMETIC_MOD, $1, $3);
     }
     ;
@@ -1231,17 +1231,17 @@ expression_arithmetic_operation_multiplicative
 unitary_expression
     : TOKEN_NOT unitary_expression
     {
-        debug_bison_info_with_green("[RULE::unitary_expression:TOKEN_NOT]\t ");
+        debug_bison("[RULE::unitary_expression:TOKEN_NOT]\t ");
         $$ = create_expression_unitary(EXPRESSION_TYPE_LOGICAL_UNITARY_NOT, $2);
     }
     | TOKEN_SUB unitary_expression
     {
-        debug_bison_info_with_green("[RULE::unitary_expression:TOKEN_SUB]\t ");
+        debug_bison("[RULE::unitary_expression:TOKEN_SUB]\t ");
         $$ = create_expression_unitary(EXPRESSION_TYPE_ARITHMETIC_UNITARY_MINUS, $2);
     }
     | TOKEN_BIT_NOT unitary_expression
     {
-        debug_bison_info_with_green("[RULE::unitary_expression:TOKEN_BIT_NOT]\t ");
+        debug_bison("[RULE::unitary_expression:TOKEN_BIT_NOT]\t ");
         $$ = create_expression_unitary(EXPRESSION_TYPE_BITWISE_UNITARY_NOT, $2);
     }
     | postfix_expression
@@ -1283,7 +1283,7 @@ primary_expression
     | primary_new_creation
     | TOKEN_LP expression TOKEN_RP
     {
-        debug_bison_info_with_green("[RULE::primary_expression:parentheses operator]\t ");
+        debug_bison("[RULE::primary_expression:parentheses operator]\t ");
         $$ = $2;
     }
     | TOKEN_ATTRIBUTE type_specifier TOKEN_LP expression TOKEN_RP
@@ -1306,7 +1306,7 @@ primary_new_creation
 dimension_expression
     : TOKEN_LB sub_dimension_expression_list TOKEN_RB
     {
-        debug_bison_info_with_green("[RULE::dimension_expression]");
+        debug_bison("[RULE::dimension_expression]");
         $$ = create_dimension_expression($2);
     }
     | TOKEN_LB TOKEN_EXCLAM_MARK INT_LITERAL TOKEN_RB
@@ -1320,7 +1320,7 @@ sub_dimension_expression_list
     : sub_dimension_expression
     | sub_dimension_expression_list TOKEN_COMMA sub_dimension_expression
     {
-        debug_bison_info_with_green("[RULE::sub_dimension_expression_list]");
+        debug_bison("[RULE::sub_dimension_expression_list]");
         $$ = sub_dimension_expression_list_add_item($1, $3);
     }
     ;
@@ -1328,19 +1328,19 @@ sub_dimension_expression_list
 sub_dimension_expression
     : expression_arithmetic_operation_additive
     {
-        debug_bison_info_with_green("[RULE::sub_dimension_expression:1]");
+        debug_bison("[RULE::sub_dimension_expression:1]");
         $$ = create_sub_dimension_expression($1);
     }
     | // empty
     {
-        debug_bison_info_with_green("[RULE::sub_dimension_expression:2]");
+        debug_bison("[RULE::sub_dimension_expression:2]");
         $$ = create_sub_dimension_expression(nullptr);
     }
 
 slice_literal_expression
     : slice_expression
     {
-        debug_bison_info_with_green("[RULE::slice_literal_expression:slice_expression]\t ");
+        debug_bison("[RULE::slice_literal_expression:slice_expression]\t ");
         $$ = create_expression_from_slice_expression($1);
     }
     ;
@@ -1354,22 +1354,22 @@ slice_expression
 sub_slice_expression
     : expression_arithmetic_operation_additive TOKEN_COLON expression_arithmetic_operation_additive
     {
-        debug_bison_info_with_green("[RULE::slice_expression:1] low:high");
+        debug_bison("[RULE::slice_expression:1] low:high");
         $$ = create_sub_slice_expression($1, $3);
     }
     | TOKEN_COLON expression_arithmetic_operation_additive
     {
-        debug_bison_info_with_green("[RULE::slice_expression:3] :high");
+        debug_bison("[RULE::slice_expression:3] :high");
         $$ = create_sub_slice_expression(nullptr, $2);
     }
     | expression_arithmetic_operation_additive TOKEN_COLON
     {
-        debug_bison_info_with_green("[RULE::slice_expression:4] low:");
+        debug_bison("[RULE::slice_expression:4] low:");
         $$ = create_sub_slice_expression($1, nullptr);
     }
     | TOKEN_COLON
     {
-        debug_bison_info_with_green("[RULE::slice_expression:6] :");
+        debug_bison("[RULE::slice_expression:6] :");
         $$ = create_sub_slice_expression(nullptr, nullptr);
     }
     ;
@@ -1377,7 +1377,7 @@ sub_slice_expression
 primary_not_new_array
     : IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::literal_term:identifier]\t ");
+        debug_bison("[RULE::literal_term:identifier]\t ");
         $$ = create_expression_identifier($1);
     }
     | IDENTIFIER dimension_expression
@@ -1386,7 +1386,7 @@ primary_not_new_array
     }
     | function_call_expression 
     {
-        debug_bison_info_with_green("[RULE::literal_term:function_call_expression]\t ");
+        debug_bison("[RULE::literal_term:function_call_expression]\t ");
         $$ = create_expression_from_function_call($1);
     }
     | IDENTIFIER TOKEN_2COLON primary_not_new_array
@@ -1402,7 +1402,7 @@ primary_not_new_array
 primary_not_call_expression
     : IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::literal_term:identifier]\t ");
+        debug_bison("[RULE::literal_term:identifier]\t ");
         $$ = create_expression_identifier($1);
     }
     | IDENTIFIER dimension_expression
@@ -1415,7 +1415,7 @@ primary_not_call_expression
     }
     | slice_literal_expression 
     {
-        debug_bison_info_with_green("[RULE::primary_new_creation:slice_literal_expression]\t ");
+        debug_bison("[RULE::primary_new_creation:slice_literal_expression]\t ");
     }
     ;
 
@@ -1456,32 +1456,32 @@ member_call_expression
 basic_value_literal_expression
     : INT_LITERAL
     {
-        debug_bison_info_with_green("[RULE::literal_term:INT_LITERAL]\t ");
+        debug_bison("[RULE::literal_term:INT_LITERAL]\t ");
         $$ = create_expression_literal(EXPRESSION_TYPE_LITERAL_INT, $1);
     }
     | INT64_LITERAL
     {
-        debug_bison_info_with_green("[RULE::literal_term:INT64_LITERAL]\t ");
+        debug_bison("[RULE::literal_term:INT64_LITERAL]\t ");
         $$ = create_expression_literal(EXPRESSION_TYPE_LITERAL_INT64, $1);
     }
     | DOUBLE_LITERAL
     {
-        debug_bison_info_with_green("[RULE::literal_term:DOUBLE_LITERAL]\t ");
+        debug_bison("[RULE::literal_term:DOUBLE_LITERAL]\t ");
         $$ = create_expression_literal(EXPRESSION_TYPE_LITERAL_DOUBLE, $1);
     }
     | STRING_LITERAL
     {
-        debug_bison_info_with_green("[RULE::literal_term:STRING_LITERAL]\t ");
+        debug_bison("[RULE::literal_term:STRING_LITERAL]\t ");
         $$ = create_expression_literal(EXPRESSION_TYPE_LITERAL_STRING, $1);
     }
     | TOKEN_TRUE
     {
-        debug_bison_info_with_green("[RULE::literal_term:TOKEN_TRUE]\t ");
+        debug_bison("[RULE::literal_term:TOKEN_TRUE]\t ");
         $$ = create_expression_bool_literal(EXPRESSION_TYPE_LITERAL_BOOL, true);
     }
     | TOKEN_FALSE
     {
-        debug_bison_info_with_green("[RULE::literal_term:TOKEN_FALSE]\t ");
+        debug_bison("[RULE::literal_term:TOKEN_FALSE]\t ");
         $$ = create_expression_bool_literal(EXPRESSION_TYPE_LITERAL_BOOL, false);
     }
     ;
@@ -1489,12 +1489,12 @@ basic_value_literal_expression
 derive_value_literal_expression
     : array_literal_expression
     {
-        debug_bison_info_with_green("[RULE::derive_value_literal_expression:array_literal_expression]\t ");
+        debug_bison("[RULE::derive_value_literal_expression:array_literal_expression]\t ");
         $$ = create_expression_from_array_literal($1);
     }
     | class_object_literal_expression
     {
-        debug_bison_info_with_green("[RULE::derive_value_literal_expression:class_object_literal_expression]\t ");
+        debug_bison("[RULE::derive_value_literal_expression:class_object_literal_expression]\t ");
         $$ = create_expression_from_class_object_literal($1);
     }
     ;
@@ -1502,12 +1502,12 @@ derive_value_literal_expression
 function_call_expression
     : primary_not_call_expression TOKEN_LP argument_list TOKEN_RP
     {
-        debug_bison_info_with_green("[RULE::function_call_expression]\t ");
+        debug_bison("[RULE::function_call_expression]\t ");
         $$ = create_function_call_expression($1, $3);
     }
     | primary_not_call_expression TOKEN_LP               TOKEN_RP
     {
-        debug_bison_info_with_green("[RULE::function_call_expression]\t ");
+        debug_bison("[RULE::function_call_expression]\t ");
         $$ = create_function_call_expression($1, nullptr);
     }
     ;
@@ -1533,22 +1533,22 @@ iife_expression
 array_literal_expression
     : basic_type_specifier dimension_expression TOKEN_LC    expression_list_maybe_empty    TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::array_literal_expression:basic]\t ");
+        debug_bison("[RULE::array_literal_expression:basic]\t ");
         $$ = create_array_literal_expression(create_type_specifier($1), $2, $4);
     }
     | basic_type_specifier dimension_expression TOKEN_LC    expression_list TOKEN_COMMA    TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::array_literal_expression:basic]\t ");
+        debug_bison("[RULE::array_literal_expression:basic]\t ");
         $$ = create_array_literal_expression(create_type_specifier($1), $2, $4);
     }
     | class_type_specifier dimension_expression TOKEN_LC    expression_list_maybe_empty    TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::array_literal_expression:class]\t ");
+        debug_bison("[RULE::array_literal_expression:class]\t ");
         $$ = create_array_literal_expression($1, $2, $4);
     }
     | class_type_specifier dimension_expression TOKEN_LC    expression_list TOKEN_COMMA    TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::array_literal_expression:class]\t ");
+        debug_bison("[RULE::array_literal_expression:class]\t ");
         $$ = create_array_literal_expression($1, $2, $4);
     }
     ;
@@ -1556,17 +1556,17 @@ array_literal_expression
 class_object_literal_expression
     : class_type_specifier TOKEN_LC class_field_init_element_list             TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::class_object_literal_expression]\t ");
+        debug_bison("[RULE::class_object_literal_expression]\t ");
         $$ = create_class_object_literal_expression($1, $3);
     }
     | class_type_specifier TOKEN_LC                                           TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::class_object_literal_expression]\t ");
+        debug_bison("[RULE::class_object_literal_expression]\t ");
         $$ = create_class_object_literal_expression($1, nullptr);
     }
     | class_type_specifier TOKEN_LC class_field_init_element_list TOKEN_COMMA TOKEN_RC
     {
-        debug_bison_info_with_green("[RULE::class_object_literal_expression]\t ");
+        debug_bison("[RULE::class_object_literal_expression]\t ");
         $$ = create_class_object_literal_expression($1, $3);
     }
     ;
@@ -1574,32 +1574,32 @@ class_object_literal_expression
 assign_expression
     : left_value_expression_list TOKEN_ASSIGN right_value_expression_list
     {
-        debug_bison_info_with_green("[RULE::assign_expression]\t ");
+        debug_bison("[RULE::assign_expression]\t ");
         $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_ASSIGN, $1, $3);
     }
     | left_value_expression_list TOKEN_ADD_ASSIGN right_value_expression
     {
-        debug_bison_info_with_green("[RULE::assign_expression]\t ");
+        debug_bison("[RULE::assign_expression]\t ");
         $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_ADD_ASSIGN, $1, $3);
     }
     | left_value_expression_list TOKEN_SUB_ASSIGN right_value_expression
     {
-        debug_bison_info_with_green("[RULE::assign_expression]\t ");
+        debug_bison("[RULE::assign_expression]\t ");
         $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_SUB_ASSIGN, $1, $3);
     }
     | left_value_expression_list TOKEN_MUL_ASSIGN right_value_expression
     {
-        debug_bison_info_with_green("[RULE::assign_expression]\t ");
+        debug_bison("[RULE::assign_expression]\t ");
         $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_MUL_ASSIGN, $1, $3);
     }
     | left_value_expression_list TOKEN_DIV_ASSIGN right_value_expression
     {
-        debug_bison_info_with_green("[RULE::assign_expression]\t ");
+        debug_bison("[RULE::assign_expression]\t ");
         $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_DIV_ASSIGN, $1, $3);
     }
     | left_value_expression_list TOKEN_MOD_ASSIGN right_value_expression
     {
-        debug_bison_info_with_green("[RULE::assign_expression]\t ");
+        debug_bison("[RULE::assign_expression]\t ");
         $$ = create_assign_expression(ASSIGN_EXPRESSION_TYPE_MOD_ASSIGN, $1, $3);
     }
     ;
@@ -1607,12 +1607,12 @@ assign_expression
 identifier_list
     : IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::identifier_list]\t ");
+        debug_bison("[RULE::identifier_list]\t ");
         $$ = create_identifier(IDENTIFIER_TYPE_VARIABLE, $1);
     }
     | identifier_list TOKEN_COMMA IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::identifier_list]\t ");
+        debug_bison("[RULE::identifier_list]\t ");
         $$ = identifier_list_add_item($1, create_identifier(IDENTIFIER_TYPE_VARIABLE, $3));
     }
     ;
@@ -1620,7 +1620,7 @@ identifier_list
 identifier
     : IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::identifier]\t identifier(%s)", $1);
+        debug_bison("[RULE::identifier]\t identifier(%s)", $1);
         $$ = create_identifier(IDENTIFIER_TYPE_UNKNOW, $1);
     }
     ;
@@ -1638,7 +1638,7 @@ argument_list
 argument
     : right_value_expression
     {
-        debug_bison_info_with_green("[RULE::argument_list:expression]\t ");
+        debug_bison("[RULE::argument_list:expression]\t ");
         $$ = create_argument_list_from_expression($1);
     }
     ;
@@ -1646,7 +1646,7 @@ argument
 tag_definition_statement
     : TOKEN_NUM_SIGN IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::tag_definition_statement]\t ");
+        debug_bison("[RULE::tag_definition_statement]\t ");
         $$ = create_tag_definition_statement($2);
     }
     ;
@@ -1654,7 +1654,7 @@ tag_definition_statement
 jump_tag_statement
     : TOKEN_JUMP TOKEN_NUM_SIGN IDENTIFIER
     {
-        debug_bison_info_with_green("[RULE::jump_tag_statement]\t ");
+        debug_bison("[RULE::jump_tag_statement]\t ");
         $$ = create_jump_tag_statement($3);
     }
     ;

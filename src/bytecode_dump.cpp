@@ -25,6 +25,9 @@ void bc_dump_byte(RingDumpContext* ctx, RVM_Byte data) {
 void bc_dump_int(RingDumpContext* ctx, int data) {
     bc_dump_value(ctx, data);
 }
+void bc_dump_uint(RingDumpContext* ctx, unsigned int data) {
+    bc_dump_value(ctx, data);
+}
 void bc_dump_int64(RingDumpContext* ctx, long long data) {
     bc_dump_value(ctx, data);
 }
@@ -38,6 +41,10 @@ void bc_dump_double(RingDumpContext* ctx, double data) {
 
 #define bc_dump_cstring(ctx, c_str) \
     bc_dump_string(ctx, c_str, strlen(c_str));
+
+#define bc_dump_cppstring(ctx, str) \
+    bc_dump_int64(ctx, str.size()); \
+    bc_dump_block(ctx, (RVM_Byte*)str.data(), str.size());
 
 
 /*
@@ -99,9 +106,21 @@ void bc_dump_constant(RingDumpContext* ctx, RVM_Constant* constant) {
 }
 
 void bc_dump_function(RingDumpContext* ctx, RVM_Function* function) {
-    printf("----------dump a function----------\n");
+    debug_bytecode("----------dump a function----------\n");
 
-    printf("function_name: %s\n", function->identifier);
+    debug_bytecode("function_name: %s\n", function->identifier);
+
+
+    bc_dump_cppstring(ctx, function->source_file);
+    bc_dump_uint(ctx, function->start_line_number);
+    bc_dump_uint(ctx, function->end_line_number);
+
+    bc_dump_uint(ctx, function->parameter_size);
+    bc_dump_uint(ctx, function->return_value_size);
+    bc_dump_uint(ctx, function->local_variable_size);
+    bc_dump_uint(ctx, function->free_value_size);
+    bc_dump_uint(ctx, function->estimate_runtime_stack_capacity);
+
     bc_dump_cstring(ctx, function->identifier);
     bc_dump_byte(ctx, function->type);
 
@@ -112,7 +131,7 @@ void bc_dump_function(RingDumpContext* ctx, RVM_Function* function) {
         code_list              = function->u.derive_func->code_list;
         code_size              = function->u.derive_func->code_size;
 
-        printf("code_size: %u\n", code_size);
+        debug_bytecode("code_size: %u\n", code_size);
 
         bc_dump_size(ctx, code_size);
         bc_dump_vector(ctx, code_list, code_size);
@@ -121,18 +140,18 @@ void bc_dump_function(RingDumpContext* ctx, RVM_Function* function) {
 }
 
 void bc_dump_package(RingDumpContext* ctx, Package_Executer* package_executer) {
-    printf("----------dump a package----------\n");
-    printf("package_name: %s\n", package_executer->package_name);
-    printf("constant_pool_size:%u\n", package_executer->constant_pool->size);
-    printf("global_variable_size:%u\n", package_executer->global_variable_size);
-    printf("function_size:%u\n", package_executer->function_size);
-    printf("class_size:%u\n", package_executer->class_size);
-    printf("bootloader_code_size:%u\n", package_executer->bootloader_code_size);
-    printf("exist_main_func:%d\n", package_executer->exist_main_func);
-    printf("main_func_index:%u\n", package_executer->main_func_index);
-    printf("exist_global_init_func:%d\n", package_executer->exist_global_init_func);
-    printf("global_init_func_index:%u\n", package_executer->global_init_func_index);
-    printf("estimate_runtime_stack_capacity:%u\n", package_executer->estimate_runtime_stack_capacity);
+    debug_bytecode("----------dump a package----------\n");
+    debug_bytecode("package_name: %s\n", package_executer->package_name);
+    debug_bytecode("constant_pool_size:%u\n", package_executer->constant_pool->size);
+    debug_bytecode("global_variable_size:%u\n", package_executer->global_variable_size);
+    debug_bytecode("function_size:%u\n", package_executer->function_size);
+    debug_bytecode("class_size:%u\n", package_executer->class_size);
+    debug_bytecode("bootloader_code_size:%u\n", package_executer->bootloader_code_size);
+    debug_bytecode("exist_main_func:%d\n", package_executer->exist_main_func);
+    debug_bytecode("main_func_index:%u\n", package_executer->main_func_index);
+    debug_bytecode("exist_global_init_func:%d\n", package_executer->exist_global_init_func);
+    debug_bytecode("global_init_func_index:%u\n", package_executer->global_init_func_index);
+    debug_bytecode("estimate_runtime_stack_capacity:%u\n", package_executer->estimate_runtime_stack_capacity);
 
     bc_dump_cstring(ctx, package_executer->package_name);
     bc_dump_size(ctx, package_executer->constant_pool->size);
@@ -167,7 +186,7 @@ void bc_dump_root(RingDumpContext* ctx) {
 
 
     // package 的数量
-    printf("package_count: %lu\n", executer_entry->package_executer_list.size());
+    debug_bytecode("package_count: %lu\n", executer_entry->package_executer_list.size());
     bc_dump_size(ctx, executer_entry->package_executer_list.size());
 
     for (Package_Executer* package_executer : executer_entry->package_executer_list) {

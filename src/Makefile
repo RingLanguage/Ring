@@ -71,6 +71,7 @@ TOOL_GEN_VMCODE_DOC_OBJS  = vm.o tool_gen_vmcode_doc.o
 #  DEBUG_COMPILER_DETAIL 		     控制编译阶段的信息：词法分析、语法分析、语意分析
 #  DEBUG_GENERATE_SUMMARY 		     代码生成阶段 概要: 只会打印出相关的package package_unit信息
 #  DEBUG_GENERATE_DETAIL 		     代码生成阶段 详情: 会打印出package对应的字节码
+#  DEBUG_BYTECODE_DUMP 		     	 控制字节码 dump undump 日志
 #  DEBUG_GENERATE_OUTPUT_VMCODE      代码生成节点： 只打印出相应的字节码
 #  DEBUG_EXEC_VM  				     vm运行阶段的调试信息
 #  DEBUG_RVM_INTERACTIVE 		     控制调试RVM
@@ -94,6 +95,7 @@ CFLAGS = -c -static -O2 -std=c++20 \
 				 -DDEBUG_COMPILER_DETAIL1 \
 				 -DDEBUG_GENERATE_SUMMARY1 \
 				 -DDEBUG_GENERATE_DETAIL1 \
+				 -DDEBUG_BYTECODE_DUMP1 \
 				 -DDEBUG_GENERATE_OUTPUT_VMCODE1 \
 				 -DDEBUG_EXEC_VM1 \
 				 -DDEBUG_RVM_INTERACTIVE1 \

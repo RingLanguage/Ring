@@ -122,7 +122,7 @@ extern "C" int yywrap(){
 <INITIAL>">>"           { package_unit_update_line_content(yytext); return TOKEN_BIT_RSHIFT;     }
 
 <INITIAL>[A-Za-z_][A-Za-z_0-9]* {
-    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),identifier(%s)",
+    debug_flex("[STATUS:INITIAL]\t line_num(%d),column_num(%d),identifier(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
@@ -139,7 +139,7 @@ extern "C" int yywrap(){
     return IDENTIFIER;
 }
 <INITIAL>([0-9]*(_[0-9]+)*)|"0" {
-    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),int_literal(%s)",
+    debug_flex("[STATUS:INITIAL]\t line_num(%d),column_num(%d),int_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
@@ -164,7 +164,7 @@ extern "C" int yywrap(){
 }
 <INITIAL>([0-9]*(_[0-9]+)*L)|"0L" { 
     // 十进制常量，支持下划线分隔
-    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),int64_literal(%s)",
+    debug_flex("[STATUS:INITIAL]\t line_num(%d),column_num(%d),int64_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
@@ -190,7 +190,7 @@ extern "C" int yywrap(){
 
 <INITIAL>0b[01]+(_[01]+)*L? { 
     // 二进制常量，支持下划线分隔
-    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),binary_literal(%s)",
+    debug_flex("[STATUS:INITIAL]\t line_num(%d),column_num(%d),binary_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
@@ -221,7 +221,7 @@ extern "C" int yywrap(){
 
 <INITIAL>0o[0-7]+(_[0-7]+)*L? {
     // 八进制常量，支持下划线分隔
-    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),hex_literal(%s)",
+    debug_flex("[STATUS:INITIAL]\t line_num(%d),column_num(%d),hex_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
@@ -252,7 +252,7 @@ extern "C" int yywrap(){
 
 <INITIAL>0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*L? {
     // 十六进制常量，支持下划线分隔
-    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),hex_literal(%s)",
+    debug_flex("[STATUS:INITIAL]\t line_num(%d),column_num(%d),hex_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
@@ -286,7 +286,7 @@ extern "C" int yywrap(){
 }
 
 <INITIAL>[0-9]+(_[0-9]+)*\.[0-9]+(_[0-9]+)* {
-    debug_flex_info_with_red("[STATUS:INITIAL]\t line_num(%d),column_num(%d),double_literal(%s)",
+    debug_flex("[STATUS:INITIAL]\t line_num(%d),column_num(%d),double_literal(%s)",
         package_unit_get_line_number(), 
         package_unit_get_column_number(), 
         yytext);
@@ -321,7 +321,7 @@ extern "C" int yywrap(){
     BEGIN BLOCK_STRING_LITERAL_STATE;
 }
 <INITIAL>\n.* {
-    debug_flex_info_with_red("[STATUS:INITIAL]\t new line(LF) line_number(%d)\n\n", package_unit_get_line_number());
+    debug_flex("[STATUS:INITIAL]\t new line(LF) line_number(%d)\n\n", package_unit_get_line_number());
 
     package_unit_update_line_content((char*)"\n");
 
@@ -333,7 +333,7 @@ extern "C" int yywrap(){
     yyless(1);
 }
 <INITIAL>\r\n.* {
-    debug_flex_info_with_red("[STATUS:INITIAL]\t new line(CRLF) line_number(%d)\n\n", package_unit_get_line_number());
+    debug_flex("[STATUS:INITIAL]\t new line(CRLF) line_number(%d)\n\n", package_unit_get_line_number());
 
     package_unit_update_line_content((char*)"\r\n");
 
