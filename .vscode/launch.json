@@ -44,7 +44,41 @@
       "args": [
         "-O0",
         "dump",
-        "${workspaceFolder}/test/008-class/class-000.ring"
+        "${workspaceFolder}/test/996-bytecode/test0.ring",
+        "-o",
+        "${workspaceFolder}/test/996-bytecode/test0.ringc"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
+      // 调试 Ring undump 命令
+      "name": "Debug Ring undump",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/ring",
+      "args": [
+        "undump",
+        "${workspaceFolder}/test/996-bytecode/test0.ringc"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${fileDirname}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
+      // 调试 Ring binrun 命令
+      "name": "Debug Ring binrun",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/ring",
+      "args": [
+        "binrun",
+        "${workspaceFolder}/test/test0.ringc"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
