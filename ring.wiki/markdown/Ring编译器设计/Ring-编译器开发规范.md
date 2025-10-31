@@ -54,7 +54,7 @@ If you not flod function signature, not need add a empty line.
 
 ```
 void ring_bytecode_dump(Package_Executer* executer, FILE* output) {
-    debug_generate_info_with_darkgreen("\t");
+    debug_generate("\t");
 }
 ```
 
