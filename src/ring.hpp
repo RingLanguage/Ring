@@ -4,9 +4,13 @@
 
 #include "dap.hpp"
 #include "linenoise.h"
+#include <atomic>
 #include <cstdio>
 #include <cstring>
+#include <deque>
+#include <mutex>
 #include <nlohmann/json.hpp>
+#include <pthread.h>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -269,7 +273,12 @@ struct Ring_VirtualMachine {
 
     RVM_DebugConfig*   debug_config;
 
+    RVM_DebugConfig*   debug_config;
+
     RingCoroutine*     current_coroutine;
+
+    // 新增字段 - Golang风格协程支持
+    struct Scheduler* scheduler; // 协程调度器
 };
 
 // 从后边获取 1BYTE的操作数
@@ -312,6 +321,20 @@ typedef enum {
     CO_STAT_DEAD,
 } CO_STAT;
 
+typedef enum {
+    G_STATUS_IDLE,
+    G_STATUS_RUNNABLE,
+    G_STATUS_RUNNING,
+    G_STATUS_SUSPENDED,
+    G_STATUS_DEAD,
+} G_STATUS;
+
+typedef unsigned long long M_ID;
+
+// 提前声明
+struct Machine;
+struct Scheduler;
+
 typedef unsigned long long CO_ID;
 
 
@@ -335,10 +358,17 @@ struct RingCoroutine {
 
     long long         last_run_time;
     CO_STAT           status;
+    G_STATUS          g_status; // Golang风格协程状态
 
     RVM_RuntimeStack* runtime_stack; // 运行堆栈
 
     RVM_CallInfo*     call_info; // 函数调用栈
+
+    // 新增字段 - Golang风格协程支持
+    M_ID     m_id;       // 当前执行该协程的M的ID
+    uint64_t stack_size; // 栈大小
+    uint64_t goid;       // 协程唯一标识
+    bool     is_system;  // 是否为系统协程
 
     // defer 调用链
     unsigned int   defer_list_size;
@@ -346,6 +376,64 @@ struct RingCoroutine {
 };
 
 struct GarbageCollector {
+};
+
+/*
+ * Machine 表示一个物理线程
+ *
+ * m_id:            机器ID
+ * thread_id:       物理线程ID
+ * running_g:       当前正在运行的G
+ * local_runnable_gs: 本地可运行队列
+ * park_count:      挂起计数
+ * is_main:         是否为主线程
+ */
+struct Machine {
+    M_ID                        m_id;              // 机器ID
+    pthread_t                   thread_id;         // 物理线程ID
+    RingCoroutine*              running_g;         // 当前正在运行的G
+    std::vector<RingCoroutine*> local_runnable_gs; // 本地可运行队列
+    std::atomic<int>            park_count;        // 挂起计数
+    bool                        is_main;           // 是否为主线程
+    std::mutex                  local_queue_mutex; // 本地队列锁
+};
+
+/*
+ * Scheduler 负责协程调度
+ *
+ * machines:              所有机器
+ * global_runnable_gs:    全局可运行队列
+ * global_runnable_count: 全局可运行协程计数
+ * global_queue_mutex:    全局队列锁
+ */
+struct Scheduler {
+    std::vector<Machine*>      machines;              // 所有机器
+    std::deque<RingCoroutine*> global_runnable_gs;    // 全局可运行队列
+    std::atomic<int>           global_runnable_count; // 全局可运行协程计数
+    std::mutex                 global_queue_mutex;    // 全局队列锁
+};
+
+/*
+ * Channel 表示一个通道，用于协程间通信
+ *
+ * buffer:           通道缓冲区
+ * buffer_size:      缓冲区大小，0表示无缓冲通道
+ * mutex:            互斥锁，保护通道操作
+ * send_cond:        发送条件变量
+ * recv_cond:        接收条件变量
+ * closed:           通道是否已关闭
+ * send_wait_gs:     等待发送的协程队列
+ * recv_wait_gs:     等待接收的协程队列
+ */
+struct Channel {
+    std::deque<RVM_Value>      buffer;       // 通道缓冲区
+    size_t                     buffer_size;  // 缓冲区大小，0表示无缓冲通道
+    std::mutex                 mutex;        // 互斥锁，保护通道操作
+    std::condition_variable    send_cond;    // 发送条件变量
+    std::condition_variable    recv_cond;    // 接收条件变量
+    bool                       closed;       // 通道是否已关闭
+    std::deque<RingCoroutine*> send_wait_gs; // 等待发送的协程队列
+    std::deque<RingCoroutine*> recv_wait_gs; // 等待接收的协程队列
 };
 
 struct ImportPackageInfo {
@@ -4126,29 +4214,35 @@ void       std_lib_runtime_heap_size(Ring_VirtualMachine* rvm,
 void       std_lib_runtime_gc(Ring_VirtualMachine* rvm,
                               unsigned int arg_size, RVM_Value* args,
                               unsigned int* return_size, RVM_Value** return_list);
-void       std_lib_runtime_print_call_stack(Ring_VirtualMachine* rvm,
-                                            unsigned int arg_size, RVM_Value* args,
-                                            unsigned int* return_size, RVM_Value** return_list);
-void       std_lib_runtime_call_info(Ring_VirtualMachine* rvm,
-                                     unsigned int arg_size, RVM_Value* args,
-                                     unsigned int* return_size, RVM_Value** return_list);
 
-void       std_lib_time_time(Ring_VirtualMachine* rvm,
-                             unsigned int arg_size, RVM_Value* args,
-                             unsigned int* return_size, RVM_Value** return_list);
-void       std_lib_time_sleep(Ring_VirtualMachine* rvm,
-                              unsigned int arg_size, RVM_Value* args,
-                              unsigned int* return_size, RVM_Value** return_list);
+// Channel 相关函数声明
+Channel* create_channel(size_t buffer_size);
+void     close_channel(Channel* ch);
+bool     send_to_channel(Channel* ch, const RVM_Value& value);
+bool     recv_from_channel(Channel* ch, RVM_Value* value);
+void     std_lib_runtime_print_call_stack(Ring_VirtualMachine* rvm,
+                                          unsigned int arg_size, RVM_Value* args,
+                                          unsigned int* return_size, RVM_Value** return_list);
+void     std_lib_runtime_call_info(Ring_VirtualMachine* rvm,
+                                   unsigned int arg_size, RVM_Value* args,
+                                   unsigned int* return_size, RVM_Value** return_list);
 
-void       std_lib_math_abs(Ring_VirtualMachine* rvm,
+void     std_lib_time_time(Ring_VirtualMachine* rvm,
+                           unsigned int arg_size, RVM_Value* args,
+                           unsigned int* return_size, RVM_Value** return_list);
+void     std_lib_time_sleep(Ring_VirtualMachine* rvm,
                             unsigned int arg_size, RVM_Value* args,
                             unsigned int* return_size, RVM_Value** return_list);
-void       std_lib_math_sqrt(Ring_VirtualMachine* rvm,
-                             unsigned int arg_size, RVM_Value* args,
-                             unsigned int* return_size, RVM_Value** return_list);
-void       std_lib_math_pow(Ring_VirtualMachine* rvm,
-                            unsigned int arg_size, RVM_Value* args,
-                            unsigned int* return_size, RVM_Value** return_list);
+
+void     std_lib_math_abs(Ring_VirtualMachine* rvm,
+                          unsigned int arg_size, RVM_Value* args,
+                          unsigned int* return_size, RVM_Value** return_list);
+void     std_lib_math_sqrt(Ring_VirtualMachine* rvm,
+                           unsigned int arg_size, RVM_Value* args,
+                           unsigned int* return_size, RVM_Value** return_list);
+void     std_lib_math_pow(Ring_VirtualMachine* rvm,
+                          unsigned int arg_size, RVM_Value* args,
+                          unsigned int* return_size, RVM_Value** return_list);
 // --------------------
 
 /* --------------------

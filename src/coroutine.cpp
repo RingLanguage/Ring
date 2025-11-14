@@ -1,7 +1,19 @@
 #include "ring.hpp"
 #include <cassert>
 #include <ctime>
+#include <iostream>
+#include "ring.hpp"
 
+// 函数前向声明
+extern struct Scheduler* init_scheduler();
+extern void set_global_scheduler(struct Scheduler* sched);
+extern struct Machine* create_machine(struct Scheduler* sched, bool is_main);
+extern void set_global_main_machine(struct Machine* m);
+extern struct Machine* get_machine_by_id(M_ID m_id);
+extern void add_g_to_local_queue(struct Machine* m, RingCoroutine* g);
+extern void add_g_to_global_queue(RingCoroutine* g);
+extern void resume_g(RingCoroutine* g);
+extern void yield_g(RingCoroutine* g);
 
 extern int RING_DEBUG_TRACE_COROUTINE_SCHED;
 
@@ -34,8 +46,13 @@ RingCoroutine* launch_root_coroutine(Ring_VirtualMachine* rvm) {
     co->p_co_id       = -1;
     co->last_run_time = -1;
     co->status        = CO_STAT_INIT;
+    co->g_status      = G_STATUS_RUNNING; // 根协程直接运行
     co->runtime_stack = new_runtime_stack();
     co->call_info     = nullptr;
+    co->stack_size    = 8 * 1024 * 1024; // 根协程栈大小更大，8MB
+    co->goid          = (uint64_t)co->co_id; // 使用co_id作为goid
+    co->is_system     = true; // 根协程是系统协程
+    co->m_id          = 1; // 根协程运行在主机器上
 
     // step-1: new and stroe callinfo
     RVM_CallInfo* callinfo         = (RVM_CallInfo*)mem_alloc(rvm->meta_pool, sizeof(RVM_CallInfo));
@@ -57,8 +74,26 @@ RingCoroutine* launch_root_coroutine(Ring_VirtualMachine* rvm) {
 
     co->call_info                  = store_callinfo(co->call_info, callinfo);
 
-
     coroutine_map.insert(std::make_pair(co->co_id, co));
+
+    // 初始化调度器（如果还没有初始化）
+    if (rvm->scheduler == nullptr) {
+        // 初始化全局调度器
+        rvm->scheduler = init_scheduler();
+        set_global_scheduler(rvm->scheduler);
+        
+        // 创建主机器（运行在主线程上）
+        Machine* main_machine = create_machine(rvm->scheduler, true);
+        set_global_main_machine(main_machine);
+        main_machine->thread_id = pthread_self(); // 设置为主线程ID
+        main_machine->running_g = co; // 设置当前运行的协程
+        
+        // 创建更多的机器（根据CPU核心数）
+        unsigned int cpu_count = 4; // 临时固定为4，实际应该获取CPU核心数
+        for (unsigned int i = 1; i < cpu_count; i++) {
+            create_machine(rvm->scheduler, false);
+        }
+    }
 
     return co;
 }
@@ -87,9 +122,13 @@ RingCoroutine* launch_coroutine(Ring_VirtualMachine* rvm,
     co->p_co_id       = VM_CUR_CO->co_id;
     co->last_run_time = -1;
     co->status        = CO_STAT_INIT;
+    co->g_status      = G_STATUS_IDLE; // 新增：Golang风格协程状态
     co->runtime_stack = new_runtime_stack();
     co->call_info     = nullptr;
-
+    co->stack_size    = 4 * 1024 * 1024; // 默认栈大小 4MB
+    co->goid          = (uint64_t)co->co_id; // 使用co_id作为goid
+    co->is_system     = false; // 非系统协程
+    co->m_id          = 0; // 初始时没有绑定机器
 
     // step-1: new and stroe callinfo
     RVM_CallInfo* callinfo         = (RVM_CallInfo*)mem_alloc(rvm->meta_pool, sizeof(RVM_CallInfo));
@@ -127,8 +166,23 @@ RingCoroutine* launch_coroutine(Ring_VirtualMachine* rvm,
         printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [create::] co_id:%llu\n", co->co_id);
     }
 
-
-    // step-3: 初始化匿名函数的局部变量
+    // 在Golang风格的协程设计中，创建协程后应将其添加到可运行队列
+    if (rvm->scheduler != nullptr) {
+        co->g_status = G_STATUS_RUNNABLE;
+        // 获取当前运行在哪个机器上
+        Machine* curr_machine = nullptr;
+        if (VM_CUR_CO != nullptr && VM_CUR_CO->m_id != 0) {
+            curr_machine = get_machine_by_id(VM_CUR_CO->m_id);
+        }
+        
+        if (curr_machine != nullptr) {
+            // 优先添加到本地队列
+            add_g_to_local_queue(curr_machine, co);
+        } else {
+            // 添加到全局队列
+            add_g_to_global_queue(co);
+        }
+    }
 
     return co;
 }
@@ -403,37 +457,43 @@ int resume_coroutine(Ring_VirtualMachine* rvm,
         *caller_function = target_co->call_info->callee_function;
     }
 
+    // 在Golang风格的协程设计中，resume操作应该将目标协程添加到可运行队列
+    if (rvm->scheduler != nullptr) {
+        // 调用调度器的resume_g函数来处理协程调度
+        resume_g(target_co);
+    } else {
+        // 回退到原来的协作式协程实现
+        // 协程上下文切换
+        // 1. 记录协程 切回时，对应的 pc
+        curr_co->status                         = CO_STAT_SUSPENDED;
+        curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
+        // 2. 目标协程 记录 pc
+        target_co->p_co_id       = curr_co->co_id;
+        target_co->status        = CO_STAT_RUNNING;
+        target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
+        // 3. 切换 coroutine
+        rvm->current_coroutine = target_co;
 
-    // 协程上下文切换
-    // 1. 记录协程 切回时，对应的 pc
-    curr_co->status                         = CO_STAT_SUSPENDED;
-    curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
-    // 2. 目标协程 记录 pc
-    target_co->p_co_id       = curr_co->co_id;
-    target_co->status        = CO_STAT_RUNNING;
-    target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
-    // 3. 切换 coroutine
-    rvm->current_coroutine = target_co;
 
+        if (RING_DEBUG_TRACE_COROUTINE_SCHED == 1) {
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::] "
+                                "co_id:%lld->%lld\n",
+                                curr_co->co_id, target_co->co_id);
 
-    if (RING_DEBUG_TRACE_COROUTINE_SCHED == 1) {
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::] "
-                            "co_id:%lld->%lld\n",
-                            curr_co->co_id, target_co->co_id);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::  store-old] "
+                                "Coroutine{co_id:%lld, status:%d}\n",
+                                curr_co->co_id, curr_co->status);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::  store-old] "
+                                "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
+                                curr_co->runtime_stack->data, curr_co->runtime_stack->top_index, curr_co->runtime_stack->size, curr_co->runtime_stack->capacity);
 
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::  store-old] "
-                            "Coroutine{co_id:%lld, status:%d}\n",
-                            curr_co->co_id, curr_co->status);
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::  store-old] "
-                            "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
-                            curr_co->runtime_stack->data, curr_co->runtime_stack->top_index, curr_co->runtime_stack->size, curr_co->runtime_stack->capacity);
-
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::restore-new] "
-                            "Coroutine{co_id:%lld, status:%d}\n",
-                            target_co->co_id, target_co->status);
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::restore-new] "
-                            "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
-                            target_co->runtime_stack->data, target_co->runtime_stack->top_index, target_co->runtime_stack->size, target_co->runtime_stack->capacity);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::restore-new] "
+                                "Coroutine{co_id:%lld, status:%d}\n",
+                                target_co->co_id, target_co->status);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [resume::restore-new] "
+                                "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
+                                target_co->runtime_stack->data, target_co->runtime_stack->top_index, target_co->runtime_stack->size, target_co->runtime_stack->capacity);
+        }
     }
 
     return 0;
@@ -458,44 +518,51 @@ int yield_coroutine(Ring_VirtualMachine* rvm) {
         return -1;
     }
 
-
     // get ns timestamp
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
     long long timestamp = (long long)(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 
-    // 协程上下文切换
-    // 1. 记录协程 切回时，对应的 pc
-    curr_co->status                         = CO_STAT_SUSPENDED;
-    curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
-    // 2. 目标协程 记录 pc
-    target_co->last_run_time = timestamp;
-    target_co->status        = CO_STAT_RUNNING;
-    target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
-    // 3. 切换 coroutine
-    rvm->current_coroutine = target_co;
+    if (rvm->scheduler != nullptr) {
+        // 在Golang风格的协程设计中，yield操作应该将当前协程添加到可运行队列的尾部
+        // 1. 记录协程切回时对应的pc
+        curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
+        
+        // 2. 调用调度器的yield_g函数来处理协程调度
+        yield_g(curr_co);
+    } else {
+        // 回退到原来的协作式协程实现
+        // 协程上下文切换
+        // 1. 记录协程 切回时，对应的 pc
+        curr_co->status                         = CO_STAT_SUSPENDED;
+        curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
+        // 2. 目标协程 记录 pc
+        target_co->last_run_time = timestamp;
+        target_co->status        = CO_STAT_RUNNING;
+        target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
+        // 3. 切换 coroutine
+        rvm->current_coroutine = target_co;
+        
+        if (RING_DEBUG_TRACE_COROUTINE_SCHED == 1) {
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::] "
+                                "co_id:%lld<-%lld\n",
+                                target_co->co_id, curr_co->co_id);
 
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::  store-old] "
+                                "Coroutine{co_id:%lld, status:%d}\n",
+                                curr_co->co_id, curr_co->status);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::  store-old] "
+                                "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
+                                curr_co->runtime_stack->data, curr_co->runtime_stack->top_index, curr_co->runtime_stack->size, curr_co->runtime_stack->capacity);
 
-    if (RING_DEBUG_TRACE_COROUTINE_SCHED == 1) {
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::] "
-                            "co_id:%lld<-%lld\n",
-                            target_co->co_id, curr_co->co_id);
-
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::  store-old] "
-                            "Coroutine{co_id:%lld, status:%d}\n",
-                            curr_co->co_id, curr_co->status);
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::  store-old] "
-                            "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
-                            curr_co->runtime_stack->data, curr_co->runtime_stack->top_index, curr_co->runtime_stack->size, curr_co->runtime_stack->capacity);
-
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::restore-new] "
-                            "Coroutine{co_id:%lld, status:%d}\n",
-                            target_co->co_id, target_co->status);
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::restore-new] "
-                            "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
-                            target_co->runtime_stack->data, target_co->runtime_stack->top_index, target_co->runtime_stack->size, target_co->runtime_stack->capacity);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::restore-new] "
+                                "Coroutine{co_id:%lld, status:%d}\n",
+                                target_co->co_id, target_co->status);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [yield::restore-new] "
+                                "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
+                                target_co->runtime_stack->data, target_co->runtime_stack->top_index, target_co->runtime_stack->size, target_co->runtime_stack->capacity);
+        }
     }
-
 
     return 0;
 }
@@ -524,43 +591,71 @@ int finish_coroutine(Ring_VirtualMachine* rvm,
     clock_gettime(CLOCK_REALTIME, &ts);
     long long timestamp = (long long)(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 
-    // 协程上下文切换
-    // 1. 记录协程 切回时，对应的 pc
-    curr_co->status = CO_STAT_DEAD;
-    // curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
-    // 2. 目标协程 记录 pc
-    target_co->last_run_time = timestamp;
-    target_co->status        = CO_STAT_RUNNING;
-    target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
-    // 3. 切换 coroutine
-    rvm->current_coroutine = target_co;
+    if (rvm->scheduler != nullptr) {
+        // 在Golang风格的协程设计中，finish_coroutine函数应该处理协程结束时的资源清理
+        // 1. 设置协程状态为死亡
+        curr_co->status = CO_STAT_DEAD;
+        curr_co->g_status = G_STATUS_DEAD;
+        
+        if (RING_DEBUG_TRACE_COROUTINE_SCHED == 1) {
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::] "
+                                "co_id:%lld is finished\n",
+                                curr_co->co_id);
+
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::    destory] "
+                                "Coroutine{co_id:%lld, status:%d}\n",
+                                curr_co->co_id, curr_co->status);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::    destory] "
+                                "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
+                                curr_co->runtime_stack->data, curr_co->runtime_stack->top_index, curr_co->runtime_stack->size, curr_co->runtime_stack->capacity);
+        }
+        
+        // 2. 资源清理
+        coroutine_map.erase(curr_co_id);
+        mem_free(rvm->meta_pool, curr_co, sizeof(RingCoroutine));
+        // TODO: 复用 runtime_stack
+        
+        // 3. 通知调度器当前机器可能需要获取新的协程
+        // 注意：这里应该是调度器的责任，而不是在finish函数中直接实现
+    } else {
+        // 回退到原来的协作式协程实现
+        // 协程上下文切换
+        // 1. 记录协程 切回时，对应的 pc
+        curr_co->status = CO_STAT_DEAD;
+        // curr_co->call_info->coroutine_resume_pc = curr_co->call_info->pc + 1;
+        // 2. 目标协程 记录 pc
+        target_co->last_run_time = timestamp;
+        target_co->status        = CO_STAT_RUNNING;
+        target_co->call_info->pc = target_co->call_info->coroutine_resume_pc;
+        // 3. 切换 coroutine
+        rvm->current_coroutine = target_co;
 
 
-    if (RING_DEBUG_TRACE_COROUTINE_SCHED == 1) {
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::] "
-                            "co_id:%lld<-%lld\n",
-                            target_co->co_id, curr_co->co_id);
+        if (RING_DEBUG_TRACE_COROUTINE_SCHED == 1) {
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::] "
+                                "co_id:%lld<-%lld\n",
+                                target_co->co_id, curr_co->co_id);
 
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::    destory] "
-                            "Coroutine{co_id:%lld, status:%d}\n",
-                            curr_co->co_id, curr_co->status);
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::    destory] "
-                            "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
-                            curr_co->runtime_stack->data, curr_co->runtime_stack->top_index, curr_co->runtime_stack->size, curr_co->runtime_stack->capacity);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::    destory] "
+                                "Coroutine{co_id:%lld, status:%d}\n",
+                                curr_co->co_id, curr_co->status);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::    destory] "
+                                "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
+                                curr_co->runtime_stack->data, curr_co->runtime_stack->top_index, curr_co->runtime_stack->size, curr_co->runtime_stack->capacity);
 
 
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::restore-new] "
-                            "Coroutine{co_id:%lld, status:%d}\n",
-                            target_co->co_id, target_co->status);
-        printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::restore-new] "
-                            "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
-                            target_co->runtime_stack->data, target_co->runtime_stack->top_index, target_co->runtime_stack->size, target_co->runtime_stack->capacity);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::restore-new] "
+                                "Coroutine{co_id:%lld, status:%d}\n",
+                                target_co->co_id, target_co->status);
+            printf_witch_yellow("[RING_DEBUG::trace_coroutine_sched] [dead::restore-new] "
+                                "RuntimeStack{data:%p, top_index:%u, size:%u, capacity:%u}\n",
+                                target_co->runtime_stack->data, target_co->runtime_stack->top_index, target_co->runtime_stack->size, target_co->runtime_stack->capacity);
+        }
+
+        coroutine_map.erase(curr_co_id);
+        mem_free(rvm->meta_pool, curr_co, sizeof(RingCoroutine));
+        // TODO: 复用 runtime_stack
     }
-
-    coroutine_map.erase(curr_co_id);
-    mem_free(rvm->meta_pool, curr_co, sizeof(RingCoroutine));
-    // TODO: 复用 runtime_stack
-
 
     return 0;
 }
